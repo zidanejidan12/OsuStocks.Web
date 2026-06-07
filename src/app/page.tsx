@@ -138,21 +138,21 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  // Debounce the search input so we don't fetch on every keystroke.
+  // Debounce the search input so we don't fetch on every keystroke. Resetting to
+  // page 1 belongs with the query change here, not in a separate state-sync effect.
   useEffect(() => {
-    const handle = setTimeout(() => setDebouncedSearch(search), 300);
+    const handle = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 300);
     return () => clearTimeout(handle);
   }, [search]);
-
-  // Reset to the first page whenever the query changes.
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch, sort]);
 
   // Fetch the market overview once the user is authenticated.
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: clear any stale error before refetching
     setOverviewError(null);
 
     getMarketOverview()
@@ -179,8 +179,12 @@ export default function Home() {
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
+    // Intentional skeleton-on-refetch when the page/sort/search query changes;
+    // the documented exception to react-hooks/set-state-in-effect.
+    /* eslint-disable react-hooks/set-state-in-effect */
     setStocksLoading(true);
     setStocksError(null);
+    /* eslint-enable react-hooks/set-state-in-effect */
 
     getStocks({
       page,
@@ -273,7 +277,10 @@ export default function Home() {
               search={search}
               onSearchChange={setSearch}
               sort={sort}
-              onSortChange={setSort}
+              onSortChange={(value) => {
+                setSort(value);
+                setPage(1);
+              }}
               page={page}
               pageSize={PAGE_SIZE}
               totalCount={totalCount}

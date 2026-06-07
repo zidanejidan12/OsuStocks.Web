@@ -29,11 +29,14 @@ export interface Me {
   osuUserId: number;
   username: string;
   role: UserRole;
+  /** osu! profile country, ISO 3166-1 alpha-2 (e.g. "US"). Optional until the API returns it. */
+  countryCode?: string;
 }
 
 export interface TopMover {
   stockId: string;
   playerName: string;
+  avatarUrl?: string | null;
   currentPrice: number;
   priceChange24h: number;
 }
@@ -48,6 +51,8 @@ export interface MarketOverview {
 export interface StockSummary {
   stockId: string;
   playerName: string;
+  /** osu! profile image URL. Optional until the API returns it. */
+  avatarUrl?: string | null;
   currentPrice: number;
   volume: number;
   priceChange24h: number;
@@ -86,12 +91,14 @@ export interface Trade {
   totalAmount: number;
   executedAt: string;
   playerName: string;
+  avatarUrl?: string | null;
 }
 
 export interface Holding {
   holdingId: string;
   stockId: string;
   playerName: string;
+  avatarUrl?: string | null;
   quantity: number;
   averagePrice: number;
   currentPrice: number;
@@ -104,6 +111,7 @@ export interface HoldingFlat {
   holdingId: string;
   stockId: string;
   playerName: string;
+  avatarUrl?: string | null;
   quantity: number;
   averagePrice: number;
   currentPrice: number;

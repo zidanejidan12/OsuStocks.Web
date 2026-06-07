@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -31,6 +31,7 @@ import { PriceChange } from "@/components/ui/PriceChange";
 import { Badge } from "@/components/ui/Badge";
 import { Reveal } from "@/components/motion/Reveal";
 import { Money } from "@/components/ui/Money";
+import { Avatar } from "@/components/ui/Avatar";
 import { scaleIn, EASE_OUT_EXPO } from "@/lib/motion";
 import { formatNumber, formatDateTime } from "@/lib/format";
 
@@ -345,11 +346,16 @@ export function StockDetail({ stockId }: { stockId: string }) {
 
   useEffect(() => {
     let cancelled = false;
+    // Resetting fetch state synchronously is intentional: it shows the loading
+    // skeleton while we refetch for the new stockId — the documented exception to
+    // react-hooks/set-state-in-effect (this is not the derive-state anti-pattern).
+    /* eslint-disable react-hooks/set-state-in-effect */
     setLoading(true);
     setError(null);
     setNotFound(false);
     setUnauthorized(false);
     setHistoryLoaded(false);
+    /* eslint-enable react-hooks/set-state-in-effect */
 
     getStock(stockId)
       .then((data) => {
@@ -407,7 +413,10 @@ export function StockDetail({ stockId }: { stockId: string }) {
       <div className="mx-auto max-w-6xl px-4 py-10 sm:py-14">
         <Skeleton className="h-5 w-24" />
         <div className="mt-8 flex flex-col gap-4 border-b border-zinc-800/60 pb-8 sm:flex-row sm:items-end sm:justify-between">
-          <Skeleton className="h-10 w-64" />
+          <div className="flex items-center gap-4">
+            <Skeleton className="h-16 w-16 rounded-full" />
+            <Skeleton className="h-10 w-64" />
+          </div>
           <div className="flex flex-col gap-2 sm:items-end">
             <Skeleton className="h-9 w-40" />
             <Skeleton className="h-5 w-24" />
@@ -489,13 +498,16 @@ export function StockDetail({ stockId }: { stockId: string }) {
       {/* Asymmetric header: name on the left, price + change + volume on the right. */}
       <Reveal className="mt-8">
         <header className="flex flex-col gap-6 border-b border-zinc-800/60 pb-8 md:flex-row md:items-end md:justify-between">
-          <div>
-            <span className="text-xs font-medium uppercase tracking-[0.12em] text-zinc-500">
-              Player Stock
-            </span>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tighter text-zinc-100 md:text-4xl">
-              {stock.playerName}
-            </h1>
+          <div className="flex items-center gap-4">
+            <Avatar src={stock.avatarUrl} name={stock.playerName} size="lg" />
+            <div>
+              <span className="text-xs font-medium uppercase tracking-[0.12em] text-zinc-500">
+                Player Stock
+              </span>
+              <h1 className="mt-2 text-3xl font-semibold tracking-tighter text-zinc-100 md:text-4xl">
+                {stock.playerName}
+              </h1>
+            </div>
           </div>
 
           <div className="flex items-end gap-8">

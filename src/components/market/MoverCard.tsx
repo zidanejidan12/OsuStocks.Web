@@ -8,6 +8,7 @@ import { TrendUp, TrendDown, CaretRight } from "@phosphor-icons/react";
 import type { TopMover } from "@/lib/api/types";
 import { PriceChange } from "@/components/ui/PriceChange";
 import { Money } from "@/components/ui/Money";
+import { Avatar } from "@/components/ui/Avatar";
 import { spring } from "@/lib/motion";
 
 const CARD_BASE =
@@ -57,8 +58,11 @@ export function MoverCard({
           />
         </div>
 
-        <div className="mt-4 truncate text-lg font-medium text-zinc-100">
-          {mover.playerName}
+        <div className="mt-4 flex items-center gap-2.5">
+          <Avatar src={mover.avatarUrl} name={mover.playerName} size="sm" />
+          <span className="truncate text-lg font-medium text-zinc-100">
+            {mover.playerName}
+          </span>
         </div>
 
         <div className="mt-1 flex items-baseline justify-between gap-3">

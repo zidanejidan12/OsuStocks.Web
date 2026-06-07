@@ -14,6 +14,7 @@ import { PriceChange } from "@/components/ui/PriceChange";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { buttonClasses } from "@/components/ui/Button";
 import { Money } from "@/components/ui/Money";
+import { Avatar } from "@/components/ui/Avatar";
 import { formatNumber } from "@/lib/format";
 import { spring } from "@/lib/motion";
 
@@ -102,7 +103,10 @@ export function StockList({
               {Array.from({ length: 8 }).map((_, i) => (
                 <tr key={i}>
                   <td className="px-4 py-3.5">
-                    <Skeleton className="h-4 w-32" />
+                    <div className="flex items-center gap-2.5">
+                      <Skeleton className="h-8 w-8 rounded-full" />
+                      <Skeleton className="h-4 w-32" />
+                    </div>
                   </td>
                   <td className="px-4 py-3.5">
                     <Skeleton className="ml-auto h-4 w-16" />
@@ -150,14 +154,21 @@ export function StockList({
                   <td className="px-4 py-3.5">
                     <Link
                       href={`/stocks/${stock.stockId}`}
-                      className="inline-flex items-center gap-1.5 font-medium text-zinc-100 transition-colors group-hover:text-pink-400"
+                      className="inline-flex items-center gap-2.5 font-medium text-zinc-100 transition-colors group-hover:text-pink-400"
                     >
-                      {stock.playerName}
-                      <CaretRight
-                        size={14}
-                        weight="bold"
-                        className="text-pink-400 opacity-0 transition-opacity group-hover:opacity-100"
+                      <Avatar
+                        src={stock.avatarUrl}
+                        name={stock.playerName}
+                        size="sm"
                       />
+                      <span className="inline-flex items-center gap-1.5">
+                        {stock.playerName}
+                        <CaretRight
+                          size={14}
+                          weight="bold"
+                          className="text-pink-400 opacity-0 transition-opacity group-hover:opacity-100"
+                        />
+                      </span>
                     </Link>
                   </td>
                   <td className="px-4 py-3.5 text-right font-mono tabular-nums text-zinc-100">

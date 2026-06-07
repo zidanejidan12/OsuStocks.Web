@@ -15,6 +15,7 @@ import type { Portfolio } from "@/lib/api/types";
 import { formatNumber } from "@/lib/format";
 import { Card } from "@/components/ui/Card";
 import { Money } from "@/components/ui/Money";
+import { Avatar } from "@/components/ui/Avatar";
 import { PriceChange } from "@/components/ui/PriceChange";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -148,14 +149,17 @@ function HoldingsTable({ portfolio }: { portfolio: Portfolio }) {
               <td className="px-4 py-3">
                 <Link
                   href={`/stocks/${h.stockId}`}
-                  className="inline-flex items-center gap-1 font-medium text-zinc-100 transition-colors hover:text-pink-400"
+                  className="inline-flex items-center gap-2.5 font-medium text-zinc-100 transition-colors hover:text-pink-400"
                 >
-                  {h.playerName}
-                  <CaretRight
-                    size={14}
-                    weight="bold"
-                    className="text-zinc-600 opacity-0 transition-opacity group-hover:opacity-100 group-hover:text-pink-400"
-                  />
+                  <Avatar src={h.avatarUrl} name={h.playerName} size="sm" />
+                  <span className="inline-flex items-center gap-1">
+                    {h.playerName}
+                    <CaretRight
+                      size={14}
+                      weight="bold"
+                      className="text-zinc-600 opacity-0 transition-opacity group-hover:opacity-100 group-hover:text-pink-400"
+                    />
+                  </span>
                 </Link>
               </td>
               <td className="px-4 py-3 text-right font-mono tabular-nums text-zinc-300">
@@ -206,7 +210,10 @@ function PortfolioSkeleton() {
               key={i}
               className="flex items-center justify-between px-4 py-4"
             >
-              <Skeleton className="h-4 w-32" />
+              <div className="flex items-center gap-2.5">
+                <Skeleton className="h-8 w-8 rounded-full" />
+                <Skeleton className="h-4 w-32" />
+              </div>
               <div className="flex items-center gap-6">
                 <Skeleton className="hidden h-4 w-16 sm:block" />
                 <Skeleton className="hidden h-4 w-20 sm:block" />
@@ -231,9 +238,14 @@ export default function PortfolioPage() {
     if (authLoading || !user) return;
 
     let cancelled = false;
+    // Resetting fetch state synchronously is intentional: it shows the loading
+    // skeleton while we (re)fetch — the documented exception to
+    // react-hooks/set-state-in-effect (this is not the derive-state anti-pattern).
+    /* eslint-disable react-hooks/set-state-in-effect */
     setLoading(true);
     setError(null);
     setUnauthorized(false);
+    /* eslint-enable react-hooks/set-state-in-effect */
 
     getPortfolio()
       .then((data) => {

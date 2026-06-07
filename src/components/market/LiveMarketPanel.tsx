@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/Card";
 import { PriceChange } from "@/components/ui/PriceChange";
 import { StatusDot } from "@/components/ui/StatusDot";
 import { Money } from "@/components/ui/Money";
+import { Avatar } from "@/components/ui/Avatar";
 
 type Row = {
   name: string;
@@ -29,8 +30,9 @@ const ROWS: Row[] = [
 function TickerRow({ row }: { row: Row }) {
   return (
     <div className="flex items-center justify-between gap-6 px-5 py-3.5">
-      <span className="truncate text-sm font-medium text-zinc-200">
-        {row.name}
+      <span className="flex items-center gap-2.5 text-sm font-medium text-zinc-200">
+        <Avatar name={row.name} size="sm" />
+        <span className="truncate">{row.name}</span>
       </span>
       <div className="flex items-center gap-5">
         <span className="font-mono text-sm tabular-nums text-zinc-400">

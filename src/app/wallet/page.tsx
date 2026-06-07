@@ -126,9 +126,14 @@ export default function WalletPage() {
     if (authLoading || !user) return;
 
     let cancelled = false;
+    // Resetting fetch state synchronously is intentional: it shows the loading
+    // skeleton while we (re)fetch — the documented exception to
+    // react-hooks/set-state-in-effect (this is not the derive-state anti-pattern).
+    /* eslint-disable react-hooks/set-state-in-effect */
     setLoading(true);
     setError(null);
     setUnauthorized(false);
+    /* eslint-enable react-hooks/set-state-in-effect */
 
     Promise.all([getWallet(), getWalletTransactions()])
       .then(([walletData, txData]) => {

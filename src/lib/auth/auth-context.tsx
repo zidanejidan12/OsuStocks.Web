@@ -10,6 +10,7 @@ import {
 import type { Me } from "@/lib/api/types";
 import { API_BASE_URL, getMe } from "@/lib/api/client";
 import { clearAuth, getAccessToken } from "@/lib/auth/token";
+import * as analytics from "@/lib/analytics";
 
 interface AuthContextValue {
   user: Me | null;
@@ -38,9 +39,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       try {
         const me = await getMe();
-        if (!cancelled) setUser(me);
+        if (!cancelled) {
+          setUser(me);
+          analytics.identify(me.userId, { osu_country: me.countryCode });
+        }
       } catch {
         clearAuth();
+        analytics.reset();
         if (!cancelled) setUser(null);
       } finally {
         if (!cancelled) setLoading(false);
@@ -67,6 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(() => {
     clearAuth();
+    analytics.reset();
     setUser(null);
   }, []);
 
@@ -74,8 +80,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const me = await getMe();
       setUser(me);
+      analytics.identify(me.userId, { osu_country: me.countryCode });
     } catch {
       clearAuth();
+      analytics.reset();
       setUser(null);
     }
   }, []);
