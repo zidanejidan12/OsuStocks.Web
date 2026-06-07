@@ -1,4 +1,6 @@
 // Pure formatting helpers. No runtime dependencies.
+// Note: amounts are unitless strings here — the osu! coin glyph is rendered by
+// the <Money> / <PriceChange> components, not baked into these values.
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   minimumFractionDigits: 2,
@@ -10,7 +12,7 @@ const integerFormatter = new Intl.NumberFormat("en-US", {
 });
 
 export function formatCurrency(n: number): string {
-  return "$" + currencyFormatter.format(n);
+  return currencyFormatter.format(n);
 }
 
 export function formatNumber(n: number): string {
@@ -19,7 +21,7 @@ export function formatNumber(n: number): string {
 
 export function formatChange(n: number): string {
   const sign = n >= 0 ? "+" : "-";
-  return sign + "$" + currencyFormatter.format(Math.abs(n));
+  return sign + currencyFormatter.format(Math.abs(n));
 }
 
 export function formatDateTime(iso: string): string {

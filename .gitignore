@@ -30,8 +30,8 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files — commit .env and .env.example (non-secret defaults),
-# keep local overrides and secrets out of git
+# env files — commit .env.example only; keep .env and local overrides
+# (and any secrets) out of git
 .env*.local
 
 # vercel

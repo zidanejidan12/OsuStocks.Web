@@ -3,8 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { ChartLineUp, WarningCircle, ArrowRight } from "@phosphor-icons/react";
 import { Card } from "@/components/ui/Card";
-import { Spinner } from "@/components/ui/Spinner";
+import { buttonClasses } from "@/components/ui/Button";
+import { Reveal } from "@/components/motion/Reveal";
+import { scaleIn } from "@/lib/motion";
 import { useAuth } from "@/lib/auth/auth-context";
 import { setAuth } from "@/lib/auth/token";
 
@@ -49,31 +53,68 @@ export default function AuthCallbackPage() {
 
   if (error) {
     return (
-      <main className="flex flex-1 items-center justify-center bg-zinc-950 p-6 text-zinc-100">
-        <Card className="w-full max-w-md text-center">
-          <div className="space-y-3">
-            <h1 className="text-lg font-semibold text-rose-400">
-              Sign-in failed
-            </h1>
-            <p className="text-sm text-zinc-400">
-              We could not read an access token from the callback. Please try
-              again.
-            </p>
-            <Link
-              href="/login"
-              className="inline-block rounded-lg bg-pink-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-pink-400"
-            >
-              Back to login
-            </Link>
-          </div>
-        </Card>
+      <main className="grid min-h-[calc(100dvh-4rem)] place-items-center bg-zinc-950 px-4 py-12 text-zinc-100">
+        <Reveal className="w-full max-w-md">
+          <Card>
+            <div className="flex flex-col items-center text-center">
+              <span className="grid h-14 w-14 place-items-center rounded-2xl bg-rose-500/15 text-rose-400 ring-1 ring-inset ring-rose-500/25">
+                <WarningCircle size={26} weight="bold" />
+              </span>
+              <h1 className="mt-5 text-xl font-semibold tracking-tighter">
+                Sign-in failed
+              </h1>
+              <p className="mt-2 max-w-xs text-sm leading-relaxed text-zinc-400">
+                We could not read an access token from the callback. Please try
+                again.
+              </p>
+              <Link
+                href="/login"
+                className={buttonClasses({
+                  variant: "primary",
+                  size: "md",
+                  className: "mt-6",
+                })}
+              >
+                Back to login
+                <ArrowRight size={18} weight="bold" />
+              </Link>
+            </div>
+          </Card>
+        </Reveal>
       </main>
     );
   }
 
   return (
-    <main className="flex flex-1 items-center justify-center bg-zinc-950 p-6 text-zinc-100">
-      <Spinner label="Signing you in..." />
+    <main className="grid min-h-[calc(100dvh-4rem)] place-items-center bg-zinc-950 px-4 py-12 text-zinc-100">
+      <motion.div
+        variants={scaleIn}
+        initial="hidden"
+        animate="show"
+        className="flex flex-col items-center text-center"
+      >
+        <div className="relative grid h-16 w-16 place-items-center">
+          <motion.span
+            className="absolute inset-0 rounded-2xl bg-pink-500/15 ring-1 ring-inset ring-pink-500/25"
+            animate={{ scale: [1, 1.12, 1], opacity: [0.6, 1, 0.6] }}
+            transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+            aria-hidden="true"
+          />
+          <motion.span
+            className="relative text-pink-400"
+            animate={{ y: [0, -3, 0] }}
+            transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <ChartLineUp size={28} weight="bold" />
+          </motion.span>
+        </div>
+        <p className="mt-5 text-sm font-medium tracking-tight text-zinc-300">
+          Completing sign-in...
+        </p>
+        <p className="mt-1 text-xs text-zinc-500">
+          Hang tight while we finish setting up your session.
+        </p>
+      </motion.div>
     </main>
   );
 }

@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth/auth-context";
 import { Nav } from "@/components/Nav";
+import { Footer } from "@/components/Footer";
+import { Backdrop } from "@/components/Backdrop";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,7 +18,10 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
-  title: "OsuStocks",
+  title: {
+    default: "OsuStocks",
+    template: "%s · OsuStocks",
+  },
   description:
     "Trade osu! players like stocks — browse the market, track your portfolio, and buy and sell shares tied to osu! player performance.",
   applicationName: "OsuStocks",
@@ -44,10 +49,12 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} antialiased`}
     >
-      <body className="min-h-screen bg-zinc-950 text-zinc-100">
+      <body className="flex min-h-screen flex-col bg-zinc-950 font-sans text-zinc-100">
+        <Backdrop />
         <AuthProvider>
           <Nav />
-          <main className="mx-auto max-w-5xl px-4 py-6">{children}</main>
+          <main className="relative flex-1">{children}</main>
+          <Footer />
         </AuthProvider>
       </body>
     </html>

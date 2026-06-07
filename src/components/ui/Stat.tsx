@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+// Label + mono numeric value. Numbers always use the mono face + tabular figures.
 export function Stat({
   label,
   value,
@@ -11,11 +12,13 @@ export function Stat({
 }) {
   return (
     <div>
-      <div className="text-xs uppercase tracking-wide text-zinc-400">
+      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">
         {label}
       </div>
-      <div className="text-xl font-semibold">{value}</div>
-      {sub != null && <div className="mt-0.5 text-sm text-zinc-400">{sub}</div>}
+      <div className="mt-1.5 font-mono text-2xl font-semibold tabular-nums text-zinc-50">
+        {value}
+      </div>
+      {sub != null && <div className="mt-1 text-sm text-zinc-400">{sub}</div>}
     </div>
   );
 }

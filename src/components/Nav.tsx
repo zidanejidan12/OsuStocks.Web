@@ -2,13 +2,24 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
+import {
+  ChartLineUp,
+  ChartPieSlice,
+  Wallet,
+  SignOut,
+  SignIn,
+} from "@phosphor-icons/react";
 import { useAuth } from "@/lib/auth/auth-context";
+import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
+import { buttonClasses } from "@/components/ui/Button";
+import { spring } from "@/lib/motion";
 
 const LINKS = [
-  { href: "/", label: "Market" },
-  { href: "/portfolio", label: "Portfolio" },
-  { href: "/wallet", label: "Wallet" },
+  { href: "/", label: "Market", Icon: ChartLineUp },
+  { href: "/portfolio", label: "Portfolio", Icon: ChartPieSlice },
+  { href: "/wallet", label: "Wallet", Icon: Wallet },
 ];
 
 export function Nav() {
@@ -16,29 +27,40 @@ export function Nav() {
   const { user, loading, logout } = useAuth();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur">
-      <nav className="mx-auto flex max-w-5xl items-center gap-6 px-4 py-3">
-        <Link href="/" className="font-semibold tracking-tight">
-          <span className="text-pink-500">Osu</span>Stocks
+    <header className="sticky top-0 z-50 border-b border-white/5 bg-zinc-950/70 backdrop-blur-xl">
+      <nav className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4">
+        <Link href="/" className="group flex items-center gap-2.5">
+          <span className="grid h-8 w-8 place-items-center rounded-lg bg-pink-500/15 text-pink-400 ring-1 ring-inset ring-pink-500/25 transition-transform group-hover:scale-105">
+            <ChartLineUp size={18} weight="bold" />
+          </span>
+          <span className="text-[15px] font-semibold tracking-tight">
+            <span className="text-pink-400">Osu</span>Stocks
+          </span>
         </Link>
 
-        <ul className="flex items-center gap-1 text-sm">
-          {LINKS.map((link) => {
+        <ul className="ml-2 hidden items-center gap-1 text-sm sm:flex">
+          {LINKS.map(({ href, label, Icon }) => {
             const active =
-              link.href === "/"
-                ? pathname === "/"
-                : pathname.startsWith(link.href);
+              href === "/" ? pathname === "/" : pathname.startsWith(href);
             return (
-              <li key={link.href}>
+              <li key={href}>
                 <Link
-                  href={link.href}
-                  className={`rounded-md px-3 py-1.5 transition-colors ${
+                  href={href}
+                  className={`relative flex items-center gap-2 rounded-lg px-3 py-1.5 transition-colors ${
                     active
-                      ? "bg-zinc-800 text-zinc-100"
+                      ? "text-zinc-100"
                       : "text-zinc-400 hover:text-zinc-100"
                   }`}
                 >
-                  {link.label}
+                  {active && (
+                    <motion.span
+                      layoutId="nav-active"
+                      transition={spring}
+                      className="absolute inset-0 -z-10 rounded-lg bg-zinc-800/80 ring-1 ring-inset ring-white/5"
+                    />
+                  )}
+                  <Icon size={16} weight={active ? "fill" : "regular"} />
+                  {label}
                 </Link>
               </li>
             );
@@ -50,25 +72,25 @@ export function Nav() {
             <Spinner />
           ) : user ? (
             <>
-              <span className="text-zinc-300">{user.username}</span>
-              {user.role === "Admin" && (
-                <span className="rounded-full bg-pink-500/15 px-2 py-0.5 text-xs font-medium text-pink-400">
-                  Admin
-                </span>
-              )}
+              <span className="hidden text-zinc-300 sm:inline">
+                {user.username}
+              </span>
+              {user.role === "Admin" && <Badge tone="accent">Admin</Badge>}
               <button
                 type="button"
                 onClick={logout}
-                className="rounded-md border border-zinc-800 px-3 py-1.5 text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
+                className={buttonClasses({ variant: "secondary", size: "sm" })}
               >
-                Logout
+                <SignOut size={16} weight="bold" />
+                <span className="hidden sm:inline">Logout</span>
               </button>
             </>
           ) : (
             <Link
               href="/login"
-              className="rounded-md bg-pink-500 px-3 py-1.5 font-medium text-white transition-colors hover:bg-pink-400"
+              className={buttonClasses({ variant: "primary", size: "sm" })}
             >
+              <SignIn size={16} weight="bold" />
               Login
             </Link>
           )}

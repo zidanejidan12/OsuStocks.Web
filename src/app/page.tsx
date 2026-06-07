@@ -2,56 +2,121 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
+import { ArrowRight, WarningCircle, Lock } from "@phosphor-icons/react";
 import type { MarketOverview, Paged, StockSort, StockSummary } from "@/lib/api/types";
 import { getMarketOverview, getStocks, ApiError } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/auth-context";
-import { Spinner } from "@/components/ui/Spinner";
+import { Card } from "@/components/ui/Card";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { StatusDot } from "@/components/ui/StatusDot";
+import { buttonClasses } from "@/components/ui/Button";
+import { MagneticButton } from "@/components/ui/MagneticButton";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Reveal } from "@/components/motion/Reveal";
 import { MarketOverviewCards } from "@/components/market/MarketOverviewCards";
 import { StockList } from "@/components/market/StockList";
+import { LiveMarketPanel } from "@/components/market/LiveMarketPanel";
 
 const PAGE_SIZE = 25;
 
 function LoginNotice() {
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-6 text-center">
-      <p className="text-zinc-300">Please log in to continue.</p>
-      <Link
-        href="/login"
-        className="mt-3 inline-block rounded-lg bg-pink-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-pink-600"
-      >
-        Go to login
-      </Link>
-    </div>
+    <Card>
+      <EmptyState
+        title="Please log in"
+        message="Your session has expired. Sign in again to continue trading."
+        icon={<Lock size={22} weight="bold" />}
+        action={
+          <Link href="/login" className={buttonClasses({ size: "sm" })}>
+            Log in
+          </Link>
+        }
+      />
+    </Card>
   );
 }
 
 function ErrorNotice({ message }: { message: string }) {
   return (
-    <div className="rounded-xl border border-rose-900/60 bg-rose-950/30 p-4 text-sm text-rose-300">
-      {message}
+    <div className="flex items-start gap-2.5 rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-300">
+      <WarningCircle size={18} weight="bold" className="mt-0.5 shrink-0" />
+      <span>{message}</span>
     </div>
   );
 }
 
 function Hero({ onLogin }: { onLogin: () => void }) {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center px-6 py-24 text-center">
-      <h1 className="bg-gradient-to-r from-pink-400 to-rose-500 bg-clip-text text-5xl font-bold tracking-tight text-transparent sm:text-6xl">
-        OsuStocks
-      </h1>
-      <p className="mt-4 max-w-md text-lg text-zinc-400">
-        Trade your favorite osu! players like stocks.
-      </p>
-      <button
-        type="button"
-        onClick={onLogin}
-        className="mt-8 rounded-lg bg-pink-500 px-6 py-3 text-base font-medium text-white transition-colors hover:bg-pink-600"
-      >
-        Get started
-      </button>
-      <Link href="/login" className="mt-4 text-sm text-zinc-500 hover:text-zinc-300">
-        Already have a token? Log in
-      </Link>
+    <section className="mx-auto w-full max-w-6xl px-4 py-16 sm:py-24">
+      <div className="grid items-center gap-12 md:min-h-[60vh] md:grid-cols-2 md:gap-10">
+        {/* LEFT: copy + CTAs */}
+        <Reveal>
+          <div className="flex items-center gap-2.5">
+            <StatusDot tone="pink" />
+            <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-zinc-500">
+              The osu! stock market
+            </span>
+          </div>
+
+          <h1 className="mt-6 text-5xl font-semibold leading-[0.95] tracking-tighter text-zinc-50 md:text-7xl">
+            Trade the players you{" "}
+            <span className="text-pink-400">watch</span>.
+          </h1>
+
+          <p className="mt-6 max-w-[48ch] text-lg leading-relaxed text-zinc-400">
+            Buy and sell shares tied to osu! player performance. Track the
+            market, build a portfolio, and ride every rank-up.
+          </p>
+
+          <div className="mt-9 flex flex-wrap items-center gap-3">
+            <MagneticButton
+              onClick={onLogin}
+              className={buttonClasses({ size: "lg" })}
+            >
+              Get started
+              <ArrowRight size={18} weight="bold" />
+            </MagneticButton>
+            <Link
+              href="/login"
+              className={buttonClasses({ variant: "ghost", size: "lg" })}
+            >
+              I have a token
+            </Link>
+          </div>
+        </Reveal>
+
+        {/* RIGHT: decorative live-market panel */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+          className="md:pl-4"
+        >
+          <LiveMarketPanel />
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+function DashboardSkeleton() {
+  return (
+    <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:py-14">
+      <Skeleton className="h-8 w-40" />
+      <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-12">
+        <div className="grid grid-cols-2 gap-4 md:col-span-5">
+          <Skeleton className="h-28 rounded-2xl" />
+          <Skeleton className="h-28 rounded-2xl" />
+        </div>
+        <Skeleton className="h-28 rounded-2xl md:col-span-4" />
+        <Skeleton className="h-28 rounded-2xl md:col-span-3" />
+      </div>
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-between">
+        <Skeleton className="h-11 w-full rounded-xl sm:max-w-xs" />
+        <Skeleton className="h-11 w-full rounded-xl sm:w-48" />
+      </div>
+      <Skeleton className="mt-4 h-80 rounded-2xl" />
     </div>
   );
 }
@@ -150,11 +215,7 @@ export default function Home() {
   }, [user, page, sort, debouncedSearch]);
 
   if (authLoading) {
-    return (
-      <div className="flex flex-1 items-center justify-center">
-        <Spinner label="Loading..." />
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (!user) {
@@ -162,44 +223,65 @@ export default function Home() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-zinc-100">Market</h1>
-        <p className="text-sm text-zinc-400">
+    <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:py-14">
+      <Reveal>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <h1 className="text-3xl font-semibold tracking-tighter text-zinc-50 sm:text-4xl">
+            Market
+          </h1>
+          <div className="flex items-center gap-2 pb-1">
+            <StatusDot tone="emerald" />
+            <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-500">
+              Live
+            </span>
+          </div>
+        </div>
+        <p className="mt-1.5 text-sm text-zinc-400">
           Welcome back, {user.username}.
         </p>
-      </div>
+      </Reveal>
 
       {unauthorized ? (
-        <LoginNotice />
+        <div className="mt-8">
+          <LoginNotice />
+        </div>
       ) : (
-        <div className="flex flex-col gap-6">
+        <div className="mt-8 flex flex-col gap-6">
           {overviewError ? (
             <ErrorNotice message={overviewError} />
           ) : overview ? (
-            <MarketOverviewCards overview={overview} />
+            <Reveal delay={0.05}>
+              <MarketOverviewCards overview={overview} />
+            </Reveal>
           ) : (
-            <div className="flex justify-center py-6">
-              <Spinner label="Loading overview..." />
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
+              <div className="grid grid-cols-2 gap-4 md:col-span-5">
+                <Skeleton className="h-28 rounded-2xl" />
+                <Skeleton className="h-28 rounded-2xl" />
+              </div>
+              <Skeleton className="h-28 rounded-2xl md:col-span-4" />
+              <Skeleton className="h-28 rounded-2xl md:col-span-3" />
             </div>
           )}
 
           {stocksError && <ErrorNotice message={stocksError} />}
 
-          <StockList
-            stocks={stocks}
-            loading={stocksLoading}
-            search={search}
-            onSearchChange={setSearch}
-            sort={sort}
-            onSortChange={setSort}
-            page={page}
-            pageSize={PAGE_SIZE}
-            totalCount={totalCount}
-            onPageChange={setPage}
-          />
+          <Reveal delay={0.1}>
+            <StockList
+              stocks={stocks}
+              loading={stocksLoading}
+              search={search}
+              onSearchChange={setSearch}
+              sort={sort}
+              onSortChange={setSort}
+              page={page}
+              pageSize={PAGE_SIZE}
+              totalCount={totalCount}
+              onPageChange={setPage}
+            />
+          </Reveal>
         </div>
       )}
-    </main>
+    </div>
   );
 }

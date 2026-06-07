@@ -1,12 +1,21 @@
 "use client";
 
 import Link from "next/link";
+import { motion } from "framer-motion";
+import {
+  MagnifyingGlass,
+  CaretRight,
+  CaretLeft,
+  ChartBar,
+} from "@phosphor-icons/react";
 import type { StockSort, StockSummary } from "@/lib/api/types";
-import { Card } from "@/components/ui/Card";
-import { Spinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PriceChange } from "@/components/ui/PriceChange";
-import { formatCurrency, formatNumber } from "@/lib/format";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { buttonClasses } from "@/components/ui/Button";
+import { Money } from "@/components/ui/Money";
+import { formatNumber } from "@/lib/format";
+import { spring } from "@/lib/motion";
 
 const SORT_OPTIONS: { value: StockSort; label: string }[] = [
   { value: "name_asc", label: "Player (A-Z)" },
@@ -51,17 +60,24 @@ export function StockList({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <input
-          type="search"
-          value={search}
-          onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Search players..."
-          className="w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-pink-500 focus:outline-none sm:max-w-xs"
-        />
+        <div className="relative w-full sm:max-w-xs">
+          <MagnifyingGlass
+            size={16}
+            weight="bold"
+            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500"
+          />
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder="Search players..."
+            className="w-full rounded-xl border border-zinc-800 bg-zinc-900/60 py-2.5 pl-10 pr-3.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-colors focus:border-pink-500/50 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
+          />
+        </div>
         <select
           value={sort}
           onChange={(e) => onSortChange(e.target.value as StockSort)}
-          className="w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 focus:border-pink-500 focus:outline-none sm:w-auto"
+          className="w-full rounded-xl border border-zinc-800 bg-zinc-900/60 px-3.5 py-2.5 text-sm text-zinc-100 transition-colors focus:border-pink-500/50 focus:outline-none focus:ring-2 focus:ring-pink-500/20 sm:w-auto"
         >
           {SORT_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -71,62 +87,100 @@ export function StockList({
         </select>
       </div>
 
-      <Card className="p-0">
+      <div className="overflow-x-auto rounded-2xl border border-zinc-800/80">
         {loading ? (
-          <div className="flex justify-center p-10">
-            <Spinner label="Loading stocks..." />
-          </div>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-zinc-800 text-left text-[11px] uppercase tracking-wider text-zinc-500">
+                <th className="px-4 py-3 font-medium">Player</th>
+                <th className="px-4 py-3 text-right font-medium">Price</th>
+                <th className="px-4 py-3 text-right font-medium">24h</th>
+                <th className="px-4 py-3 text-right font-medium">Volume</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-800/60">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <tr key={i}>
+                  <td className="px-4 py-3.5">
+                    <Skeleton className="h-4 w-32" />
+                  </td>
+                  <td className="px-4 py-3.5">
+                    <Skeleton className="ml-auto h-4 w-16" />
+                  </td>
+                  <td className="px-4 py-3.5">
+                    <Skeleton className="ml-auto h-4 w-14" />
+                  </td>
+                  <td className="px-4 py-3.5">
+                    <Skeleton className="ml-auto h-4 w-12" />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         ) : stocks.length === 0 ? (
           <div className="p-6">
             <EmptyState
               title="No stocks found"
               message="Try adjusting your search or filters."
+              icon={<ChartBar size={22} weight="bold" />}
             />
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-zinc-800 text-left text-xs uppercase tracking-wide text-zinc-400">
-                  <th className="px-4 py-3 font-medium">Player</th>
-                  <th className="px-4 py-3 text-right font-medium">Price</th>
-                  <th className="px-4 py-3 text-right font-medium">24h</th>
-                  <th className="px-4 py-3 text-right font-medium">Volume</th>
-                </tr>
-              </thead>
-              <tbody>
-                {stocks.map((stock) => (
-                  <tr
-                    key={stock.stockId}
-                    className="border-b border-zinc-800/60 last:border-0 hover:bg-zinc-900"
-                  >
-                    <td className="px-4 py-3">
-                      <Link
-                        href={`/stocks/${stock.stockId}`}
-                        className="font-medium text-zinc-100 hover:text-pink-400"
-                      >
-                        {stock.playerName}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3 text-right text-zinc-100">
-                      {formatCurrency(stock.currentPrice)}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <PriceChange value={stock.priceChange24h} />
-                    </td>
-                    <td className="px-4 py-3 text-right text-zinc-300">
-                      {formatNumber(stock.volume)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-zinc-800 text-left text-[11px] uppercase tracking-wider text-zinc-500">
+                <th className="px-4 py-3 font-medium">Player</th>
+                <th className="px-4 py-3 text-right font-medium">Price</th>
+                <th className="px-4 py-3 text-right font-medium">24h</th>
+                <th className="px-4 py-3 text-right font-medium">Volume</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-800/60">
+              {stocks.map((stock, i) => (
+                <motion.tr
+                  key={stock.stockId}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    ...spring,
+                    delay: Math.min(i, 12) * 0.025,
+                  }}
+                  className="group transition-colors hover:bg-zinc-900/50"
+                >
+                  <td className="px-4 py-3.5">
+                    <Link
+                      href={`/stocks/${stock.stockId}`}
+                      className="inline-flex items-center gap-1.5 font-medium text-zinc-100 transition-colors group-hover:text-pink-400"
+                    >
+                      {stock.playerName}
+                      <CaretRight
+                        size={14}
+                        weight="bold"
+                        className="text-pink-400 opacity-0 transition-opacity group-hover:opacity-100"
+                      />
+                    </Link>
+                  </td>
+                  <td className="px-4 py-3.5 text-right font-mono tabular-nums text-zinc-100">
+                    <Money value={stock.currentPrice} />
+                  </td>
+                  <td className="px-4 py-3.5 text-right">
+                    <PriceChange
+                      value={stock.priceChange24h}
+                      className="justify-end"
+                    />
+                  </td>
+                  <td className="px-4 py-3.5 text-right font-mono tabular-nums text-zinc-400">
+                    {formatNumber(stock.volume)}
+                  </td>
+                </motion.tr>
+              ))}
+            </tbody>
+          </table>
         )}
-      </Card>
+      </div>
 
-      <div className="flex items-center justify-between text-sm text-zinc-400">
-        <span>
+      <div className="flex items-center justify-between gap-3 text-sm">
+        <span className="font-mono tabular-nums text-zinc-500">
           Page {page} of {totalPages}
           {totalCount > 0 ? ` · ${formatNumber(totalCount)} stocks` : ""}
         </span>
@@ -135,17 +189,27 @@ export function StockList({
             type="button"
             onClick={() => onPageChange(page - 1)}
             disabled={!canPrev}
-            className="rounded-lg border border-zinc-800 px-3 py-1.5 text-zinc-200 transition-colors hover:border-zinc-700 disabled:cursor-not-allowed disabled:opacity-40"
+            className={buttonClasses({
+              variant: "secondary",
+              size: "sm",
+              className: "disabled:pointer-events-none disabled:opacity-40",
+            })}
           >
-            Previous
+            <CaretLeft size={14} weight="bold" />
+            Prev
           </button>
           <button
             type="button"
             onClick={() => onPageChange(page + 1)}
             disabled={!canNext}
-            className="rounded-lg border border-zinc-800 px-3 py-1.5 text-zinc-200 transition-colors hover:border-zinc-700 disabled:cursor-not-allowed disabled:opacity-40"
+            className={buttonClasses({
+              variant: "secondary",
+              size: "sm",
+              className: "disabled:pointer-events-none disabled:opacity-40",
+            })}
           >
             Next
+            <CaretRight size={14} weight="bold" />
           </button>
         </div>
       </div>

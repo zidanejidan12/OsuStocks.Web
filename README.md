@@ -23,9 +23,10 @@ npm install
 
 ### Configuration
 
-All configuration lives in **`.env`** — the single source of truth, committed
-with non-secret defaults. Put machine-specific overrides or secrets in
-`.env.local` (gitignored), which takes precedence.
+All configuration lives in **`.env`** — the single source of truth for ports and
+URLs. `.env` is gitignored, so create it from the committed template
+(`cp .env.example .env`). Machine-specific overrides or secrets can also go in
+`.env.local`, which takes precedence.
 
 ```
 # .env
