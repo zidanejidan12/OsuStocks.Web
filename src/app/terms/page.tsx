@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalSection } from "@/components/legal/LegalSection";
+import { CONTACT_EMAIL, GOVERNING_LAW } from "@/lib/legal";
 
 export const metadata: Metadata = {
   title: "Terms of Use",
@@ -165,7 +166,18 @@ export default function TermsPage() {
           </p>
         </LegalSection>
 
-        <LegalSection title="11. Contact">
+        {GOVERNING_LAW && (
+          <LegalSection title="11. Governing law">
+            <p>
+              These Terms are governed by the laws of {GOVERNING_LAW}, without
+              regard to its conflict-of-law rules. Because the Service involves no
+              real money or value, this clause concerns only the use of the game
+              itself.
+            </p>
+          </LegalSection>
+        )}
+
+        <LegalSection title={GOVERNING_LAW ? "12. Contact" : "11. Contact"}>
           <p>
             Questions about these Terms? Reach out through the project&rsquo;s
             repository:{" "}
@@ -174,6 +186,12 @@ export default function TermsPage() {
             </a>
             .
           </p>
+          {CONTACT_EMAIL && (
+            <p>
+              You can also email us at{" "}
+              <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+            </p>
+          )}
         </LegalSection>
       </div>
     </div>

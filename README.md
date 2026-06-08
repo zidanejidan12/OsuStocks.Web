@@ -33,7 +33,16 @@ URLs. `.env` is gitignored, so create it from the committed template
 PORT=3000                                          # web app port
 NEXT_PUBLIC_API_BASE_URL=http://localhost:5152     # API base; requests go to <base>/api/v1
 NEXT_PUBLIC_SITE_URL=http://localhost:3000         # public origin; base for OpenGraph image URLs
+NEXT_PUBLIC_POSTHOG_KEY=                           # optional; analytics off when blank
+NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com  # optional; PostHog ingest host
 ```
+
+**Analytics is optional.** Leave `NEXT_PUBLIC_POSTHOG_KEY` blank and the app
+sends nothing and never loads the [PostHog](https://posthog.com) bundle. Set a
+project key to enable it — PostHog is the only vendor wired into the
+`src/lib/analytics` seam today, initialized from `src/instrumentation-client.ts`
+(which captures the initial pageview and every SPA navigation). Both vars are
+inlined into the client bundle at build time, so changing them needs a rebuild.
 
 **Changing the web port:** edit `PORT` in `.env`. That one value flows to
 `npm run dev`, `npm start`, PM2, and Docker Compose. (Next.js can't read `PORT`

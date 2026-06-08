@@ -26,7 +26,7 @@ export function MoverCard({
   const accent = tone === "success" ? "text-emerald-400" : "text-rose-400";
   const Icon = tone === "success" ? TrendUp : TrendDown;
 
-  if (!mover) {
+  if (!mover || !mover.stockId) {
     return (
       <div className={CARD_BASE}>
         <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">

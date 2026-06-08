@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth/auth-context";
+import { NotificationsProvider } from "@/lib/notifications/notifications-context";
+import { ToastProvider } from "@/components/ui/Toast";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { Backdrop } from "@/components/Backdrop";
@@ -51,11 +53,15 @@ export default function RootLayout({
     >
       <body className="flex min-h-screen flex-col bg-zinc-950 font-sans text-zinc-100">
         <Backdrop />
-        <AuthProvider>
-          <Nav />
-          <main className="relative flex-1">{children}</main>
-          <Footer />
-        </AuthProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <NotificationsProvider>
+              <Nav />
+              <main className="relative flex-1">{children}</main>
+              <Footer />
+            </NotificationsProvider>
+          </AuthProvider>
+        </ToastProvider>
       </body>
     </html>
   );
