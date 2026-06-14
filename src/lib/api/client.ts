@@ -5,6 +5,7 @@ import type {
   HealthStatus,
   Me,
   MarketOverview,
+  LiveMover,
   Paged,
   Portfolio,
   PricePoint,
@@ -116,6 +117,13 @@ export function getStocks(params?: {
 
 export function getStock(stockId: string): Promise<StockSummary> {
   return request<StockSummary>("/market/stocks/" + stockId);
+}
+
+// Public (no auth) — top movers for the landing-page live ticker.
+export function getLiveMovers(limit = 8): Promise<LiveMover[]> {
+  return request<{ items: LiveMover[] }>(
+    "/market/movers?limit=" + limit,
+  ).then((r) => r.items);
 }
 
 export function getStockHistory(stockId: string): Promise<PricePoint[]> {
