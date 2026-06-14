@@ -63,6 +63,18 @@ export interface PricePoint {
   price: number;
 }
 
+// A recent osu! top play that moved a stock's price. percentChange/newPrice are null
+// when no correlated price-history row was found for the event.
+export interface TopPlay {
+  scoreId: number;
+  pp: number | null;
+  coverUrl: string | null;
+  title: string | null;
+  percentChange: number | null;
+  newPrice: number | null;
+  occurredAt: string;
+}
+
 export interface Paged<T> {
   items: T[];
   page?: number;
