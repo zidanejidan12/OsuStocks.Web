@@ -423,7 +423,18 @@ export function updateMarketSettings(body: MarketSettings): Promise<void> {
 }
 
 // BE list item names the tier `trackingTier`; carry avatarUrl/stockId through.
-export function getTrackedPlayers(): Promise<Paged<TrackedPlayer>> {
+// Paginated server-side — the tracked-players set can be in the thousands, so always
+// pass page/pageSize (and optional search) rather than fetching the whole list.
+export function getTrackedPlayers(params?: {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+}): Promise<Paged<TrackedPlayer>> {
+  const qs = new URLSearchParams();
+  qs.set("page", String(params?.page ?? 1));
+  qs.set("pageSize", String(params?.pageSize ?? 25));
+  if (params?.search?.trim()) qs.set("search", params.search.trim());
+
   return request<{
     items: Array<{
       trackedPlayerId: string;
@@ -436,7 +447,8 @@ export function getTrackedPlayers(): Promise<Paged<TrackedPlayer>> {
     }>;
     page?: number;
     pageSize?: number;
-  }>("/admin/tracked-players").then((raw) => ({
+    totalCount?: number;
+  }>(`/admin/tracked-players?${qs.toString()}`).then((raw) => ({
     items: raw.items.map((p) => ({
       trackedPlayerId: p.trackedPlayerId,
       osuUserId: p.osuUserId,
@@ -448,6 +460,7 @@ export function getTrackedPlayers(): Promise<Paged<TrackedPlayer>> {
     })),
     page: raw.page,
     pageSize: raw.pageSize,
+    totalCount: raw.totalCount,
   }));
 }
 
