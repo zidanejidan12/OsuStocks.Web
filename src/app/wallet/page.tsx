@@ -29,6 +29,7 @@ import { buttonClasses } from "@/components/ui/Button";
 import { Reveal } from "@/components/motion/Reveal";
 import { spring, scaleIn, fadeUp, staggerContainer } from "@/lib/motion";
 import { useAuth } from "@/lib/auth/auth-context";
+import * as analytics from "@/lib/analytics";
 
 // Credits flow money in; debits flow money out. Used for the Type column's
 // icon + tone. (The Amount column is colored strictly by sign — see below.)
@@ -140,6 +141,7 @@ export default function WalletPage() {
         if (cancelled) return;
         setWallet(walletData);
         setTransactions(txData.items);
+        analytics.track("wallet_viewed", { balance: walletData.balance });
       })
       .catch((err) => {
         if (cancelled) return;

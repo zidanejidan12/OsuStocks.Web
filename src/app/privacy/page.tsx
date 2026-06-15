@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalSection } from "@/components/legal/LegalSection";
+import { CONTACT_EMAIL } from "@/lib/legal";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
@@ -73,10 +74,24 @@ export default function PrivacyPage() {
             </li>
             <li>We do not sell or rent your information.</li>
             <li>
-              The OsuStocks web app does not use advertising or third-party
-              analytics and tracking cookies.
+              We do not use advertising, ad networks, or cross-site tracking. Any
+              product analytics is optional and privacy-respecting (see
+              &ldquo;Analytics&rdquo; below).
             </li>
           </ul>
+        </LegalSection>
+
+        <LegalSection title="Analytics (optional)">
+          <p>
+            The deploying operator may enable <strong>PostHog</strong>, a
+            product-analytics provider, to collect privacy-respecting usage events
+            &mdash; such as page views and which features are used &mdash; to
+            understand and improve the game. Analytics is{" "}
+            <strong>off unless the operator configures it</strong>, is never used
+            for advertising, and when enabled, PostHog processes this data on the
+            operator&rsquo;s behalf. When analytics is disabled, the app loads no
+            analytics code and sends no such data.
+          </p>
         </LegalSection>
 
         <LegalSection title="4. Cookies and local storage">
@@ -130,6 +145,12 @@ export default function PrivacyPage() {
             </a>
             .
           </p>
+          {CONTACT_EMAIL && (
+            <p>
+              You can also email us at{" "}
+              <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+            </p>
+          )}
           <p>
             See also our <a href="/terms">Terms of Use</a>.
           </p>

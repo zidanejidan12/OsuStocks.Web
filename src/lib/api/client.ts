@@ -2,20 +2,29 @@
 
 import { getAccessToken } from "@/lib/auth/token";
 import type {
+  AppNotification,
+  Candle,
   HealthStatus,
-  Me,
+  HistoryRange,
+  LeaderboardEntry,
+  MarketEvent,
   MarketOverview,
   LiveMover,
+  MarketSettings,
+  Me,
   Paged,
   Portfolio,
   PricePoint,
   TopPlay,
   HoldingFlat,
+  StockAnalytics,
   StockSort,
   StockSummary,
   Trade,
+  TrackedPlayer,
   TradeRequest,
   TradeResult,
+  Trending,
   Wallet,
   WalletTransaction,
 } from "@/lib/api/types";
@@ -177,4 +186,109 @@ export function getWalletTransactions(params?: {
   pageSize?: number;
 }): Promise<Paged<WalletTransaction>> {
   return request<Paged<WalletTransaction>>("/wallet/transactions" + buildQuery(params));
+}
+
+// --- Frontend-ahead endpoints (see the contracts note in types.ts) ---------
+
+/** OHLC candles for a range. Backs the stock-detail chart's candle/line modes. */
+export function getStockCandles(
+  stockId: string,
+  range: HistoryRange,
+): Promise<Candle[]> {
+  return request<Candle[]>(
+    "/market/stocks/" + stockId + "/history" + buildQuery({ range }),
+  );
+}
+
+export function getStockAnalytics(stockId: string): Promise<StockAnalytics> {
+  return request<StockAnalytics>("/market/stocks/" + stockId + "/analytics");
+}
+
+export function getTrending(): Promise<Trending> {
+  return request<Trending>("/market/trending");
+}
+
+export function getMarketEvents(params?: {
+  page?: number;
+  pageSize?: number;
+}): Promise<Paged<MarketEvent>> {
+  return request<Paged<MarketEvent>>("/market/events" + buildQuery(params));
+}
+
+export function getStockEvents(
+  stockId: string,
+  params?: { page?: number; pageSize?: number },
+): Promise<Paged<MarketEvent>> {
+  return request<Paged<MarketEvent>>(
+    "/market/events/" + stockId + buildQuery(params),
+  );
+}
+
+export function getLeaderboard(params?: {
+  page?: number;
+  pageSize?: number;
+}): Promise<Paged<LeaderboardEntry>> {
+  return request<Paged<LeaderboardEntry>>("/leaderboard" + buildQuery(params));
+}
+
+export function getNotifications(params?: {
+  page?: number;
+  pageSize?: number;
+}): Promise<Paged<AppNotification>> {
+  return request<Paged<AppNotification>>("/notifications" + buildQuery(params));
+}
+
+export function markNotificationRead(notificationId: string): Promise<void> {
+  return request<void>("/notifications/" + notificationId + "/read", {
+    method: "POST",
+  });
+}
+
+export function markAllNotificationsRead(): Promise<void> {
+  return request<void>("/notifications/read-all", { method: "POST" });
+}
+
+// --- Admin (endpoints exist server-side; paths assumed under /admin) -------
+
+export function getMarketSettings(): Promise<MarketSettings> {
+  return request<MarketSettings>("/admin/market/settings");
+}
+
+export function updateMarketSettings(
+  body: MarketSettings,
+): Promise<MarketSettings> {
+  return request<MarketSettings>("/admin/market/settings", {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+}
+
+export function getTrackedPlayers(): Promise<Paged<TrackedPlayer>> {
+  return request<Paged<TrackedPlayer>>("/admin/tracked-players");
+}
+
+export function addTrackedPlayer(body: {
+  osuUserId: number;
+  tier: TrackedPlayer["tier"];
+}): Promise<TrackedPlayer> {
+  return request<TrackedPlayer>("/admin/tracked-players", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function updateTrackedPlayer(
+  trackedPlayerId: string,
+  body: { tier?: TrackedPlayer["tier"]; isActive?: boolean },
+): Promise<TrackedPlayer> {
+  return request<TrackedPlayer>("/admin/tracked-players/" + trackedPlayerId, {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
+}
+
+export function removeTrackedPlayer(trackedPlayerId: string): Promise<void> {
+  return request<void>("/admin/tracked-players/" + trackedPlayerId, {
+    method: "DELETE",
+  });
 }
