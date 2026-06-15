@@ -23,6 +23,7 @@ import { buttonClasses } from "@/components/ui/Button";
 import { Reveal } from "@/components/motion/Reveal";
 import { spring, fadeUp, staggerContainer } from "@/lib/motion";
 import { useAuth } from "@/lib/auth/auth-context";
+import * as analytics from "@/lib/analytics";
 
 function PageShell({ children }: { children: React.ReactNode }) {
   return (
@@ -251,6 +252,9 @@ export default function PortfolioPage() {
       .then((data) => {
         if (cancelled) return;
         setPortfolio(data);
+        analytics.track("portfolio_viewed", {
+          holdings: data.holdings.length,
+        });
       })
       .catch((err) => {
         if (cancelled) return;

@@ -60,6 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = useCallback((returnTo?: string) => {
+    analytics.track("login_started", { returnTo: returnTo ?? "/" });
     const callback =
       window.location.origin +
       "/auth/callback?returnTo=" +

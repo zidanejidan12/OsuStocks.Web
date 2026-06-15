@@ -11,9 +11,18 @@ import { Reveal } from "@/components/motion/Reveal";
 import { scaleIn } from "@/lib/motion";
 import { useAuth } from "@/lib/auth/auth-context";
 import { setAuth } from "@/lib/auth/token";
+import * as analytics from "@/lib/analytics";
 
 function twoHoursFromNow(): string {
   return new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
+}
+
+// Only ever redirect to an internal path. Rejects absolute URLs and
+// protocol-relative ("//evil.com") values so a crafted callback link can't turn
+// sign-in into an open redirect.
+function safeReturnTo(raw: string | null): string {
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return "/";
+  return raw;
 }
 
 export default function AuthCallbackPage() {
@@ -31,8 +40,9 @@ export default function AuthCallbackPage() {
       const accessToken =
         search.get("accessToken") ?? hash.get("accessToken");
       const expiresAt = search.get("expiresAt") ?? hash.get("expiresAt");
-      const returnTo =
-        search.get("returnTo") ?? hash.get("returnTo") ?? "/";
+      const returnTo = safeReturnTo(
+        search.get("returnTo") ?? hash.get("returnTo"),
+      );
 
       if (!accessToken) {
         if (!cancelled) setError(true);
@@ -40,6 +50,7 @@ export default function AuthCallbackPage() {
       }
 
       setAuth({ accessToken, expiresAt: expiresAt ?? twoHoursFromNow() });
+      analytics.track("login_completed");
       await refresh();
       if (!cancelled) router.replace(returnTo);
     }

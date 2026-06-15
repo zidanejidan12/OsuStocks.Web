@@ -1,0 +1,134 @@
+"use client";
+
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import type { AppNotification } from "@/lib/api/types";
+import {
+  getNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
+} from "@/lib/api/client";
+import { useAuth } from "@/lib/auth/auth-context";
+
+interface NotificationsContextValue {
+  notifications: AppNotification[];
+  unreadCount: number;
+  loading: boolean;
+  /** True once a fetch has failed (e.g. endpoint not live yet) — UI can soften. */
+  unavailable: boolean;
+  refresh: () => Promise<void>;
+  markRead: (id: string) => Promise<void>;
+  markAllRead: () => Promise<void>;
+}
+
+const NotificationsContext = createContext<NotificationsContextValue | null>(null);
+
+const POLL_INTERVAL_MS = 60_000;
+
+export function NotificationsProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [unavailable, setUnavailable] = useState(false);
+
+  const refresh = useCallback(async () => {
+    if (!user) return;
+    try {
+      const page = await getNotifications();
+      setNotifications(page.items);
+      setUnavailable(false);
+    } catch {
+      // Frontend-ahead: the endpoint may not exist yet. Stay quiet (no toast
+      // spam) and let the bell simply show nothing.
+      setUnavailable(true);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  // Fetch on login, poll while signed in, and refresh when the tab regains focus.
+  useEffect(() => {
+    // Intentional synchronous resets/kickoff on auth change — the documented
+    // exception to react-hooks/set-state-in-effect.
+    /* eslint-disable react-hooks/set-state-in-effect */
+    if (!user) {
+      setNotifications([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    refresh();
+    /* eslint-enable react-hooks/set-state-in-effect */
+
+    const interval = setInterval(refresh, POLL_INTERVAL_MS);
+    const onFocus = () => refresh();
+    window.addEventListener("focus", onFocus);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("focus", onFocus);
+    };
+  }, [user, refresh]);
+
+  const markRead = useCallback(async (id: string) => {
+    // Optimistic — flip locally, then tell the server.
+    setNotifications((prev) =>
+      prev.map((n) => (n.notificationId === id ? { ...n, isRead: true } : n)),
+    );
+    try {
+      await markNotificationRead(id);
+    } catch {
+      // Roll back on failure.
+      setNotifications((prev) =>
+        prev.map((n) => (n.notificationId === id ? { ...n, isRead: false } : n)),
+      );
+    }
+  }, []);
+
+  const markAllRead = useCallback(async () => {
+    const snapshot = notifications;
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    try {
+      await markAllNotificationsRead();
+    } catch {
+      setNotifications(snapshot);
+    }
+  }, [notifications]);
+
+  const unreadCount = useMemo(
+    () => notifications.reduce((acc, n) => acc + (n.isRead ? 0 : 1), 0),
+    [notifications],
+  );
+
+  const value = useMemo(
+    () => ({
+      notifications,
+      unreadCount,
+      loading,
+      unavailable,
+      refresh,
+      markRead,
+      markAllRead,
+    }),
+    [notifications, unreadCount, loading, unavailable, refresh, markRead, markAllRead],
+  );
+
+  return (
+    <NotificationsContext.Provider value={value}>
+      {children}
+    </NotificationsContext.Provider>
+  );
+}
+
+export function useNotifications(): NotificationsContextValue {
+  const ctx = useContext(NotificationsContext);
+  if (ctx === null) {
+    throw new Error("useNotifications must be used within a NotificationsProvider");
+  }
+  return ctx;
+}
