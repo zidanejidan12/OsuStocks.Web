@@ -305,3 +305,57 @@ export interface TrackedPlayer {
   /** The stock minted for this player, once one exists. Optional. */
   stockId?: string | null;
 }
+
+// --- Investor level (GET /investor/level) ----------------------------------
+export interface InvestorLevel {
+  /** Current level, soft-capped at 100. */
+  level: number;
+  /** Cosmetic rank name for the current level. */
+  title: string;
+  /** Lifetime XP earned. */
+  totalXp: number;
+  /** XP accumulated within the current level. */
+  xpIntoLevel: number;
+  /** XP required to reach the next level. 0 when at the cap. */
+  xpForNextLevel: number;
+  /** Progress toward the next level, as a 0..1 fraction. */
+  progressToNext: number;
+}
+
+// --- Achievements (GET /achievements) --------------------------------------
+export interface Achievement {
+  code: string;
+  name: string;
+  description: string;
+  category: string;
+  metric: string;
+  threshold: number;
+  currentValue: number;
+  rewardCredits: number;
+  unlocked: boolean;
+  unlockedAt: string | null;
+}
+
+export interface AchievementsResponse {
+  unlockedCount: number;
+  totalCount: number;
+  items: Achievement[];
+}
+
+// --- Missions (GET /missions) ----------------------------------------------
+export type MissionPeriod = "Daily" | "Weekly";
+
+export interface Mission {
+  code: string;
+  name: string;
+  description: string;
+  period: MissionPeriod;
+  periodKey: string;
+  metric: string;
+  target: number;
+  currentValue: number;
+  rewardCredits: number;
+  completed: boolean;
+  completedAt: string | null;
+  resetsAt: string;
+}

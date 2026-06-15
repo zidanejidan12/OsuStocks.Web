@@ -9,6 +9,8 @@ import {
   Wallet,
   Fire,
   Trophy,
+  Medal,
+  Target,
   Bell,
   GearSix,
   SignOut,
@@ -24,6 +26,8 @@ const LINKS = [
   { href: "/", label: "Market", Icon: ChartLineUp },
   { href: "/trending", label: "Trending", Icon: Fire },
   { href: "/leaderboard", label: "Leaderboard", Icon: Trophy },
+  { href: "/achievements", label: "Achievements", Icon: Medal },
+  { href: "/missions", label: "Missions", Icon: Target },
   { href: "/portfolio", label: "Portfolio", Icon: ChartPieSlice },
   { href: "/wallet", label: "Wallet", Icon: Wallet },
 ];
