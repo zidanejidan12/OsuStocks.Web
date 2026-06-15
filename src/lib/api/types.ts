@@ -67,6 +67,15 @@ export interface PricePoint {
   price: number;
 }
 
+// A top mover for the public landing-page live ticker.
+export interface LiveMover {
+  stockId: string;
+  playerName: string;
+  avatarUrl: string | null;
+  currentPrice: number;
+  priceChange24h: number;
+}
+
 // A recent osu! top play that moved a stock's price. percentChange/newPrice are null
 // when no correlated price-history row was found for the event.
 export interface TopPlay {
