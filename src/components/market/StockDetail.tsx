@@ -898,6 +898,22 @@ export function StockDetail({ stockId }: { stockId: string }) {
               <h1 className="mt-2 text-3xl font-semibold tracking-tighter text-zinc-100 md:text-4xl">
                 {stock.playerName}
               </h1>
+              {(stock.globalRank != null || stock.currentPp != null) && (
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+                  {stock.globalRank != null && (
+                    <span className="inline-flex items-center gap-1 rounded-md bg-zinc-800/70 px-2 py-0.5 font-mono tabular-nums text-zinc-300 ring-1 ring-inset ring-zinc-700/50">
+                      <span className="text-zinc-500">#</span>
+                      {formatNumber(stock.globalRank)}
+                    </span>
+                  )}
+                  {stock.currentPp != null && (
+                    <span className="inline-flex items-center gap-1 rounded-md bg-pink-500/10 px-2 py-0.5 font-mono tabular-nums text-pink-300 ring-1 ring-inset ring-pink-500/25">
+                      {formatNumber(Math.round(stock.currentPp))}
+                      <span className="text-pink-400/70">pp</span>
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 

@@ -60,6 +60,10 @@ export interface StockSummary {
   currentPrice: number;
   volume: number;
   priceChange24h: number;
+  /** Latest synced osu! global rank. Null until the player has been synced. */
+  globalRank?: number | null;
+  /** Latest synced osu! performance points (pp). Null until synced. */
+  currentPp?: number | null;
 }
 
 export interface PricePoint {
