@@ -25,6 +25,7 @@ import type {
   TradeRequest,
   TradeResult,
   Trending,
+  TrendingStock,
   Wallet,
   WalletTransaction,
 } from "@/lib/api/types";
@@ -188,54 +189,196 @@ export function getWalletTransactions(params?: {
   return request<Paged<WalletTransaction>>("/wallet/transactions" + buildQuery(params));
 }
 
-// --- Frontend-ahead endpoints (see the contracts note in types.ts) ---------
+// --- Frontend-ahead endpoints --------------------------------------------------
+// These adapt the real API wire shapes to the types the UI consumes (same pattern
+// as getNotifications), so components stay decoupled from the backend field names.
 
-/** OHLC candles for a range. Backs the stock-detail chart's candle/line modes. */
+/** BE returns { range, candles: [{ bucketStart, ... }] }; the chart wants Candle[] with `timestamp`. */
 export function getStockCandles(
   stockId: string,
   range: HistoryRange,
 ): Promise<Candle[]> {
-  return request<Candle[]>(
-    "/market/stocks/" + stockId + "/history" + buildQuery({ range }),
+  return request<{
+    range: string;
+    candles: Array<{
+      bucketStart: string;
+      open: number;
+      high: number;
+      low: number;
+      close: number;
+      volume: number;
+    }>;
+  }>("/market/stocks/" + stockId + "/history" + buildQuery({ range })).then((r) =>
+    (r.candles ?? []).map((c) => ({
+      timestamp: c.bucketStart,
+      open: c.open,
+      high: c.high,
+      low: c.low,
+      close: c.close,
+      volume: c.volume,
+    })),
   );
 }
 
+/** BE splits volume into shares/value and names the trader count activeTraders24h. */
 export function getStockAnalytics(stockId: string): Promise<StockAnalytics> {
-  return request<StockAnalytics>("/market/stocks/" + stockId + "/analytics");
+  return request<{
+    volume24hShares: number;
+    volume24hValue: number;
+    volume7dShares: number;
+    volume7dValue: number;
+    volatility7d: number;
+    ownershipCount: number;
+    activeTraders24h: number;
+    marketCap: number;
+  }>("/market/stocks/" + stockId + "/analytics").then((r) => ({
+    volume24h: r.volume24hShares,
+    volume7d: r.volume7dShares,
+    volatility7d: r.volatility7d,
+    ownershipCount: r.ownershipCount,
+    activeTraders: r.activeTraders24h,
+    marketCap: r.marketCap,
+  }));
 }
 
+/** Each bucket item carries one polymorphic `metricValue`; map it into the field that bucket renders. */
 export function getTrending(): Promise<Trending> {
-  return request<Trending>("/market/trending");
+  const base = (r: RawTrendingStock): TrendingStock => ({
+    stockId: r.stockId,
+    playerName: r.playerName,
+    avatarUrl: r.avatarUrl,
+    countryCode: r.countryCode,
+    currentPrice: r.currentPrice,
+    volume: 0,
+    priceChange24h: 0,
+  });
+  return request<Record<keyof Trending, RawTrendingStock[]>>(
+    "/market/trending",
+  ).then((raw) => ({
+    mostBought: raw.mostBought.map((r) => ({ ...base(r), priceChange24h: r.metricValue })),
+    mostSold: raw.mostSold.map((r) => ({ ...base(r), priceChange24h: r.metricValue })),
+    fastestRising: raw.fastestRising.map((r) => ({ ...base(r), priceChange24h: r.metricValue })),
+    fastestFalling: raw.fastestFalling.map((r) => ({ ...base(r), priceChange24h: r.metricValue })),
+    highestVolume: raw.highestVolume.map((r) => ({ ...base(r), volume: r.metricValue })),
+  }));
+}
+
+interface RawTrendingStock {
+  stockId: string;
+  playerName: string;
+  avatarUrl?: string | null;
+  countryCode?: string | null;
+  metricValue: number;
+  currentPrice: number;
+}
+
+// BE activity-feed item shape; the feed is price-history only, so everything is a PriceChange.
+interface RawMarketEvent {
+  stockId: string;
+  playerName: string;
+  avatarUrl?: string | null;
+  reason: string;
+  description: string;
+  percentChange: number | null;
+  newPrice: number | null;
+  occurredAt: string;
+}
+
+function toMarketEvent(e: RawMarketEvent): MarketEvent {
+  return {
+    eventId: `${e.stockId}-${e.occurredAt}`,
+    type: "PriceChange",
+    stockId: e.stockId,
+    playerName: e.playerName,
+    avatarUrl: e.avatarUrl,
+    price: e.newPrice ?? undefined,
+    priceChange: e.percentChange ?? undefined,
+    occurredAt: e.occurredAt,
+  };
 }
 
 export function getMarketEvents(params?: {
   page?: number;
   pageSize?: number;
 }): Promise<Paged<MarketEvent>> {
-  return request<Paged<MarketEvent>>("/market/events" + buildQuery(params));
+  return request<Paged<RawMarketEvent>>(
+    "/market/events" + buildQuery(params),
+  ).then((page) => ({ ...page, items: page.items.map(toMarketEvent) }));
 }
 
 export function getStockEvents(
   stockId: string,
   params?: { page?: number; pageSize?: number },
 ): Promise<Paged<MarketEvent>> {
-  return request<Paged<MarketEvent>>(
+  return request<Paged<RawMarketEvent>>(
     "/market/events/" + stockId + buildQuery(params),
-  );
+  ).then((page) => ({ ...page, items: page.items.map(toMarketEvent) }));
 }
 
+// BE route is /leaderboards/wealth and uses `value` / `periodChange` per entry.
 export function getLeaderboard(params?: {
   page?: number;
   pageSize?: number;
+  period?: "daily" | "weekly" | "monthly";
 }): Promise<Paged<LeaderboardEntry>> {
-  return request<Paged<LeaderboardEntry>>("/leaderboard" + buildQuery(params));
+  return request<{
+    items: Array<{
+      rank: number;
+      userId: string;
+      username: string;
+      avatarUrl?: string | null;
+      countryCode?: string | null;
+      value: number;
+      periodChange?: number | null;
+    }>;
+    page: number;
+    pageSize: number;
+  }>("/leaderboards/wealth" + buildQuery(params)).then((raw) => ({
+    items: raw.items.map((e) => ({
+      rank: e.rank,
+      userId: e.userId,
+      username: e.username,
+      avatarUrl: e.avatarUrl,
+      countryCode: e.countryCode,
+      portfolioValue: e.value,
+      profitLoss: e.periodChange ?? undefined,
+    })),
+    page: raw.page,
+    pageSize: raw.pageSize,
+  }));
+}
+
+// The API returns { id, type, title, body, data, isRead, createdAt }; adapt it to the
+// AppNotification shape the UI uses (notificationId/message) here so components stay decoupled
+// from the wire format.
+interface RawNotification {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  data?: string | null;
+  isRead: boolean;
+  createdAt: string;
 }
 
 export function getNotifications(params?: {
   page?: number;
   pageSize?: number;
 }): Promise<Paged<AppNotification>> {
-  return request<Paged<AppNotification>>("/notifications" + buildQuery(params));
+  return request<Paged<RawNotification>>(
+    "/notifications" + buildQuery(params),
+  ).then((page) => ({
+    ...page,
+    items: page.items.map((n) => ({
+      notificationId: n.id,
+      type: n.type as AppNotification["type"],
+      title: n.title,
+      message: n.body,
+      isRead: n.isRead,
+      createdAt: n.createdAt,
+      link: null,
+    })),
+  }));
 }
 
 export function markNotificationRead(notificationId: string): Promise<void> {
@@ -263,30 +406,63 @@ export function updateMarketSettings(
   });
 }
 
+// BE list item names the tier `trackingTier` (and omits avatarUrl/stockId).
 export function getTrackedPlayers(): Promise<Paged<TrackedPlayer>> {
-  return request<Paged<TrackedPlayer>>("/admin/tracked-players");
+  return request<{
+    items: Array<{
+      trackedPlayerId: string;
+      osuUserId: number;
+      username: string;
+      trackingTier: TrackedPlayer["tier"];
+      isActive: boolean;
+    }>;
+    page?: number;
+    pageSize?: number;
+  }>("/admin/tracked-players").then((raw) => ({
+    items: raw.items.map((p) => ({
+      trackedPlayerId: p.trackedPlayerId,
+      osuUserId: p.osuUserId,
+      username: p.username,
+      tier: p.trackingTier,
+      isActive: p.isActive,
+    })),
+    page: raw.page,
+    pageSize: raw.pageSize,
+  }));
 }
 
+// BE expects `trackingTier` in the body and returns only { trackedPlayerId }; build the
+// optimistic row from the input so the UI shows it until the next list refresh.
 export function addTrackedPlayer(body: {
   osuUserId: number;
   tier: TrackedPlayer["tier"];
 }): Promise<TrackedPlayer> {
-  return request<TrackedPlayer>("/admin/tracked-players", {
+  return request<{ trackedPlayerId: string }>("/admin/tracked-players", {
     method: "POST",
-    body: JSON.stringify(body),
-  });
+    body: JSON.stringify({ osuUserId: body.osuUserId, trackingTier: body.tier }),
+  }).then((r) => ({
+    trackedPlayerId: r.trackedPlayerId,
+    osuUserId: body.osuUserId,
+    username: `osu! #${body.osuUserId}`,
+    tier: body.tier,
+    isActive: true,
+  }));
 }
 
+// BE exposes separate /enable and /disable routes (PATCH, no body, 204) — no generic update.
 export function updateTrackedPlayer(
   trackedPlayerId: string,
-  body: { tier?: TrackedPlayer["tier"]; isActive?: boolean },
-): Promise<TrackedPlayer> {
-  return request<TrackedPlayer>("/admin/tracked-players/" + trackedPlayerId, {
-    method: "PATCH",
-    body: JSON.stringify(body),
-  });
+  body: { isActive?: boolean },
+): Promise<void> {
+  const action = body.isActive ? "enable" : "disable";
+  return request<void>(
+    "/admin/tracked-players/" + trackedPlayerId + "/" + action,
+    { method: "PATCH" },
+  );
 }
 
+// NOTE: there is no BE delete endpoint for tracked players yet — this 404s and the
+// admin page surfaces the error. Add a BE route (or drop the UI) to make it work.
 export function removeTrackedPlayer(trackedPlayerId: string): Promise<void> {
   return request<void>("/admin/tracked-players/" + trackedPlayerId, {
     method: "DELETE",
