@@ -9,9 +9,10 @@ import {
   WarningCircle,
   Lock,
   Coins,
+  Medal,
 } from "@phosphor-icons/react";
-import { getPortfolio, ApiError } from "@/lib/api/client";
-import type { Portfolio } from "@/lib/api/types";
+import { getPortfolio, getInvestorLevel, ApiError } from "@/lib/api/client";
+import type { Portfolio, InvestorLevel } from "@/lib/api/types";
 import { formatNumber } from "@/lib/format";
 import { Card } from "@/components/ui/Card";
 import { Money } from "@/components/ui/Money";
@@ -94,6 +95,96 @@ function SummaryBand({ portfolio }: { portfolio: Portfolio }) {
           </dd>
         </div>
       </dl>
+    </Card>
+  );
+}
+
+// Self-contained Investor Level card: fetches its own data so the rest of the
+// page renders even if this endpoint is slow/unavailable.
+function InvestorLevelCard() {
+  const [level, setLevel] = useState<InvestorLevel | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    getInvestorLevel()
+      .then((data) => {
+        if (!cancelled) setLevel(data);
+      })
+      .catch(() => {
+        if (!cancelled) setFailed(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (failed) return null;
+
+  if (loading || !level) {
+    return (
+      <Card>
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-11 w-11 rounded-xl" />
+          <div className="flex-1">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="mt-2 h-3 w-20" />
+          </div>
+        </div>
+        <Skeleton className="mt-4 h-1.5 w-full rounded-full" />
+      </Card>
+    );
+  }
+
+  const atMax = level.xpForNextLevel === 0 || level.level >= 100;
+  const pct = atMax ? 100 : Math.min(100, Math.max(0, level.progressToNext * 100));
+
+  return (
+    <Card>
+      <div className="flex items-center gap-3">
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-pink-500/15 text-pink-300 ring-1 ring-inset ring-pink-500/25">
+          <Medal size={22} weight="fill" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-baseline gap-2">
+            <span className="text-sm font-semibold text-zinc-100">
+              Level {formatNumber(level.level)}
+            </span>
+            <span className="truncate text-xs font-medium uppercase tracking-wider text-pink-300">
+              {level.title}
+            </span>
+          </div>
+          <div className="mt-0.5 text-xs text-zinc-500">
+            {formatNumber(level.totalXp)} total XP
+          </div>
+        </div>
+        {atMax && (
+          <span className="rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs font-semibold text-amber-300 ring-1 ring-inset ring-amber-500/30">
+            MAX
+          </span>
+        )}
+      </div>
+
+      <div className="mt-4 space-y-1.5">
+        <div className="flex items-center justify-between text-xs tabular-nums text-zinc-500">
+          <span>{atMax ? "Max level reached" : "Next level"}</span>
+          {!atMax && (
+            <span className="font-mono text-zinc-400">
+              {formatNumber(level.xpIntoLevel)} / {formatNumber(level.xpForNextLevel)} XP
+            </span>
+          )}
+        </div>
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-800">
+          <div
+            className="h-full rounded-full bg-pink-500"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      </div>
     </Card>
   );
 }
@@ -314,6 +405,10 @@ export default function PortfolioPage() {
 
       {!loading && !error && portfolio && (
         <div className="mt-8 space-y-8">
+          <Reveal>
+            <InvestorLevelCard />
+          </Reveal>
+
           <Reveal>
             <SummaryBand portfolio={portfolio} />
           </Reveal>

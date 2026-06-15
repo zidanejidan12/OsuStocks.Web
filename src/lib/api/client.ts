@@ -2,16 +2,19 @@
 
 import { getAccessToken } from "@/lib/auth/token";
 import type {
+  AchievementsResponse,
   AppNotification,
   Candle,
   HealthStatus,
   HistoryRange,
+  InvestorLevel,
   LeaderboardEntry,
   MarketEvent,
   MarketOverview,
   LiveMover,
   MarketSettings,
   Me,
+  Mission,
   Paged,
   Portfolio,
   PricePoint,
@@ -187,6 +190,20 @@ export function getWalletTransactions(params?: {
   pageSize?: number;
 }): Promise<Paged<WalletTransaction>> {
   return request<Paged<WalletTransaction>>("/wallet/transactions" + buildQuery(params));
+}
+
+// --- Phase 3: Economy expansion (investor level, achievements, missions) ---
+
+export function getInvestorLevel(): Promise<InvestorLevel> {
+  return request<InvestorLevel>("/investor/level");
+}
+
+export function getAchievements(): Promise<AchievementsResponse> {
+  return request<AchievementsResponse>("/achievements");
+}
+
+export function getMissions(): Promise<Mission[]> {
+  return request<{ items: Mission[] }>("/missions").then((r) => r.items);
 }
 
 // --- Frontend-ahead endpoints --------------------------------------------------
