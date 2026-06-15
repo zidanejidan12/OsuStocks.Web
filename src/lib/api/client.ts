@@ -33,8 +33,12 @@ import type {
   WalletTransaction,
 } from "@/lib/api/types";
 
-export const API_BASE_URL: string =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5152";
+// Empty by default → requests are relative (same-origin): the browser only ever
+// sees /api/v1/* on this app's own origin, and the Next.js rewrite in
+// next.config.ts proxies them to the real backend server-side. The backend
+// origin is therefore never exposed in the Network tab or the JS bundle.
+// Set NEXT_PUBLIC_API_BASE_URL only for an intentional direct-to-backend setup.
+export const API_BASE_URL: string = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
 export class ApiError extends Error {
   code: string;
