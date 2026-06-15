@@ -17,18 +17,22 @@ import {
   Users,
   Pulse,
   Timer,
+  Trophy,
+  ArrowSquareOut,
 } from "@phosphor-icons/react";
 import type {
   Candle,
   HistoryRange,
   StockAnalytics,
   StockSummary,
+  TopPlay,
   TradeResult,
 } from "@/lib/api/types";
 import {
   getStock,
   getStockCandles,
   getStockAnalytics,
+  getStockTopPlays,
   buy,
   sell,
   ApiError,
@@ -631,6 +635,114 @@ function TradePanel({ stockId }: { stockId: string }) {
   );
 }
 
+function RecentTopPlays({ stockId }: { stockId: string }) {
+  const [plays, setPlays] = useState<TopPlay[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getStockTopPlays(stockId, 5)
+      .then((data) => {
+        if (!cancelled) setPlays(data);
+      })
+      .catch(() => {
+        if (!cancelled) setPlays([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [stockId]);
+
+  return (
+    <Card>
+      <div className="mb-5 flex items-center gap-2">
+        <Trophy size={18} weight="bold" className="text-amber-400" />
+        <h2 className="text-xs font-medium uppercase tracking-[0.12em] text-zinc-500">
+          Recent top plays
+        </h2>
+      </div>
+
+      {plays === null ? (
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-12 w-full rounded-xl" />
+          ))}
+        </div>
+      ) : plays.length === 0 ? (
+        <EmptyState
+          title="No recent top plays"
+          message="When this player sets a new top play, its market impact shows up here."
+          icon={<Trophy size={20} weight="bold" />}
+        />
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {plays.map((play) => (
+            <li
+              key={`${play.scoreId}-${play.occurredAt}`}
+              className="relative overflow-hidden rounded-xl border border-zinc-800/60"
+            >
+              {/* Blurred beatmap cover behind the row, osu!-style, with a dark
+                  left-to-right scrim so the text stays legible. */}
+              {play.coverUrl && (
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={play.coverUrl}
+                    alt=""
+                    aria-hidden="true"
+                    loading="lazy"
+                    className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-[2px]"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-zinc-950/95 via-zinc-950/80 to-zinc-950/40" />
+                </>
+              )}
+
+              <div className="relative flex items-center justify-between gap-3 px-3.5 py-3">
+                <div className="flex min-w-0 items-center gap-3">
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-amber-500/20 text-amber-300 ring-1 ring-amber-400/30">
+                    <Trophy size={16} weight="fill" />
+                  </span>
+                  <div className="min-w-0">
+                    <div className="font-mono text-sm font-semibold tabular-nums text-zinc-50">
+                      {play.pp != null
+                        ? `${formatNumber(Math.round(play.pp))}pp`
+                        : "New top play"}
+                    </div>
+                    {play.title && (
+                      <div className="truncate text-[11px] text-zinc-300">
+                        {play.title}
+                      </div>
+                    )}
+                    <div className="font-mono text-[10px] tabular-nums text-zinc-400">
+                      {formatDateTime(play.occurredAt)}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex shrink-0 items-center gap-3">
+                  {play.percentChange != null && (
+                    <PriceChange value={play.percentChange} className="text-sm" />
+                  )}
+                  {play.scoreId > 0 && (
+                    <a
+                      href={`https://osu.ppy.sh/scores/${play.scoreId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="View score on osu!"
+                      className="text-zinc-400 transition-colors hover:text-pink-400"
+                    >
+                      <ArrowSquareOut size={16} weight="bold" />
+                    </a>
+                  )}
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Card>
+  );
+}
+
 export function StockDetail({ stockId }: { stockId: string }) {
   const [stock, setStock] = useState<StockSummary | null>(null);
   const [loading, setLoading] = useState(true);
@@ -820,6 +932,10 @@ export function StockDetail({ stockId }: { stockId: string }) {
 
           <Reveal delay={0.12}>
             <AnalyticsPanel stockId={stockId} />
+          </Reveal>
+
+          <Reveal delay={0.14}>
+            <RecentTopPlays stockId={stockId} />
           </Reveal>
         </div>
 

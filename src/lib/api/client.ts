@@ -14,6 +14,7 @@ import type {
   Paged,
   Portfolio,
   PricePoint,
+  TopPlay,
   HoldingFlat,
   StockAnalytics,
   StockSort,
@@ -128,6 +129,15 @@ export function getStock(stockId: string): Promise<StockSummary> {
 
 export function getStockHistory(stockId: string): Promise<PricePoint[]> {
   return request<PricePoint[]>("/market/stocks/" + stockId + "/history");
+}
+
+export function getStockTopPlays(
+  stockId: string,
+  limit = 5,
+): Promise<TopPlay[]> {
+  return request<{ items: TopPlay[] }>(
+    "/market/stocks/" + stockId + "/top-plays?limit=" + limit,
+  ).then((r) => r.items);
 }
 
 export function buy(body: TradeRequest): Promise<TradeResult> {
