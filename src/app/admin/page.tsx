@@ -13,6 +13,9 @@ import {
   Lock,
   ShieldWarning,
   WarningCircle,
+  MagnifyingGlass,
+  CaretLeft,
+  CaretRight,
 } from "@phosphor-icons/react";
 import {
   getMarketSettings,
@@ -210,6 +213,8 @@ function MarketSettingsCard() {
 }
 
 // --- Tracked players -------------------------------------------------------
+const PAGE_SIZE = 25;
+
 function TrackedPlayersCard() {
   const { notify } = useToast();
   const [players, setPlayers] = useState<TrackedPlayer[]>([]);
@@ -218,21 +223,41 @@ function TrackedPlayersCard() {
   const [osuUserId, setOsuUserId] = useState("");
   const [tier, setTier] = useState<TrackingTier>("Tier1");
   const [adding, setAdding] = useState(false);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+
+  // Debounce the search box and reset to the first page whenever the term changes.
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [search]);
 
   const load = useCallback(async () => {
     try {
-      const page = await getTrackedPlayers();
-      setPlayers(page.items);
+      const result = await getTrackedPlayers({
+        page,
+        pageSize: PAGE_SIZE,
+        search: debouncedSearch || undefined,
+      });
+      setPlayers(result.items);
+      setTotalCount(result.totalCount ?? result.items.length);
       setUnavailable(false);
     } catch {
       setUnavailable(true);
     } finally {
       setLoaded(true);
     }
-  }, []);
+  }, [page, debouncedSearch]);
 
   useEffect(() => {
-    // Fetch once on mount; load() owns its own loading/error state.
+    // Reload whenever the page or (debounced) search term changes.
     /* eslint-disable-next-line react-hooks/set-state-in-effect */
     load();
   }, [load]);
@@ -246,9 +271,16 @@ function TrackedPlayersCard() {
     setAdding(true);
     try {
       const created = await addTrackedPlayer({ osuUserId: id, tier });
-      setPlayers((prev) => [created, ...prev]);
       setOsuUserId("");
       notify({ tone: "success", title: `Tracking ${created.username || id}` });
+      // Jump to an unfiltered first page and reload so the new player and counts
+      // reflect server-side ordering/pagination.
+      setSearch("");
+      if (page === 1 && debouncedSearch === "") {
+        load();
+      } else {
+        setPage(1);
+      }
     } catch (err) {
       notify({
         tone: "danger",
@@ -284,11 +316,13 @@ function TrackedPlayersCard() {
   const onRemove = async (p: TrackedPlayer) => {
     const snapshot = players;
     setPlayers((prev) => prev.filter((x) => x.trackedPlayerId !== p.trackedPlayerId));
+    setTotalCount((c) => Math.max(0, c - 1));
     try {
       await removeTrackedPlayer(p.trackedPlayerId);
       notify({ tone: "success", title: `Removed ${p.username || p.osuUserId}` });
     } catch (err) {
       setPlayers(snapshot);
+      setTotalCount((c) => c + 1);
       notify({
         tone: "danger",
         title: "Couldn't remove player",
@@ -341,6 +375,29 @@ function TrackedPlayersCard() {
         </Button>
       </div>
 
+      {/* Search + count */}
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="relative flex-1">
+          <MagnifyingGlass
+            size={16}
+            weight="bold"
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"
+          />
+          <input
+            type="text"
+            value={search}
+            placeholder="Search by name or osu! user ID…"
+            onChange={(e) => setSearch(e.target.value)}
+            className={`${inputClass} pl-9`}
+          />
+        </div>
+        {loaded && !unavailable && (
+          <span className="shrink-0 font-mono text-xs tabular-nums text-zinc-500">
+            {totalCount.toLocaleString()} tracked
+          </span>
+        )}
+      </div>
+
       {!loaded ? (
         <div className="space-y-2">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -354,8 +411,12 @@ function TrackedPlayersCard() {
       ) : players.length === 0 ? (
         <EmptyState
           icon={<UsersThree size={20} weight="bold" />}
-          title="No tracked players"
-          message="Add an osu! user ID above to start tracking a player."
+          title={debouncedSearch ? "No matches" : "No tracked players"}
+          message={
+            debouncedSearch
+              ? `No tracked players match "${debouncedSearch}".`
+              : "Add an osu! user ID above to start tracking a player."
+          }
         />
       ) : (
         <motion.ul
@@ -413,6 +474,32 @@ function TrackedPlayersCard() {
             </motion.li>
           ))}
         </motion.ul>
+      )}
+
+      {loaded && !unavailable && totalPages > 1 && (
+        <div className="mt-4 flex items-center justify-between gap-3">
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page <= 1}
+            className="flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:border-zinc-700 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <CaretLeft size={14} weight="bold" />
+            Prev
+          </button>
+          <span className="font-mono text-xs tabular-nums text-zinc-500">
+            Page {page} / {totalPages}
+          </span>
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page >= totalPages}
+            className="flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:border-zinc-700 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Next
+            <CaretRight size={14} weight="bold" />
+          </button>
+        </div>
       )}
     </Card>
   );
