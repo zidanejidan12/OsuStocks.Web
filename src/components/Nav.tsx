@@ -20,6 +20,7 @@ import { useAuth } from "@/lib/auth/auth-context";
 import { useNotifications } from "@/lib/notifications/notifications-context";
 import { Spinner } from "@/components/ui/Spinner";
 import { buttonClasses } from "@/components/ui/Button";
+import { Avatar } from "@/components/ui/Avatar";
 import { spring } from "@/lib/motion";
 
 const LINKS = [
@@ -123,9 +124,14 @@ export function Nav() {
                   <GearSix size={18} weight="bold" />
                 </Link>
               )}
-              <span className="hidden text-zinc-300 sm:inline">
-                {user.username}
-              </span>
+              <Link
+                href="/portfolio"
+                aria-label={user.username}
+                title={user.username}
+                className="shrink-0 rounded-full ring-2 ring-transparent transition-colors hover:ring-pink-500/40"
+              >
+                <Avatar src={user.avatarUrl} name={user.username} size="sm" />
+              </Link>
               <button
                 type="button"
                 onClick={logout}
