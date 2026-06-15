@@ -48,16 +48,18 @@ function errorMessage(err: unknown, fallback: string): string {
   return err instanceof ApiError ? err.message || fallback : fallback;
 }
 
-function NumberField({
+function DecimalField({
   label,
   value,
   onChange,
-  min = 0,
+  min,
+  step,
 }: {
   label: string;
   value: number;
   onChange: (n: number) => void;
-  min?: number;
+  min: number;
+  step: number;
 }) {
   return (
     <label className="flex flex-col gap-1.5">
@@ -67,8 +69,9 @@ function NumberField({
       <input
         type="number"
         min={min}
+        step={step}
         value={value}
-        onChange={(e) => onChange(Math.max(min, Math.floor(Number(e.target.value) || 0)))}
+        onChange={(e) => onChange(Math.max(min, Number(e.target.value) || min))}
         className={inputClass}
       />
     </label>
@@ -107,8 +110,8 @@ function MarketSettingsCard() {
     if (!settings) return;
     setSaving(true);
     try {
-      const updated = await updateMarketSettings(settings);
-      setSettings(updated);
+      // PUT returns 204 — keep the locally-edited values rather than clearing state.
+      await updateMarketSettings(settings);
       notify({ tone: "success", title: "Market settings saved" });
     } catch (err) {
       notify({
@@ -144,52 +147,54 @@ function MarketSettingsCard() {
         <div className="space-y-5">
           <button
             type="button"
-            onClick={() => patch({ tradingEnabled: !settings.tradingEnabled })}
+            onClick={() => patch({ isMaintenanceMode: !settings.isMaintenanceMode })}
             className="flex w-full items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 text-left transition-colors hover:border-zinc-700"
           >
             <span className="flex items-center gap-2.5">
               <Power
                 size={18}
                 weight="bold"
-                className={settings.tradingEnabled ? "text-emerald-400" : "text-zinc-500"}
+                className={settings.isMaintenanceMode ? "text-amber-400" : "text-zinc-500"}
               />
-              <span className="text-sm font-medium text-zinc-100">Trading enabled</span>
+              <span className="text-sm font-medium text-zinc-100">Maintenance mode</span>
             </span>
             <span
               className={`relative h-6 w-11 rounded-full transition-colors ${
-                settings.tradingEnabled ? "bg-emerald-500" : "bg-zinc-700"
+                settings.isMaintenanceMode ? "bg-amber-500" : "bg-zinc-700"
               }`}
             >
               <motion.span
                 layout
                 transition={spring}
                 className={`absolute top-0.5 h-5 w-5 rounded-full bg-white ${
-                  settings.tradingEnabled ? "right-0.5" : "left-0.5"
+                  settings.isMaintenanceMode ? "right-0.5" : "left-0.5"
                 }`}
               />
             </span>
           </button>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <NumberField
-              label="Trade cooldown (s)"
-              value={settings.tradeCooldownSeconds}
-              onChange={(n) => patch({ tradeCooldownSeconds: n })}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <DecimalField
+              label="pp multiplier"
+              value={settings.ppMultiplier}
+              onChange={(n) => patch({ ppMultiplier: n })}
+              min={0.0001}
+              step={0.0001}
             />
-            <NumberField
-              label="Max position / stock"
-              value={settings.maxPositionPerStock}
-              onChange={(n) => patch({ maxPositionPerStock: n })}
-              min={1}
+            <DecimalField
+              label="Trade multiplier"
+              value={settings.tradeMultiplier}
+              onChange={(n) => patch({ tradeMultiplier: n })}
+              min={0.0001}
+              step={0.0001}
             />
-            {typeof settings.priceUpdateIntervalSeconds === "number" && (
-              <NumberField
-                label="Price update (s)"
-                value={settings.priceUpdateIntervalSeconds}
-                onChange={(n) => patch({ priceUpdateIntervalSeconds: n })}
-                min={1}
-              />
-            )}
+            <DecimalField
+              label="Decay multiplier"
+              value={settings.decayMultiplier}
+              onChange={(n) => patch({ decayMultiplier: n })}
+              min={0.0001}
+              step={0.0001}
+            />
           </div>
 
           <div className="flex justify-end">

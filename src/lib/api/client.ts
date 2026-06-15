@@ -394,19 +394,18 @@ export function markAllNotificationsRead(): Promise<void> {
 // --- Admin (endpoints exist server-side; paths assumed under /admin) -------
 
 export function getMarketSettings(): Promise<MarketSettings> {
-  return request<MarketSettings>("/admin/market/settings");
+  return request<MarketSettings>("/admin/market-settings");
 }
 
-export function updateMarketSettings(
-  body: MarketSettings,
-): Promise<MarketSettings> {
-  return request<MarketSettings>("/admin/market/settings", {
+// PUT returns 204 No Content — don't expect a body back.
+export function updateMarketSettings(body: MarketSettings): Promise<void> {
+  return request<void>("/admin/market-settings", {
     method: "PUT",
     body: JSON.stringify(body),
   });
 }
 
-// BE list item names the tier `trackingTier` (and omits avatarUrl/stockId).
+// BE list item names the tier `trackingTier`; carry avatarUrl/stockId through.
 export function getTrackedPlayers(): Promise<Paged<TrackedPlayer>> {
   return request<{
     items: Array<{
@@ -415,6 +414,8 @@ export function getTrackedPlayers(): Promise<Paged<TrackedPlayer>> {
       username: string;
       trackingTier: TrackedPlayer["tier"];
       isActive: boolean;
+      avatarUrl: string | null;
+      stockId: string | null;
     }>;
     page?: number;
     pageSize?: number;
@@ -425,27 +426,38 @@ export function getTrackedPlayers(): Promise<Paged<TrackedPlayer>> {
       username: p.username,
       tier: p.trackingTier,
       isActive: p.isActive,
+      avatarUrl: p.avatarUrl,
+      stockId: p.stockId,
     })),
     page: raw.page,
     pageSize: raw.pageSize,
   }));
 }
 
-// BE expects `trackingTier` in the body and returns only { trackedPlayerId }; build the
-// optimistic row from the input so the UI shows it until the next list refresh.
+// BE expects `trackingTier` in the body and returns the full object; map it to a TrackedPlayer.
 export function addTrackedPlayer(body: {
   osuUserId: number;
   tier: TrackedPlayer["tier"];
 }): Promise<TrackedPlayer> {
-  return request<{ trackedPlayerId: string }>("/admin/tracked-players", {
+  return request<{
+    trackedPlayerId: string;
+    osuUserId: number;
+    username: string;
+    trackingTier: TrackedPlayer["tier"];
+    isActive: boolean;
+    avatarUrl: string | null;
+    stockId: string | null;
+  }>("/admin/tracked-players", {
     method: "POST",
     body: JSON.stringify({ osuUserId: body.osuUserId, trackingTier: body.tier }),
   }).then((r) => ({
     trackedPlayerId: r.trackedPlayerId,
-    osuUserId: body.osuUserId,
-    username: `osu! #${body.osuUserId}`,
-    tier: body.tier,
-    isActive: true,
+    osuUserId: r.osuUserId,
+    username: r.username,
+    tier: r.trackingTier,
+    isActive: r.isActive,
+    avatarUrl: r.avatarUrl,
+    stockId: r.stockId,
   }));
 }
 
@@ -461,8 +473,7 @@ export function updateTrackedPlayer(
   );
 }
 
-// NOTE: there is no BE delete endpoint for tracked players yet — this 404s and the
-// admin page surfaces the error. Add a BE route (or drop the UI) to make it work.
+// DELETE 204 on success; 409 CONFLICT if the player's stock has trades or holdings.
 export function removeTrackedPlayer(trackedPlayerId: string): Promise<void> {
   return request<void>("/admin/tracked-players/" + trackedPlayerId, {
     method: "DELETE",

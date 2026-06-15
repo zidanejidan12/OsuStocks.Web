@@ -285,14 +285,14 @@ export interface Candle {
 
 // --- Admin (market settings + tracked players) -----------------------------
 export interface MarketSettings {
-  /** Master switch for trading. */
-  tradingEnabled: boolean;
-  /** Seconds a user must wait between trades on the same stock. */
-  tradeCooldownSeconds: number;
-  /** Max shares of a single stock one user may hold. */
-  maxPositionPerStock: number;
-  /** How often prices recompute, in seconds. Optional. */
-  priceUpdateIntervalSeconds?: number;
+  /** Multiplier applied to pp-driven price moves. */
+  ppMultiplier: number;
+  /** Multiplier applied to trade-driven price moves. */
+  tradeMultiplier: number;
+  /** Multiplier applied to idle price decay. */
+  decayMultiplier: number;
+  /** When true, trading is halted for maintenance. */
+  isMaintenanceMode: boolean;
 }
 
 export interface TrackedPlayer {
