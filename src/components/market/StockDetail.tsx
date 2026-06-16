@@ -417,7 +417,10 @@ function AnalyticsPanel({ stockId }: { stockId: string }) {
 function TradePanel({ stockId }: { stockId: string }) {
   const { user } = useAuth();
   const { notify } = useToast();
-  const [quantity, setQuantity] = useState(1);
+  // Raw input string so decimals (incl. a trailing ".") type smoothly; `quantity` is the
+  // derived numeric value rounded to 2 dp (fractional shares, matching the API's 2-dp limit).
+  const [quantityInput, setQuantityInput] = useState("1");
+  const quantity = Math.round((Number(quantityInput) || 0) * 100) / 100;
   const [pending, setPending] = useState<"buy" | "sell" | null>(null);
   const [result, setResult] = useState<TradeResult | null>(null);
   const [cooldownUntil, setCooldownUntil] = useState(0);
@@ -490,8 +493,8 @@ function TradePanel({ stockId }: { stockId: string }) {
 
   async function execute(action: "buy" | "sell") {
     if (pending || onCooldown) return;
-    if (!Number.isFinite(quantity) || quantity < 1) {
-      notify({ tone: "danger", title: "Invalid quantity", message: "Quantity must be at least 1." });
+    if (!Number.isFinite(quantity) || quantity <= 0) {
+      notify({ tone: "danger", title: "Invalid quantity", message: "Quantity must be at least 0.01." });
       return;
     }
     setPending(action);
@@ -537,11 +540,10 @@ function TradePanel({ stockId }: { stockId: string }) {
         <input
           id="trade-quantity"
           type="number"
-          min={1}
-          value={quantity}
-          onChange={(e) =>
-            setQuantity(Math.max(1, Math.floor(Number(e.target.value) || 1)))
-          }
+          min={0.01}
+          step={0.01}
+          value={quantityInput}
+          onChange={(e) => setQuantityInput(e.target.value)}
           className="w-full rounded-xl border border-zinc-800 bg-zinc-900/60 px-3.5 py-2.5 text-sm font-mono tabular-nums text-zinc-100 placeholder:text-zinc-500 transition-colors focus:border-pink-500/50 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
         />
         {/* Position-limit hint, surfaced before the user commits. */}
