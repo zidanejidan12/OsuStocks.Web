@@ -6,8 +6,8 @@ const API_REPO = "https://github.com/zidanejidan12/OsuStocks.API";
 // Cosmetic credit — links to each member's osu! profile; avatars come from osu!'s CDN.
 const TEAM = [
   { id: 3484548, name: "Almond Eye" },
-  { id: 11421465, name: "Nishino Flower" },
-  { id: 6560131, name: "Verxina" },
+  { id: 11421465, name: "Verxina" },
+  { id: 6560131, name: "Nishino Flower" },
 ];
 
 export function Footer() {
