@@ -17,7 +17,7 @@ export default function OpengraphImage() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(135deg, #18181b 0%, #09090b 100%)",
+          background: "linear-gradient(135deg, #1f1a1e 0%, #141015 100%)",
           color: "#fafafa",
         }}
       >
@@ -25,7 +25,7 @@ export default function OpengraphImage() {
           <span style={{ color: "#ec4899" }}>Osu</span>
           <span>Stocks</span>
         </div>
-        <div style={{ display: "flex", marginTop: 16, fontSize: 42, color: "#a1a1aa" }}>
+        <div style={{ display: "flex", marginTop: 16, fontSize: 42, color: "#aa9fa9" }}>
           Trade your favorite osu! players like stocks
         </div>
       </div>

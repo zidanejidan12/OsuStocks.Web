@@ -1,11 +1,28 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-background: #09090b;
-  --color-foreground: #f4f4f5;
+  --color-background: #141015;
+  --color-foreground: #f3eef2;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --color-accent: #ec4899;
+}
+
+/* osu!-web "mauve" twist: retint the whole neutral (zinc) scale toward a warm
+   purplish-dark so every existing zinc-* utility inherits the osu! profile look.
+   The pink accent stays as Tailwind's pink (#ec4899) — our magenta twist. */
+@theme {
+  --color-zinc-50: #f9f6f8;
+  --color-zinc-100: #f3eef2;
+  --color-zinc-200: #e7e0e6;
+  --color-zinc-300: #cfc5ce;
+  --color-zinc-400: #aa9fa9;
+  --color-zinc-500: #847a83;
+  --color-zinc-600: #645b63;
+  --color-zinc-700: #483f47;
+  --color-zinc-800: #2e2630;
+  --color-zinc-900: #1f1a1e;
+  --color-zinc-950: #141015;
 }
 
 @layer base {
@@ -29,31 +46,31 @@
   }
   * {
     scrollbar-width: thin;
-    scrollbar-color: #27272a transparent;
+    scrollbar-color: #2e2630 transparent;
   }
   *::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
   *::-webkit-scrollbar-thumb {
-    background: #27272a;
+    background: #2e2630;
     border-radius: 9999px;
   }
   *::-webkit-scrollbar-thumb:hover {
-    background: #3f3f46;
+    background: #483f47;
   }
 }
 
 @layer components {
   /* Shimmer skeleton surface */
   .skeleton {
-    background: linear-gradient(90deg, #18181b 25%, #27272a 37%, #18181b 63%);
+    background: linear-gradient(90deg, #1f1a1e 25%, #2e2630 37%, #1f1a1e 63%);
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.6s linear infinite;
   }
   /* Frosted glass with inner refraction edge */
   .glass {
-    background: color-mix(in oklab, #18181b 72%, transparent);
+    background: color-mix(in oklab, #1f1a1e 72%, transparent);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     border: 1px solid rgba(255, 255, 255, 0.06);
