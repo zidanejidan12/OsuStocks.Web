@@ -135,6 +135,7 @@ export default function Home() {
 
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState<StockSort>("change24h_desc");
+  const [country, setCountry] = useState("ALL");
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
@@ -191,6 +192,7 @@ export default function Home() {
       pageSize: PAGE_SIZE,
       sort,
       search: debouncedSearch || undefined,
+      country,
     })
       .then((data: Paged<StockSummary>) => {
         if (cancelled) return;
@@ -216,7 +218,7 @@ export default function Home() {
     return () => {
       cancelled = true;
     };
-  }, [user, page, sort, debouncedSearch]);
+  }, [user, page, sort, country, debouncedSearch]);
 
   if (authLoading) {
     return <DashboardSkeleton />;
@@ -279,6 +281,11 @@ export default function Home() {
               sort={sort}
               onSortChange={(value) => {
                 setSort(value);
+                setPage(1);
+              }}
+              country={country}
+              onCountryChange={(value) => {
+                setCountry(value);
                 setPage(1);
               }}
               page={page}

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -8,15 +9,20 @@ import {
   CaretLeft,
   ChartBar,
 } from "@phosphor-icons/react";
-import type { StockSort, StockSummary } from "@/lib/api/types";
+import type { MarketCountry, StockSort, StockSummary } from "@/lib/api/types";
+import { getMarketCountries } from "@/lib/api/client";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PriceChange } from "@/components/ui/PriceChange";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { buttonClasses } from "@/components/ui/Button";
 import { Money } from "@/components/ui/Money";
 import { Avatar } from "@/components/ui/Avatar";
+import { Flag, countryName } from "@/components/ui/Flag";
 import { formatNumber } from "@/lib/format";
 import { spring } from "@/lib/motion";
+
+// Sentinel value for the "All countries" option (no filter).
+const ALL_COUNTRIES = "ALL";
 
 const SORT_OPTIONS: { value: StockSort; label: string }[] = [
   { value: "name_asc", label: "Player (A-Z)" },
@@ -36,6 +42,9 @@ type Props = {
   onSearchChange: (value: string) => void;
   sort: StockSort;
   onSortChange: (value: StockSort) => void;
+  /** Selected country filter (ISO 3166-1 alpha-2), or "ALL" for no filter. */
+  country: string;
+  onCountryChange: (value: string) => void;
   page: number;
   pageSize: number;
   totalCount: number;
@@ -49,6 +58,8 @@ export function StockList({
   onSearchChange,
   sort,
   onSortChange,
+  country,
+  onCountryChange,
   page,
   pageSize,
   totalCount,
@@ -57,6 +68,26 @@ export function StockList({
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const canPrev = page > 1;
   const canNext = page < totalPages;
+
+  // Populate the country dropdown once on mount; degrade gracefully (filter just
+  // stays "All countries") if the endpoint errors.
+  const [countries, setCountries] = useState<MarketCountry[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    getMarketCountries()
+      .then((items) => {
+        if (!cancelled) setCountries(items);
+      })
+      .catch(() => {
+        // Non-fatal: leave the list empty so only "All countries" shows.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const selectedCountry =
+    country !== ALL_COUNTRIES && country !== "" ? country : null;
 
   return (
     <div className="flex flex-col gap-4">
@@ -75,17 +106,37 @@ export function StockList({
             className="w-full rounded-xl border border-zinc-800 bg-zinc-900/60 py-2.5 pl-10 pr-3.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-colors focus:border-pink-500/50 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
           />
         </div>
-        <select
-          value={sort}
-          onChange={(e) => onSortChange(e.target.value as StockSort)}
-          className="w-full rounded-xl border border-zinc-800 bg-zinc-900/60 px-3.5 py-2.5 text-sm text-zinc-100 transition-colors focus:border-pink-500/50 focus:outline-none focus:ring-2 focus:ring-pink-500/20 sm:w-auto"
-        >
-          {SORT_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="flex items-center gap-2">
+            {selectedCountry && (
+              <Flag countryCode={selectedCountry} className="h-4 w-[21px] shrink-0" />
+            )}
+            <select
+              value={country}
+              onChange={(e) => onCountryChange(e.target.value)}
+              aria-label="Filter by country"
+              className="w-full rounded-xl border border-zinc-800 bg-zinc-900/60 px-3.5 py-2.5 text-sm text-zinc-100 transition-colors focus:border-pink-500/50 focus:outline-none focus:ring-2 focus:ring-pink-500/20 sm:w-auto"
+            >
+              <option value={ALL_COUNTRIES}>All countries</option>
+              {countries.map((c) => (
+                <option key={c.countryCode} value={c.countryCode}>
+                  {countryName(c.countryCode)} — {formatNumber(c.count)}
+                </option>
+              ))}
+            </select>
+          </div>
+          <select
+            value={sort}
+            onChange={(e) => onSortChange(e.target.value as StockSort)}
+            className="w-full rounded-xl border border-zinc-800 bg-zinc-900/60 px-3.5 py-2.5 text-sm text-zinc-100 transition-colors focus:border-pink-500/50 focus:outline-none focus:ring-2 focus:ring-pink-500/20 sm:w-auto"
+          >
+            {SORT_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className="overflow-x-auto rounded-2xl border border-zinc-800/80">
@@ -163,6 +214,12 @@ export function StockList({
                       />
                       <span className="inline-flex items-center gap-1.5">
                         {stock.playerName}
+                        {stock.countryCode && (
+                          <Flag
+                            countryCode={stock.countryCode}
+                            className="h-3 shrink-0"
+                          />
+                        )}
                         <CaretRight
                           size={14}
                           weight="bold"

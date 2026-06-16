@@ -10,13 +10,26 @@ import {
   Lock,
   Coins,
   Medal,
+  ArrowSquareOut,
 } from "@phosphor-icons/react";
-import { getPortfolio, getInvestorLevel, ApiError } from "@/lib/api/client";
-import type { Portfolio, InvestorLevel } from "@/lib/api/types";
+import {
+  getPortfolio,
+  getInvestorLevel,
+  getStocks,
+  getStock,
+  ApiError,
+} from "@/lib/api/client";
+import type {
+  Portfolio,
+  InvestorLevel,
+  Me,
+  StockSummary,
+} from "@/lib/api/types";
 import { formatNumber } from "@/lib/format";
 import { Card } from "@/components/ui/Card";
 import { Money } from "@/components/ui/Money";
 import { Avatar } from "@/components/ui/Avatar";
+import { Flag } from "@/components/ui/Flag";
 import { PriceChange } from "@/components/ui/PriceChange";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -62,40 +75,200 @@ function PleaseLogIn() {
   );
 }
 
-// Divided summary band: three headline stats sharing one surface.
-function SummaryBand({ portfolio }: { portfolio: Portfolio }) {
+// osu!-userpage-style profile header for the signed-in investor: cover banner,
+// overlapping avatar, country flag, and portfolio stats as tiles.
+function ProfileHeader({
+  user,
+  portfolio,
+}: {
+  user: Me;
+  portfolio: Portfolio | null;
+}) {
   return (
-    <Card className="p-0">
-      <dl className="grid grid-cols-1 divide-y divide-zinc-800 md:grid-cols-3 md:divide-x md:divide-y-0">
-        <div className="p-5 sm:p-6">
-          <dt className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">
-            Current Value
-          </dt>
-          <dd className="mt-1.5 font-mono text-2xl font-semibold tabular-nums text-zinc-50 sm:text-3xl">
-            <Money value={portfolio.currentValue} />
-          </dd>
+    <Reveal>
+      <header className="overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900/40">
+        <div className="relative h-28 sm:h-36">
+          <div className="absolute inset-0 bg-gradient-to-br from-pink-600/45 via-pink-500/10 to-zinc-950" />
+          <div className="absolute inset-0 bg-[radial-gradient(120%_150%_at_12%_-30%,rgba(236,72,153,0.40),transparent_55%)]" />
+          <div className="grain pointer-events-none absolute inset-0 opacity-[0.12]" />
+          <span className="absolute left-5 top-4 rounded-md bg-zinc-950/40 px-2 py-1 text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-200 backdrop-blur">
+            Investor
+          </span>
         </div>
-        <div className="p-5 sm:p-6">
-          <dt className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">
-            Cost Basis
-          </dt>
-          <dd className="mt-1.5 font-mono text-2xl font-semibold tabular-nums text-zinc-50 sm:text-3xl">
-            <Money value={portfolio.costBasis} />
-          </dd>
+
+        <div className="px-5 pb-6 sm:px-7">
+          <div className="-mt-12 flex flex-col gap-4 sm:-mt-14 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex items-end gap-4">
+              <div className="shrink-0 rounded-full ring-4 ring-zinc-900 shadow-xl shadow-black/40">
+                <Avatar src={user.avatarUrl} name={user.username} size="xl" />
+              </div>
+              <div className="pb-1">
+                <h1 className="text-3xl font-semibold tracking-tighter text-zinc-50 md:text-4xl">
+                  {user.username}
+                </h1>
+                <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm">
+                  {user.countryCode && (
+                    <span className="inline-flex items-center rounded-md bg-zinc-800/70 px-1.5 py-1 ring-1 ring-inset ring-zinc-700/50">
+                      <Flag countryCode={user.countryCode} className="h-3.5" />
+                    </span>
+                  )}
+                  {user.role === "Admin" && (
+                    <span className="rounded-md bg-pink-500/10 px-2 py-0.5 text-xs font-medium uppercase tracking-wide text-pink-300 ring-1 ring-inset ring-pink-500/25">
+                      Admin
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <a
+              href={`https://osu.ppy.sh/users/${user.osuUserId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 self-start rounded-lg border border-zinc-700/60 bg-zinc-900/60 px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:border-pink-500/40 hover:text-pink-300 sm:self-auto"
+            >
+              View on osu!
+              <ArrowSquareOut size={14} weight="bold" />
+            </a>
+          </div>
+
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="rounded-xl border border-zinc-800/70 bg-zinc-900/50 px-4 py-3">
+              <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">
+                Current Value
+              </div>
+              <div className="mt-1 font-mono text-2xl font-semibold tabular-nums text-zinc-50">
+                {portfolio ? <Money value={portfolio.currentValue} /> : "—"}
+              </div>
+            </div>
+            <div className="rounded-xl border border-zinc-800/70 bg-zinc-900/50 px-4 py-3">
+              <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">
+                Cost Basis
+              </div>
+              <div className="mt-1 font-mono text-2xl font-semibold tabular-nums text-zinc-50">
+                {portfolio ? <Money value={portfolio.costBasis} /> : "—"}
+              </div>
+            </div>
+            <div className="rounded-xl border border-zinc-800/70 bg-zinc-900/50 px-4 py-3">
+              <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">
+                Profit / Loss
+              </div>
+              <div className="mt-1.5">
+                {portfolio ? (
+                  <PriceChange
+                    value={portfolio.profitLoss}
+                    className="text-lg"
+                  />
+                ) : (
+                  <span className="font-mono text-2xl font-semibold text-zinc-50">—</span>
+                )}
+              </div>
+            </div>
+            <div className="rounded-xl border border-zinc-800/70 bg-zinc-900/50 px-4 py-3">
+              <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">
+                Holdings
+              </div>
+              <div className="mt-1 font-mono text-2xl font-semibold tabular-nums text-zinc-50">
+                {portfolio ? formatNumber(portfolio.holdings.length) : "—"}
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="p-5 sm:p-6">
-          <dt className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">
-            Profit / Loss
-          </dt>
-          <dd className="mt-1.5">
-            <PriceChange
-              value={portfolio.profitLoss}
-              className="text-2xl font-semibold sm:text-3xl"
+      </header>
+    </Reveal>
+  );
+}
+
+// If the signed-in user is themselves a tracked player, surface their own stock
+// as a profile-detail card (price, rank, pp, 24h). Matches the user's osu!
+// username to a market stock; renders nothing when they aren't tracked.
+function YourStockCard({ user }: { user: Me }) {
+  const [stock, setStock] = useState<StockSummary | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getStocks({ search: user.username, pageSize: 5 })
+      .then(async (page) => {
+        const match = page.items.find(
+          (s) => s.playerName.toLowerCase() === user.username.toLowerCase(),
+        );
+        if (!match) {
+          if (!cancelled) setStock(null);
+          return;
+        }
+        // Fetch the full detail so we get rank/pp (the list endpoint omits them).
+        const detail = await getStock(match.stockId);
+        if (!cancelled) setStock(detail);
+      })
+      .catch(() => {
+        if (!cancelled) setStock(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user.username]);
+
+  if (!stock) return null;
+
+  return (
+    <Reveal>
+      <Card>
+        <div className="mb-4 flex items-center gap-2">
+          <ChartPieSlice size={18} weight="bold" className="text-pink-400" />
+          <h2 className="text-sm font-semibold text-zinc-100">Your Stock</h2>
+          <span className="text-xs text-zinc-500">
+            You&apos;re a tracked player — this is your market stock.
+          </span>
+        </div>
+
+        <Link
+          href={`/stocks/${stock.stockId}`}
+          className="group flex flex-col gap-4 rounded-xl border border-zinc-800/70 bg-zinc-900/50 p-4 transition-colors hover:border-pink-500/40 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div className="flex items-center gap-3">
+            <Avatar src={stock.avatarUrl} name={stock.playerName} size="lg" />
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-zinc-100 group-hover:text-pink-300">
+                  {stock.playerName}
+                </span>
+                {stock.countryCode && (
+                  <Flag countryCode={stock.countryCode} className="h-3" />
+                )}
+              </div>
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+                {stock.globalRank != null && (
+                  <span className="inline-flex items-center gap-1 rounded bg-zinc-800/70 px-1.5 py-0.5 font-mono tabular-nums text-zinc-300 ring-1 ring-inset ring-zinc-700/50">
+                    <span className="text-zinc-500">#</span>
+                    {formatNumber(stock.globalRank)}
+                  </span>
+                )}
+                {stock.currentPp != null && (
+                  <span className="inline-flex items-center gap-1 rounded bg-pink-500/10 px-1.5 py-0.5 font-mono tabular-nums text-pink-300 ring-1 ring-inset ring-pink-500/25">
+                    {formatNumber(Math.round(stock.currentPp))}
+                    <span className="text-pink-400/70">pp</span>
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-6">
+            <div className="text-right">
+              <div className="font-mono text-2xl font-semibold tabular-nums text-zinc-50">
+                <Money value={stock.currentPrice} />
+              </div>
+              <PriceChange value={stock.priceChange24h} className="justify-end text-sm" />
+            </div>
+            <CaretRight
+              size={18}
+              weight="bold"
+              className="text-zinc-600 transition-colors group-hover:text-pink-400"
             />
-          </dd>
-        </div>
-      </dl>
-    </Card>
+          </div>
+        </Link>
+      </Card>
+    </Reveal>
   );
 }
 
@@ -388,7 +561,7 @@ export default function PortfolioPage() {
 
   return (
     <PageShell>
-      <PageHeader />
+      <ProfileHeader user={user} portfolio={portfolio} />
 
       {loading && <PortfolioSkeleton />}
 
@@ -405,12 +578,10 @@ export default function PortfolioPage() {
 
       {!loading && !error && portfolio && (
         <div className="mt-8 space-y-8">
-          <Reveal>
-            <InvestorLevelCard />
-          </Reveal>
+          <YourStockCard user={user} />
 
           <Reveal>
-            <SummaryBand portfolio={portfolio} />
+            <InvestorLevelCard />
           </Reveal>
 
           <Reveal delay={0.05}>

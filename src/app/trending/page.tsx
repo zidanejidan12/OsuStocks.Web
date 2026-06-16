@@ -18,6 +18,7 @@ import { formatCompact } from "@/lib/format";
 import { Card } from "@/components/ui/Card";
 import { Money } from "@/components/ui/Money";
 import { Avatar } from "@/components/ui/Avatar";
+import { Flag } from "@/components/ui/Flag";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PriceChange } from "@/components/ui/PriceChange";
@@ -108,8 +109,13 @@ function BucketCard({ bucket, stocks }: { bucket: Bucket; stocks: TrendingStock[
                 </span>
                 <Avatar src={s.avatarUrl} name={s.playerName} size="sm" />
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-medium text-zinc-100">
-                    {s.playerName}
+                  <div className="flex min-w-0 items-center gap-1.5">
+                    <span className="truncate text-sm font-medium text-zinc-100">
+                      {s.playerName}
+                    </span>
+                    {s.countryCode && (
+                      <Flag countryCode={s.countryCode} className="h-2.5 shrink-0" />
+                    )}
                   </div>
                   <div className="font-mono text-xs tabular-nums text-zinc-500">
                     <Money value={s.currentPrice} />
