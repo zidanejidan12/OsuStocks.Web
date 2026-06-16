@@ -41,7 +41,6 @@ import { useAuth } from "@/lib/auth/auth-context";
 import { useToast } from "@/components/ui/Toast";
 import * as analytics from "@/lib/analytics";
 import { Card } from "@/components/ui/Card";
-import { Stat } from "@/components/ui/Stat";
 import { Button, buttonClasses } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -51,6 +50,7 @@ import { Reveal } from "@/components/motion/Reveal";
 import { Money } from "@/components/ui/Money";
 import { Coin } from "@/components/ui/Coin";
 import { Avatar } from "@/components/ui/Avatar";
+import { Flag } from "@/components/ui/Flag";
 import { scaleIn, EASE_OUT_EXPO } from "@/lib/motion";
 import {
   formatNumber,
@@ -888,53 +888,95 @@ export function StockDetail({ stockId }: { stockId: string }) {
       {backLink}
 
       <Reveal className="mt-8">
-        <header className="flex flex-col gap-6 border-b border-zinc-800/60 pb-8 md:flex-row md:items-end md:justify-between">
-          <div className="flex items-center gap-4">
-            <Avatar src={stock.avatarUrl} name={stock.playerName} size="lg" />
-            <div>
-              <span className="text-xs font-medium uppercase tracking-[0.12em] text-zinc-500">
-                Player Stock
-              </span>
-              <h1 className="mt-2 text-3xl font-semibold tracking-tighter text-zinc-100 md:text-4xl">
-                {stock.playerName}
-              </h1>
-              {(stock.globalRank != null || stock.currentPp != null) && (
-                <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
-                  {stock.globalRank != null && (
-                    <span className="inline-flex items-center gap-1 rounded-md bg-zinc-800/70 px-2 py-0.5 font-mono tabular-nums text-zinc-300 ring-1 ring-inset ring-zinc-700/50">
-                      <span className="text-zinc-500">#</span>
-                      {formatNumber(stock.globalRank)}
-                    </span>
-                  )}
-                  {stock.currentPp != null && (
-                    <span className="inline-flex items-center gap-1 rounded-md bg-pink-500/10 px-2 py-0.5 font-mono tabular-nums text-pink-300 ring-1 ring-inset ring-pink-500/25">
-                      {formatNumber(Math.round(stock.currentPp))}
-                      <span className="text-pink-400/70">pp</span>
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
+        {/* osu!-userpage-style profile header: cover banner, overlapping avatar, stat tiles. */}
+        <header className="overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900/40">
+          {/* Cover banner — osu!'s default cover is a pink gradient, so we lean into that. */}
+          <div className="relative h-28 sm:h-36">
+            <div className="absolute inset-0 bg-gradient-to-br from-pink-600/45 via-pink-500/10 to-zinc-950" />
+            <div className="absolute inset-0 bg-[radial-gradient(120%_150%_at_12%_-30%,rgba(236,72,153,0.40),transparent_55%)]" />
+            <div className="grain pointer-events-none absolute inset-0 opacity-[0.12]" />
+            <span className="absolute left-5 top-4 rounded-md bg-zinc-950/40 px-2 py-1 text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-200 backdrop-blur">
+              Player Stock
+            </span>
           </div>
 
-          <div className="flex items-end gap-8">
-            <div className="flex flex-col gap-1.5">
-              <span className="font-mono text-3xl font-semibold tabular-nums text-zinc-50 md:text-4xl">
-                <Money value={stock.currentPrice} />
-              </span>
-              <PriceChange value={stock.priceChange24h} className="text-sm" />
+          <div className="px-5 pb-6 sm:px-7">
+            {/* Identity row — avatar overlaps the banner */}
+            <div className="-mt-12 flex flex-col gap-4 sm:-mt-14 sm:flex-row sm:items-end sm:justify-between">
+              <div className="flex items-end gap-4">
+                <div className="shrink-0 rounded-full ring-4 ring-zinc-900 shadow-xl shadow-black/40">
+                  <Avatar src={stock.avatarUrl} name={stock.playerName} size="xl" />
+                </div>
+                <div className="pb-1">
+                  <h1 className="text-3xl font-semibold tracking-tighter text-zinc-50 md:text-4xl">
+                    {stock.playerName}
+                  </h1>
+                  <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm">
+                    {stock.countryCode && (
+                      <span className="inline-flex items-center rounded-md bg-zinc-800/70 px-1.5 py-1 ring-1 ring-inset ring-zinc-700/50">
+                        <Flag countryCode={stock.countryCode} className="h-3.5" />
+                      </span>
+                    )}
+                    {stock.globalRank != null && (
+                      <span className="inline-flex items-center gap-1 rounded-md bg-zinc-800/70 px-2 py-0.5 font-mono tabular-nums text-zinc-300 ring-1 ring-inset ring-zinc-700/50">
+                        <span className="text-zinc-500">#</span>
+                        {formatNumber(stock.globalRank)}
+                      </span>
+                    )}
+                    {stock.currentPp != null && (
+                      <span className="inline-flex items-center gap-1 rounded-md bg-pink-500/10 px-2 py-0.5 font-mono tabular-nums text-pink-300 ring-1 ring-inset ring-pink-500/25">
+                        {formatNumber(Math.round(stock.currentPp))}
+                        <span className="text-pink-400/70">pp</span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <a
+                href={`https://osu.ppy.sh/users/${encodeURIComponent(stock.playerName)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 self-start rounded-lg border border-zinc-700/60 bg-zinc-900/60 px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:border-pink-500/40 hover:text-pink-300 sm:self-auto"
+              >
+                View on osu!
+                <ArrowSquareOut size={14} weight="bold" />
+              </a>
             </div>
-            <div className="hidden h-12 w-px bg-zinc-800/80 sm:block" />
-            <div className="hidden sm:block">
-              <Stat
-                label="Volume"
-                value={
-                  <span className="inline-flex items-center gap-1.5">
-                    <Coins size={18} weight="bold" className="text-zinc-500" />
-                    {formatNumber(stock.volume)}
-                  </span>
-                }
-              />
+
+            {/* osu!-style stat tiles */}
+            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+              <div className="rounded-xl border border-zinc-800/70 bg-zinc-900/50 px-4 py-3">
+                <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">Price</div>
+                <div className="mt-1 font-mono text-2xl font-semibold tabular-nums text-zinc-50">
+                  <Money value={stock.currentPrice} />
+                </div>
+              </div>
+              <div className="rounded-xl border border-zinc-800/70 bg-zinc-900/50 px-4 py-3">
+                <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">24h</div>
+                <div className="mt-1.5">
+                  <PriceChange value={stock.priceChange24h} className="text-lg" />
+                </div>
+              </div>
+              <div className="rounded-xl border border-zinc-800/70 bg-zinc-900/50 px-4 py-3">
+                <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">Global Rank</div>
+                <div className="mt-1 font-mono text-2xl font-semibold tabular-nums text-zinc-50">
+                  {stock.globalRank != null ? `#${formatNumber(stock.globalRank)}` : "—"}
+                </div>
+              </div>
+              <div className="rounded-xl border border-zinc-800/70 bg-zinc-900/50 px-4 py-3">
+                <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">PP</div>
+                <div className="mt-1 font-mono text-2xl font-semibold tabular-nums text-zinc-50">
+                  {stock.currentPp != null ? formatNumber(Math.round(stock.currentPp)) : "—"}
+                </div>
+              </div>
+              <div className="col-span-2 rounded-xl border border-zinc-800/70 bg-zinc-900/50 px-4 py-3 sm:col-span-1">
+                <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">Volume</div>
+                <div className="mt-1 inline-flex items-center gap-1.5 font-mono text-2xl font-semibold tabular-nums text-zinc-50">
+                  <Coins size={18} weight="bold" className="text-zinc-500" />
+                  {formatNumber(stock.volume)}
+                </div>
+              </div>
             </div>
           </div>
         </header>

@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 
-type AvatarSize = "sm" | "md" | "lg";
+type AvatarSize = "sm" | "md" | "lg" | "xl";
 
 const SIZES: Record<AvatarSize, string> = {
   sm: "h-8 w-8 text-xs",
   md: "h-10 w-10 text-sm",
   lg: "h-16 w-16 text-xl",
+  xl: "h-24 w-24 text-3xl",
 };
 
 // Low-saturation tints keyed off the name, so the initial-fallbacks aren't

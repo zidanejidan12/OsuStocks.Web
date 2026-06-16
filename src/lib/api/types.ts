@@ -71,6 +71,15 @@ export interface PricePoint {
   price: number;
 }
 
+// A distinct country present among tracked stocks, with how many stocks it has.
+// Backed by GET /market/countries → { items: [{ countryCode, count }] }.
+export interface MarketCountry {
+  /** ISO 3166-1 alpha-2 country code (e.g. "FR"). */
+  countryCode: string;
+  /** Number of tracked stocks with this country code. */
+  count: number;
+}
+
 // A top mover for the public landing-page live ticker.
 export interface LiveMover {
   stockId: string;

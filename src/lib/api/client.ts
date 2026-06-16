@@ -12,6 +12,7 @@ import type {
   MarketEvent,
   MarketOverview,
   LiveMover,
+  MarketCountry,
   MarketSettings,
   Me,
   Mission,
@@ -128,8 +129,24 @@ export function getStocks(params?: {
   pageSize?: number;
   sort?: StockSort;
   search?: string;
+  /** ISO 3166-1 alpha-2 country filter; empty/"ALL" = all countries (omitted). */
+  country?: string;
 }): Promise<Paged<StockSummary>> {
-  return request<Paged<StockSummary>>("/market/stocks" + buildQuery(params));
+  // buildQuery already drops undefined/empty values; treat "ALL" as no filter too.
+  const country =
+    params?.country && params.country.toUpperCase() !== "ALL"
+      ? params.country
+      : undefined;
+  return request<Paged<StockSummary>>(
+    "/market/stocks" + buildQuery({ ...params, country }),
+  );
+}
+
+/** Distinct countries present among tracked stocks, with a count each. */
+export function getMarketCountries(): Promise<MarketCountry[]> {
+  return request<{ items: MarketCountry[] }>("/market/countries").then(
+    (r) => r.items ?? [],
+  );
 }
 
 export function getStock(stockId: string): Promise<StockSummary> {

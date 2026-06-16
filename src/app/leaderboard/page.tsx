@@ -7,6 +7,7 @@ import { getLeaderboard, ApiError } from "@/lib/api/client";
 import type { LeaderboardEntry } from "@/lib/api/types";
 import { Money } from "@/components/ui/Money";
 import { Avatar } from "@/components/ui/Avatar";
+import { Flag } from "@/components/ui/Flag";
 import { Badge } from "@/components/ui/Badge";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -166,9 +167,7 @@ export default function LeaderboardPage() {
                       </span>
                       {isMe && <Badge tone="accent">You</Badge>}
                       {e.countryCode && (
-                        <span className="rounded bg-zinc-800/70 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-zinc-400">
-                          {e.countryCode}
-                        </span>
+                        <Flag countryCode={e.countryCode} className="h-3" />
                       )}
                     </div>
                     {typeof e.profitLoss === "number" && (
