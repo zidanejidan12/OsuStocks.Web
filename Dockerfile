@@ -23,6 +23,11 @@ ARG NEXT_PUBLIC_API_BASE_URL=http://localhost:5152
 ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
 ARG NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
+# Server-side proxy target for the /api/v1/* rewrite. Next.js evaluates rewrites()
+# at BUILD time and freezes the destination into routes-manifest.json, so this MUST
+# be set here — a runtime-only env var is ignored by `next start`/pm2.
+ARG API_PROXY_TARGET=http://localhost:5152
+ENV API_PROXY_TARGET=$API_PROXY_TARGET
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
