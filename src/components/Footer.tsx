@@ -52,6 +52,18 @@ export function Footer() {
 
         <nav className="flex flex-col gap-2.5 text-sm">
           <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-600">
+            Game
+          </span>
+          <Link
+            href="/patch-notes"
+            className="text-zinc-400 transition-colors hover:text-zinc-100"
+          >
+            Patch Notes
+          </Link>
+        </nav>
+
+        <nav className="flex flex-col gap-2.5 text-sm">
+          <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-600">
             Legal
           </span>
           <Link
