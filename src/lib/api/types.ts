@@ -115,8 +115,12 @@ export interface TradeRequest {
 
 export interface TradeResult {
   tradeId: string;
+  /** Executed quantity, echoed by the server — render this, not the live input field. */
+  quantity: number;
   unitPrice: number;
   totalAmount: number;
+  /** Progressive service fee charged on the trade (burned). */
+  fee: number;
   status: string;
 }
 
