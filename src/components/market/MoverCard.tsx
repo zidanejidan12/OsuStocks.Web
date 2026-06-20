@@ -6,13 +6,11 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { TrendUp, TrendDown, CaretRight } from "@phosphor-icons/react";
 import type { TopMover } from "@/lib/api/types";
+import { Card } from "@/components/ui/Card";
 import { PriceChange } from "@/components/ui/PriceChange";
 import { Money } from "@/components/ui/Money";
 import { Avatar } from "@/components/ui/Avatar";
 import { spring } from "@/lib/motion";
-
-const CARD_BASE =
-  "h-full rounded-2xl border border-zinc-800/80 bg-zinc-900/50 p-5 shadow-[0_24px_50px_-30px_rgba(0,0,0,0.8)]";
 
 export function MoverCard({
   label,
@@ -28,13 +26,13 @@ export function MoverCard({
 
   if (!mover || !mover.stockId) {
     return (
-      <div className={CARD_BASE}>
+      <Card className="h-full">
         <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">
           <Icon size={14} weight="bold" className={accent} />
           {label}
         </div>
-        <div className="mt-6 text-sm text-zinc-600">No movers yet</div>
-      </div>
+        <div className="mt-6 text-sm text-zinc-500">No movers yet</div>
+      </Card>
     );
   }
 
@@ -44,7 +42,7 @@ export function MoverCard({
         whileHover={{ y: -2 }}
         whileTap={{ scale: 0.98 }}
         transition={spring}
-        className={`group ${CARD_BASE} transition-colors hover:border-zinc-700 hover:bg-zinc-900/70`}
+        className="group h-full rounded-2xl border border-zinc-800/80 bg-zinc-900/50 p-5 shadow-[0_24px_50px_-30px_rgba(0,0,0,0.8)] transition-colors hover:border-zinc-700 hover:bg-zinc-900/70"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">
@@ -54,7 +52,7 @@ export function MoverCard({
           <CaretRight
             size={16}
             weight="bold"
-            className="text-zinc-600 opacity-0 transition-opacity group-hover:opacity-100"
+            className="text-zinc-500 opacity-0 transition-opacity group-hover:opacity-100"
           />
         </div>
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   Target,
   CheckCircle,
@@ -79,14 +79,23 @@ function ProgressBar({
   value,
   total,
   completed,
+  label,
 }: {
   value: number;
   total: number;
   completed: boolean;
+  label: string;
 }) {
   const pct = total > 0 ? Math.min(100, (value / total) * 100) : completed ? 100 : 0;
   return (
-    <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-800">
+    <div
+      role="progressbar"
+      aria-label={`${label} progress`}
+      aria-valuenow={Math.round(pct)}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-800"
+    >
       <div
         className={`h-full rounded-full ${completed ? "bg-emerald-400" : "bg-pink-500"}`}
         style={{ width: `${pct}%` }}
@@ -98,6 +107,20 @@ function ProgressBar({
 function MissionRow({ mission }: { mission: Mission }) {
   const { name, description, target, currentValue, rewardCredits, completed, completedAt, resetsAt } =
     mission;
+
+  // Tick the "resets in" label live so it counts down without a page refresh.
+  // Only runs for incomplete missions (the only ones that show the label).
+  const [resetsLabel, setResetsLabel] = useState(() => formatResetsIn(resetsAt));
+  useEffect(() => {
+    if (completed) return;
+    /* eslint-disable-next-line react-hooks/set-state-in-effect */
+    setResetsLabel(formatResetsIn(resetsAt));
+    const id = setInterval(() => {
+      setResetsLabel(formatResetsIn(resetsAt));
+    }, 30_000);
+    return () => clearInterval(id);
+  }, [resetsAt, completed]);
+
   return (
     <Card
       className={`${
@@ -116,7 +139,7 @@ function MissionRow({ mission }: { mission: Mission }) {
           </Badge>
         ) : (
           <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-zinc-800/70 px-2.5 py-0.5 text-xs font-medium text-zinc-400 ring-1 ring-inset ring-zinc-700/50">
-            resets in {formatResetsIn(resetsAt)}
+            resets in {resetsLabel}
           </span>
         )}
       </div>
@@ -128,7 +151,12 @@ function MissionRow({ mission }: { mission: Mission }) {
             {formatNumber(Math.min(currentValue, target))} / {formatNumber(target)}
           </span>
         </div>
-        <ProgressBar value={currentValue} total={target} completed={completed} />
+        <ProgressBar
+          value={currentValue}
+          total={target}
+          completed={completed}
+          label={name}
+        />
       </div>
 
       <div className="mt-4 flex items-center justify-between border-t border-zinc-800/60 pt-3">
@@ -182,6 +210,7 @@ function MissionSection({
   icon: React.ReactNode;
   missions: Mission[];
 }) {
+  const reduceMotion = useReducedMotion();
   if (missions.length === 0) return null;
   return (
     <Reveal>
@@ -192,12 +221,15 @@ function MissionSection({
         </h2>
         <motion.div
           className="space-y-4"
-          variants={staggerContainer}
-          initial="hidden"
-          animate="show"
+          variants={reduceMotion ? undefined : staggerContainer}
+          initial={reduceMotion ? false : "hidden"}
+          animate={reduceMotion ? false : "show"}
         >
           {missions.map((m) => (
-            <motion.div key={m.code} variants={fadeUp}>
+            <motion.div
+              key={m.code}
+              variants={reduceMotion ? undefined : fadeUp}
+            >
               <MissionRow mission={m} />
             </motion.div>
           ))}
@@ -295,20 +327,41 @@ export default function MissionsPage() {
         </Reveal>
       )}
 
-      {!loading && !error && missions && missions.length > 0 && (
-        <div className="space-y-8">
-          <MissionSection
-            title="Daily"
-            icon={<Lightning size={13} weight="fill" className="text-pink-400" />}
-            missions={daily}
-          />
-          <MissionSection
-            title="Weekly"
-            icon={<CalendarCheck size={13} weight="fill" className="text-pink-400" />}
-            missions={weekly}
-          />
-        </div>
-      )}
+      {!loading &&
+        !error &&
+        missions &&
+        missions.length > 0 &&
+        daily.length === 0 &&
+        weekly.length === 0 && (
+          <Reveal>
+            <EmptyState
+              icon={<Target size={20} weight="bold" />}
+              title="No active missions"
+              message="You have no daily or weekly missions right now. Check back soon."
+            />
+          </Reveal>
+        )}
+
+      {!loading &&
+        !error &&
+        missions &&
+        missions.length > 0 &&
+        (daily.length > 0 || weekly.length > 0) && (
+          <div className="space-y-8">
+            <MissionSection
+              title="Daily"
+              icon={<Lightning size={13} weight="fill" className="text-pink-400" />}
+              missions={daily}
+            />
+            <MissionSection
+              title="Weekly"
+              icon={
+                <CalendarCheck size={13} weight="fill" className="text-pink-400" />
+              }
+              missions={weekly}
+            />
+          </div>
+        )}
     </PageShell>
   );
 }

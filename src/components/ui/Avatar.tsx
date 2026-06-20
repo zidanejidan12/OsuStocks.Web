@@ -64,7 +64,8 @@ export function Avatar({ src, name, size = "md", className = "" }: Props) {
   const initial = name.trim().charAt(0).toUpperCase() || "?";
   return (
     <span
-      aria-hidden="true"
+      role="img"
+      aria-label={name}
       className={`${base} grid place-items-center font-semibold ${tintFor(name)}`}
     >
       {initial}

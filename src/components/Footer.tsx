@@ -17,7 +17,7 @@ export function Footer() {
           </p>
         </div>
 
-        <nav className="flex flex-col gap-2.5 text-sm">
+        <nav aria-label="Game" className="flex flex-col gap-2.5 text-sm">
           <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-600">
             Game
           </span>
@@ -35,7 +35,7 @@ export function Footer() {
           </Link>
         </nav>
 
-        <nav className="flex flex-col gap-2.5 text-sm">
+        <nav aria-label="Legal" className="flex flex-col gap-2.5 text-sm">
           <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-600">
             Legal
           </span>

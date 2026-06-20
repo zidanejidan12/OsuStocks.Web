@@ -6,14 +6,18 @@ export function EmptyState({
   message,
   action,
   icon,
+  className = "",
 }: {
   title: string;
   message?: string;
   action?: ReactNode;
   icon?: ReactNode;
+  className?: string;
 }) {
   return (
-    <div className="flex flex-col items-center rounded-2xl border border-dashed border-zinc-800 bg-zinc-900/30 px-6 py-14 text-center">
+    <div
+      className={`flex flex-col items-center rounded-2xl border border-dashed border-zinc-800 bg-zinc-900/30 px-6 py-14 text-center ${className}`}
+    >
       {icon && (
         <div className="mb-4 grid h-12 w-12 place-items-center rounded-xl border border-zinc-800 bg-zinc-900/60 text-zinc-500">
           {icon}

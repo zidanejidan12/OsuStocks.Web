@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   Wallet as WalletIcon,
   Coins,
@@ -122,6 +122,7 @@ export default function WalletPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [unauthorized, setUnauthorized] = useState(false);
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     if (authLoading || !user) return;
@@ -229,8 +230,8 @@ export default function WalletPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 text-sm text-zinc-500 sm:flex-col sm:items-end sm:text-right">
-                    <WalletIcon size={16} weight="bold" className="text-zinc-600" />
+                  <div className="flex items-center gap-2 text-sm text-zinc-400 sm:flex-col sm:items-end sm:text-right">
+                    <WalletIcon size={16} weight="bold" className="text-zinc-400" />
                     <span>Available to trade</span>
                   </div>
                 </div>
@@ -257,7 +258,10 @@ export default function WalletPage() {
             ) : (
               <Reveal>
                 <div className="overflow-x-auto rounded-2xl border border-zinc-800/80">
-                  <table className="w-full text-sm">
+                  <table className="w-full min-w-[32rem] text-sm">
+                    <caption className="sr-only">
+                      Wallet transactions: type, amount, and date.
+                    </caption>
                     <thead>
                       <tr className="border-b border-zinc-800 text-left text-[11px] uppercase tracking-wider text-zinc-500">
                         <th className="px-4 py-3 font-medium">Type</th>
@@ -286,9 +290,11 @@ export default function WalletPage() {
                           <motion.tr
                             key={tx.transactionId}
                             variants={fadeUp}
-                            whileHover={{
-                              backgroundColor: "rgba(24,24,27,0.5)",
-                            }}
+                            whileHover={
+                              reduceMotion
+                                ? undefined
+                                : { backgroundColor: "rgba(24,24,27,0.5)" }
+                            }
                             transition={spring}
                             className="transition-colors"
                           >

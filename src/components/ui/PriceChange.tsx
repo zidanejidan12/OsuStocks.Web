@@ -19,8 +19,30 @@ export function PriceChange({
   showIcon?: boolean;
   format?: "currency" | "percent";
 }) {
-  const up = value > 0;
-  const down = value < 0;
+  // Non-finite guard: render a neutral em-dash with no misleading sign/direction.
+  if (!Number.isFinite(value)) {
+    return (
+      <span
+        className={`inline-flex items-center gap-1 font-mono tabular-nums text-zinc-400 ${
+          className ?? ""
+        }`}
+        role="img"
+        aria-label="unavailable"
+      >
+        {format === "currency" && <Coin />}
+        <span aria-hidden="true">—</span>
+      </span>
+    );
+  }
+
+  // Derive sign/direction from the value AS DISPLAYED (rounded to the same
+  // precision as the text) so e.g. -0.004 → "+0.00" doesn't show a "down" arrow.
+  const dp = format === "percent" ? 1 : 2;
+  const factor = 10 ** dp;
+  const rounded = Math.round(value * factor) / factor;
+
+  const up = rounded > 0;
+  const down = rounded < 0;
   const color = up
     ? "text-emerald-400"
     : down
@@ -29,11 +51,11 @@ export function PriceChange({
   const Icon = up ? TrendUp : down ? TrendDown : null;
   const direction = up ? "up" : down ? "down" : "unchanged";
 
-  // percent: value is already in percent units (e.g. 5 → "+5.0%").
+  // Format from the rounded value so the sign in the text matches the direction.
   const text =
     format === "percent"
-      ? `${value >= 0 ? "+" : "-"}${Math.abs(value).toFixed(1)}%`
-      : formatChange(value);
+      ? `${rounded < 0 ? "-" : "+"}${Math.abs(rounded).toFixed(1)}%`
+      : formatChange(rounded);
 
   return (
     <span
@@ -42,7 +64,7 @@ export function PriceChange({
       }`}
       role="img"
       aria-label={`${direction}, ${
-        format === "percent" ? `${Math.abs(value).toFixed(1)} percent` : text
+        format === "percent" ? `${Math.abs(rounded).toFixed(1)} percent` : text
       }`}
     >
       {showIcon && Icon && <Icon size={14} weight="bold" aria-hidden="true" />}

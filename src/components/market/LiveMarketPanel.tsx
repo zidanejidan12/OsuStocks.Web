@@ -4,13 +4,15 @@
 // public /market/movers endpoint and scrolls them in a seamless marquee. The
 // perpetual float/marquee loops are isolated here so they never re-render the page.
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
+import { TrendUp } from "@phosphor-icons/react";
 import { getLiveMovers } from "@/lib/api/client";
 import type { LiveMover } from "@/lib/api/types";
 import { Card } from "@/components/ui/Card";
 import { PriceChange } from "@/components/ui/PriceChange";
 import { StatusDot } from "@/components/ui/StatusDot";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Money } from "@/components/ui/Money";
 import { Avatar } from "@/components/ui/Avatar";
 
@@ -32,6 +34,7 @@ function TickerRow({ row }: { row: LiveMover }) {
 }
 
 function LiveMarketPanelBase() {
+  const reduceMotion = useReducedMotion();
   const [rows, setRows] = useState<LiveMover[] | null>(null);
 
   useEffect(() => {
@@ -53,9 +56,12 @@ function LiveMarketPanelBase() {
 
   return (
     <motion.div
-      // Gentle perpetual float — isolated to this subtree.
-      animate={{ y: [0, -8, 0] }}
-      transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+      // Gentle perpetual float — isolated to this subtree, off when reduced.
+      animate={reduceMotion ? undefined : { y: [0, -8, 0] }}
+      transition={
+        reduceMotion ? undefined : { duration: 6, repeat: Infinity, ease: "easeInOut" }
+      }
+      aria-label="Live market movers preview"
     >
       <Card className="overflow-hidden p-0">
         <div className="flex items-center justify-between border-b border-zinc-800/80 px-5 py-3.5">
@@ -87,11 +93,25 @@ function LiveMarketPanelBase() {
               ))}
             </div>
           ) : rows.length === 0 ? (
-            <div className="grid h-full place-items-center px-6 text-center text-sm text-zinc-500">
-              Markets are warming up — check back soon.
+            <div className="grid h-full place-items-center px-6">
+              <EmptyState
+                title="Markets are warming up"
+                message="Top movers will appear here soon — check back in a moment."
+                icon={<TrendUp size={20} weight="bold" />}
+                className="border-0 bg-transparent px-0 py-0"
+              />
+            </div>
+          ) : reduceMotion ? (
+            // Static, non-scrolling list when motion is reduced.
+            <div className="divide-y divide-zinc-800/60">
+              {rows.map((row, i) => (
+                <TickerRow key={`static-${i}`} row={row} />
+              ))}
             </div>
           ) : (
             <motion.div
+              // Decorative scrolling marquee — hidden from assistive tech.
+              aria-hidden="true"
               animate={{ y: ["0%", "-50%"] }}
               transition={{ duration: 14, repeat: Infinity, ease: "linear" }}
             >
@@ -100,7 +120,7 @@ function LiveMarketPanelBase() {
                   <TickerRow key={`a-${i}`} row={row} />
                 ))}
               </div>
-              <div className="divide-y divide-zinc-800/60" aria-hidden="true">
+              <div className="divide-y divide-zinc-800/60">
                 {loop.slice(rows.length).map((row, i) => (
                   <TickerRow key={`b-${i}`} row={row} />
                 ))}

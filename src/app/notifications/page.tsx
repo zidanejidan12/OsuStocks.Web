@@ -1,8 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   Bell,
   BellSlash,
@@ -77,11 +78,14 @@ function NotificationRow({
   onActivate: (n: AppNotification) => void;
 }) {
   const { Icon, tone } = TYPE_ICONS[notification.type] ?? TYPE_ICONS.System;
+  const reduceMotion = useReducedMotion();
   return (
     <motion.button
       type="button"
       variants={fadeUp}
-      whileHover={{ backgroundColor: "rgba(24,24,27,0.5)" }}
+      whileHover={
+        reduceMotion ? undefined : { backgroundColor: "rgba(24,24,27,0.5)" }
+      }
       transition={spring}
       onClick={() => onActivate(notification)}
       className={`flex w-full items-start gap-3 px-4 py-4 text-left transition-colors ${
@@ -107,11 +111,27 @@ function NotificationRow({
   );
 }
 
+const PAGE_SIZE = 20;
+
 export default function NotificationsPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { notifications, unreadCount, loading, unavailable, markRead, markAllRead } =
     useNotifications();
+
+  // Render a bounded window of the list and let the user reveal more, so a long
+  // history doesn't mount hundreds of rows (and animate them) at once.
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  // If the underlying list shrinks (e.g. refetch), don't keep a stale larger
+  // window; otherwise leave the user's expanded view intact.
+  useEffect(() => {
+    /* eslint-disable-next-line react-hooks/set-state-in-effect */
+    setVisibleCount((c) => Math.min(c, Math.max(PAGE_SIZE, notifications.length)));
+  }, [notifications.length]);
+
+  const visible = notifications.slice(0, visibleCount);
+  const hasMore = notifications.length > visibleCount;
 
   const onActivate = (n: AppNotification) => {
     if (!n.isRead) markRead(n.notificationId);
@@ -189,7 +209,7 @@ export default function NotificationsPage() {
             initial="hidden"
             animate="show"
           >
-            {notifications.map((n) => (
+            {visible.map((n) => (
               <NotificationRow
                 key={n.notificationId}
                 notification={n}
@@ -197,6 +217,17 @@ export default function NotificationsPage() {
               />
             ))}
           </motion.div>
+
+          {hasMore && (
+            <div className="mt-6 flex justify-center">
+              <Button
+                variant="secondary"
+                onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+              >
+                Load more
+              </Button>
+            </div>
+          )}
         </Reveal>
       )}
     </PageShell>

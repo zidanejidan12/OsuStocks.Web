@@ -16,7 +16,7 @@ import {
 } from "@phosphor-icons/react";
 import { getMarketEvents, ApiError } from "@/lib/api/client";
 import type { MarketEvent } from "@/lib/api/types";
-import { formatNumber, formatRelativeTime } from "@/lib/format";
+import { formatDateTime, formatNumber, formatRelativeTime } from "@/lib/format";
 import { Money } from "@/components/ui/Money";
 import { Avatar } from "@/components/ui/Avatar";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -174,7 +174,7 @@ export default function ActivityPage() {
       <Reveal>
         <header className="mb-8 flex items-center gap-3">
           <span className="relative flex h-2.5 w-2.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/70" />
+            <span className="absolute inline-flex h-full w-full motion-safe:animate-ping rounded-full bg-emerald-400/70" />
             <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400" />
           </span>
           <div>
@@ -225,7 +225,10 @@ export default function ActivityPage() {
                     href={`/stocks/${e.stockId}`}
                     className="flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-zinc-800/40"
                   >
-                    <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-zinc-800/70 ${tone}`}>
+                    <span
+                      aria-hidden="true"
+                      className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-zinc-800/70 ${tone}`}
+                    >
                       <Icon size={16} weight="bold" />
                     </span>
                     <Avatar src={e.avatarUrl} name={e.playerName} size="sm" />
@@ -236,9 +239,13 @@ export default function ActivityPage() {
                       <div className="text-xs text-zinc-500">{eventLabel(e)}</div>
                     </div>
                     <div className="shrink-0 text-right">{eventDetail(e)}</div>
-                    <span className="w-12 shrink-0 text-right text-[11px] text-zinc-600 sm:w-16 sm:text-xs">
+                    <time
+                      dateTime={e.occurredAt}
+                      title={formatDateTime(e.occurredAt)}
+                      className="w-12 shrink-0 text-right text-[11px] text-zinc-600 sm:w-16 sm:text-xs"
+                    >
                       {formatRelativeTime(e.occurredAt)}
-                    </span>
+                    </time>
                   </Link>
                 </motion.div>
               );
@@ -248,8 +255,13 @@ export default function ActivityPage() {
       )}
 
       {!loading && !error && hasMore && (
-        <div className="mt-6 flex justify-center">
-          <Button variant="secondary" onClick={onLoadMore} disabled={loadingMore}>
+        <div className="mt-6 flex justify-center" aria-live="polite">
+          <Button
+            variant="secondary"
+            onClick={onLoadMore}
+            disabled={loadingMore}
+            loading={loadingMore}
+          >
             {loadingMore ? "Loading…" : "Load more"}
           </Button>
         </div>

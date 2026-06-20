@@ -14,7 +14,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PriceChange } from "@/components/ui/PriceChange";
 import { Button } from "@/components/ui/Button";
 import { Reveal } from "@/components/motion/Reveal";
-import { spring, fadeUp, staggerContainer } from "@/lib/motion";
+import { fadeUp, staggerContainer } from "@/lib/motion";
 import { useAuth } from "@/lib/auth/auth-context";
 
 const PAGE_SIZE = 25;
@@ -36,7 +36,7 @@ function LeaderboardSkeleton() {
     <div className="divide-y divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/80">
       {Array.from({ length: 8 }).map((_, i) => (
         <div key={i} className="flex items-center gap-4 px-4 py-4">
-          <Skeleton className="h-7 w-7 rounded-lg" />
+          <Skeleton className="h-7 w-9 rounded-lg" />
           <Skeleton className="h-9 w-9 rounded-full" />
           <Skeleton className="h-4 w-32" />
           <div className="ml-auto">
@@ -146,9 +146,7 @@ export default function LeaderboardPage() {
                 <motion.li
                   key={e.userId}
                   variants={fadeUp}
-                  whileHover={{ backgroundColor: "rgba(24,24,27,0.5)" }}
-                  transition={spring}
-                  className={`flex items-center gap-4 px-4 py-3.5 transition-colors ${
+                  className={`flex items-center gap-4 px-4 py-3.5 transition-colors motion-safe:hover:bg-zinc-800/50 ${
                     isMe ? "bg-pink-500/[0.06]" : ""
                   }`}
                 >
@@ -187,8 +185,13 @@ export default function LeaderboardPage() {
       )}
 
       {!loading && !error && hasMore && (
-        <div className="mt-6 flex justify-center">
-          <Button variant="secondary" onClick={onLoadMore} disabled={loadingMore}>
+        <div className="mt-6 flex justify-center" aria-live="polite">
+          <Button
+            variant="secondary"
+            onClick={onLoadMore}
+            disabled={loadingMore}
+            loading={loadingMore}
+          >
             {loadingMore ? "Loading…" : "Load more"}
           </Button>
         </div>

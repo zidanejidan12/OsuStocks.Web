@@ -51,6 +51,10 @@ export function Flag({
       alt={name}
       title={name}
       loading="lazy"
+      // Intrinsic 4:3 size hint so the browser reserves space before load
+      // (prevents layout shift). CSS classes still control the rendered size.
+      width={20}
+      height={15}
       onError={() => setFailed(true)}
       className={`inline-block aspect-[4/3] rounded-[3px] object-cover ring-1 ring-zinc-700/50 ${className}`}
     />

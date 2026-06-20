@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
@@ -73,6 +73,12 @@ export function Nav() {
   const { unreadCount } = useNotifications();
   const [open, setOpen] = useState(false);
 
+  // The hamburger that opened the drawer — focus returns here on close so
+  // keyboard users aren't dumped at the top of the document.
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  // The drawer panel — its focusable children define the Tab trap boundary.
+  const panelRef = useRef<HTMLDivElement>(null);
+
   // Close the drawer on navigation — intentional sync to the route, the
   // documented exception to react-hooks/set-state-in-effect.
   useEffect(() => {
@@ -80,17 +86,63 @@ export function Nav() {
     setOpen(false);
   }, [pathname]);
 
-  // While the drawer is open, lock background scroll and close on Escape.
+  // While the drawer is open: lock background scroll, close on Escape, mark the
+  // header + main + footer inert (hidden from AT and untabbable), trap Tab
+  // within the panel, and on close return focus to the hamburger trigger.
   useEffect(() => {
     if (!open) return;
+
+    const trigger = triggerRef.current;
     document.body.style.overflow = "hidden";
+
+    // Hide the rest of the page from assistive tech + keyboard while the modal
+    // drawer is open. `inert` covers both tab order and AT exposure.
+    const outside = [
+      document.querySelector("header"),
+      document.getElementById("main"),
+      document.querySelector("footer"),
+    ].filter((el): el is HTMLElement => el instanceof HTMLElement);
+    for (const el of outside) {
+      el.setAttribute("inert", "");
+      el.setAttribute("aria-hidden", "true");
+    }
+
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") {
+        setOpen(false);
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const panel = panelRef.current;
+      if (!panel) return;
+      const focusables = panel.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const activeEl = document.activeElement;
+      if (e.shiftKey) {
+        if (activeEl === first || !panel.contains(activeEl)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (activeEl === last || !panel.contains(activeEl)) {
+        e.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener("keydown", onKey);
+
     return () => {
       document.body.style.overflow = "";
       window.removeEventListener("keydown", onKey);
+      for (const el of outside) {
+        el.removeAttribute("inert");
+        el.removeAttribute("aria-hidden");
+      }
+      // Return focus to whatever opened the drawer.
+      trigger?.focus();
     };
   }, [open]);
 
@@ -99,7 +151,10 @@ export function Nav() {
       <header className="sticky top-0 z-50 border-b border-white/5 bg-zinc-950/70 backdrop-blur-xl">
         <nav className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4">
           <Link href="/" className="group flex items-center gap-2.5">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-pink-500/15 text-pink-400 ring-1 ring-inset ring-pink-500/25 transition-transform group-hover:scale-105">
+            <span
+              aria-hidden="true"
+              className="grid h-8 w-8 place-items-center rounded-lg bg-pink-500/15 text-pink-400 ring-1 ring-inset ring-pink-500/25 transition-transform group-hover:scale-105"
+            >
               <ChartLineUp size={18} weight="bold" />
             </span>
             <span className="text-[15px] font-semibold tracking-tight">
@@ -114,6 +169,7 @@ export function Nav() {
                 <li key={href}>
                   <Link
                     href={href}
+                    aria-current={active ? "page" : undefined}
                     className={`relative flex items-center gap-2 rounded-lg px-3 py-1.5 transition-colors ${
                       active
                         ? "text-zinc-100"
@@ -188,6 +244,7 @@ export function Nav() {
           <div className="ml-auto flex items-center gap-2 lg:hidden">
             {user && <NotificationBell />}
             <button
+              ref={triggerRef}
               type="button"
               onClick={() => setOpen(true)}
               aria-label="Open menu"
@@ -218,6 +275,7 @@ export function Nav() {
               variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }}
             />
             <motion.div
+              ref={panelRef}
               id="mobile-nav"
               role="dialog"
               aria-modal="true"
@@ -249,6 +307,7 @@ export function Nav() {
                       <li key={href}>
                         <Link
                           href={href}
+                          aria-current={active ? "page" : undefined}
                           className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
                             active
                               ? "bg-zinc-800/80 text-zinc-100 ring-1 ring-inset ring-white/5"
@@ -265,6 +324,9 @@ export function Nav() {
                     <li>
                       <Link
                         href="/notifications"
+                        aria-current={
+                          pathname.startsWith("/notifications") ? "page" : undefined
+                        }
                         className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
                           pathname.startsWith("/notifications")
                             ? "bg-zinc-800/80 text-zinc-100 ring-1 ring-inset ring-white/5"
@@ -285,6 +347,9 @@ export function Nav() {
                     <li>
                       <Link
                         href="/admin"
+                        aria-current={
+                          pathname.startsWith("/admin") ? "page" : undefined
+                        }
                         className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
                           pathname.startsWith("/admin")
                             ? "bg-zinc-800/80 text-pink-300 ring-1 ring-inset ring-pink-500/30"

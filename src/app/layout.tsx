@@ -118,6 +118,12 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} antialiased`}
     >
       <body className="flex min-h-screen flex-col bg-zinc-950 font-sans text-zinc-100">
+        <a
+          href="#main"
+          className="sr-only z-[100] rounded-xl bg-pink-500 px-4 py-2 text-sm font-semibold text-white shadow-lg focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/50"
+        >
+          Skip to content
+        </a>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -128,7 +134,9 @@ export default function RootLayout({
             <AuthProvider>
               <NotificationsProvider>
                 <Nav />
-                <main className="relative flex-1">{children}</main>
+                <main id="main" tabIndex={-1} className="relative flex-1 focus-visible:outline-none">
+                  {children}
+                </main>
                 <Footer />
               </NotificationsProvider>
             </AuthProvider>
