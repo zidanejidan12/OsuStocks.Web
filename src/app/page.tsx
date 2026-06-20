@@ -60,8 +60,8 @@ function Hero({ onLogin }: { onLogin: () => void }) {
           </div>
 
           <h1 className="mt-6 text-5xl font-semibold leading-[0.95] tracking-tighter text-zinc-50 md:text-7xl">
-            Trade the players you{" "}
-            <span className="text-pink-400">watch</span>.
+            Trade osu! players like{" "}
+            <span className="text-pink-400">stocks</span>.
           </h1>
 
           <p className="mt-6 max-w-[48ch] text-lg leading-relaxed text-zinc-400">
