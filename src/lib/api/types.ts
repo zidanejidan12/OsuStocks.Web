@@ -297,6 +297,10 @@ export interface StockAnalytics {
   liquidity: number;
   /** Qualitative liquidity band: "Thin" | "Moderate" | "Deep". */
   liquidityTier: string;
+  /** Total shares held across all users (the float) — drives the per-trader buy cap. */
+  totalShares: number;
+  /** Single-trader ownership cap, as a percentage (e.g. 25). */
+  maxOwnershipPercentage: number;
 }
 
 // --- OHLC history (GET /market/stocks/{id}/history?range=…) -----------------

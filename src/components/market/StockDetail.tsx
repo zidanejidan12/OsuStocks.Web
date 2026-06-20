@@ -503,7 +503,10 @@ function TradePanel({
   // Wallet balance and the stock's outstanding supply (null = unknown/not yet loaded),
   // used to estimate how much the user can afford / is allowed to buy.
   const [balance, setBalance] = useState<number | null>(null);
-  const [marketCap, setMarketCap] = useState<number | null>(null);
+  // Authoritative float + per-trader cap from analytics (so the "max you can buy"
+  // matches what the server will allow).
+  const [totalShares, setTotalShares] = useState<number | null>(null);
+  const [ownershipCapPct, setOwnershipCapPct] = useState<number | null>(null);
   const [cooldownUntil, setCooldownUntil] = useState(0);
   const [now, setNow] = useState(0);
 
@@ -529,31 +532,38 @@ function TradePanel({
     loadWallet();
   }, [loadOwned, loadWallet]);
 
-  // Outstanding supply for the position cap is derived from marketCap / price.
-  // Analytics is frontend-ahead, so a missing value just disables the cap hint.
   useEffect(() => {
     let cancelled = false;
     getStockAnalytics(stockId)
       .then((a) => {
-        if (!cancelled) setMarketCap(a.marketCap);
+        if (cancelled) return;
+        setTotalShares(a.totalShares);
+        setOwnershipCapPct(a.maxOwnershipPercentage);
       })
       .catch(() => {
-        if (!cancelled) setMarketCap(null);
+        if (!cancelled) {
+          setTotalShares(null);
+          setOwnershipCapPct(null);
+        }
       });
     return () => {
       cancelled = true;
     };
   }, [stockId]);
 
-  // Outstanding shares = marketCap / price (marketCap = price × supply on the BE).
-  const totalSupply =
-    marketCap != null && currentPrice > 0 ? marketCap / currentPrice : null;
-  // How many more shares the 25% per-trader cap allows, solving
-  // (owned + q)/(supply + q) ≤ 0.25  →  q ≤ (0.25·supply − owned)/0.75.
+  // Per-trader ownership cap as a fraction — the BE value, falling back to the
+  // documented default until analytics loads.
+  const capFraction =
+    ownershipCapPct != null && ownershipCapPct > 0 && ownershipCapPct < 100
+      ? ownershipCapPct / 100
+      : POSITION_LIMIT;
+  const capPctLabel = Math.round(capFraction * 100);
+  // How many more shares the cap allows, solving
+  // (owned + q)/(supply + q) ≤ cap  →  q ≤ (cap·supply − owned)/(1 − cap).
   // Only applies once a supply exists (the first buyer is unrestricted on the BE).
   const positionHeadroom =
-    totalSupply != null && totalSupply > 0 && owned != null
-      ? Math.max(0, (POSITION_LIMIT * totalSupply - owned) / (1 - POSITION_LIMIT))
+    totalShares != null && totalShares > 0 && owned != null
+      ? Math.max(0, (capFraction * totalShares - owned) / (1 - capFraction))
       : null;
   // What the wallet can afford. The BE prices a buy at the *average* over the move
   // (slippage), so balance/price slightly overshoots — trim 0.5% so "Max" doesn't
@@ -801,12 +811,13 @@ function TradePanel({
             >
               {formatShares(maxBuy)}
             </button>{" "}
-            share{maxBuy === 1 ? "" : "s"} — capped by your balance and the 25%
-            per-trader limit.
+            share{maxBuy === 1 ? "" : "s"} — capped by your balance and the{" "}
+            {capPctLabel}% per-trader limit.
           </p>
         ) : (
           <p className="text-xs text-zinc-500">
-            Limit: up to 25% of a player&apos;s outstanding shares per trader.
+            Limit: up to {capPctLabel}% of a player&apos;s outstanding shares per
+            trader.
           </p>
         )}
 
