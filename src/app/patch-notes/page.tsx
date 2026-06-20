@@ -75,6 +75,23 @@ export default function PatchNotesPage() {
             </p>
           </LegalSection>
 
+          <LegalSection title="💸 A small service fee on trades">
+            <p>
+              To keep the economy healthy and prices meaningful, trades now carry a
+              small <strong>service fee</strong> (think of it like a transaction
+              tax). It&rsquo;s <strong>progressive</strong>: small trades pay a
+              very low rate, and only the larger portions of big trades pay more.
+            </p>
+            <ul>
+              <li>Charged on both buys and sells, shown before you confirm.</li>
+              <li>
+                Tiered so casual trading stays cheap while whales contribute more
+                &mdash; the fee is removed from circulation to fight inflation, not
+                paid to anyone.
+              </li>
+            </ul>
+          </LegalSection>
+
           <LegalSection title="✨ Also live">
             <ul>
               <li>

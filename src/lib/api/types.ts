@@ -304,6 +304,8 @@ export interface MarketSettings {
   tradeMultiplier: number;
   /** Multiplier applied to idle price decay. */
   decayMultiplier: number;
+  /** Scales the progressive trade fee live (0 = fees off, 1 = configured rates, 2 = double). */
+  tradeFeeMultiplier: number;
   /** When true, trading is halted for maintenance. */
   isMaintenanceMode: boolean;
 }
