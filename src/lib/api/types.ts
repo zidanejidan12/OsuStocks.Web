@@ -122,8 +122,12 @@ export interface TradeRequest {
 
 export interface TradeResult {
   tradeId: string;
+  /** Executed quantity echoed by the server. Optional until the API ships it (OsuStocks.API #31). */
+  quantity?: number;
   unitPrice: number;
   totalAmount: number;
+  /** Progressive service fee charged on the trade (burned). Optional for older responses. */
+  fee?: number;
   status: string;
 }
 

@@ -875,7 +875,8 @@ function TradePanel({
               <div className="flex items-center justify-between">
                 <dt className="text-emerald-300/70">Quantity</dt>
                 <dd className="font-mono tabular-nums text-emerald-200">
-                  {formatShares(resultQty ?? 0)} share{resultQty === 1 ? "" : "s"}
+                  {formatShares(result.quantity ?? resultQty ?? 0)} share
+                  {(result.quantity ?? resultQty) === 1 ? "" : "s"}
                 </dd>
               </div>
               <div className="flex items-center justify-between">
@@ -884,6 +885,14 @@ function TradePanel({
                   <Money value={result.unitPrice} />
                 </dd>
               </div>
+              {(result.fee ?? 0) > 0 && (
+                <div className="flex items-center justify-between">
+                  <dt className="text-emerald-300/70">Service fee</dt>
+                  <dd className="font-mono tabular-nums text-emerald-200">
+                    <Money value={result.fee ?? 0} />
+                  </dd>
+                </div>
+              )}
               <div className="flex items-center justify-between border-t border-emerald-500/20 pt-2">
                 <dt className="text-emerald-300/70">Total</dt>
                 <dd className="font-mono text-base font-semibold tabular-nums text-emerald-100">
