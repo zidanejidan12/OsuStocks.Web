@@ -6,6 +6,7 @@ import { useReducedMotion } from "framer-motion";
 import { Pause, Play, X } from "@phosphor-icons/react";
 import { getLiveMovers } from "@/lib/api/client";
 import type { LiveMover } from "@/lib/api/types";
+import { Avatar } from "@/components/ui/Avatar";
 import { Money } from "@/components/ui/Money";
 import { PriceChange } from "@/components/ui/PriceChange";
 import { StatusDot } from "@/components/ui/StatusDot";
@@ -19,6 +20,10 @@ const ITEM_WRAP = "inline-flex items-center gap-2 rounded";
 function ItemBody({ m }: { m: LiveMover }) {
   return (
     <>
+      {/* Decorative: the player name below already names the stock for screen readers. */}
+      <span aria-hidden="true">
+        <Avatar src={m.avatarUrl} name={m.playerName} size="xs" />
+      </span>
       <span className="font-medium text-zinc-300">{m.playerName}</span>
       <span className="font-mono tabular-nums text-zinc-400">
         <Money value={m.currentPrice} />
