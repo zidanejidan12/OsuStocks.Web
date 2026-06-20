@@ -269,6 +269,8 @@ export function getStockAnalytics(stockId: string): Promise<StockAnalytics> {
     ownershipCount: number;
     activeTraders24h: number;
     marketCap: number;
+    liquidity: number;
+    liquidityTier: string;
   }>("/market/stocks/" + stockId + "/analytics").then((r) => ({
     volume24h: r.volume24hShares,
     volume7d: r.volume7dShares,
@@ -276,6 +278,8 @@ export function getStockAnalytics(stockId: string): Promise<StockAnalytics> {
     ownershipCount: r.ownershipCount,
     activeTraders: r.activeTraders24h,
     marketCap: r.marketCap,
+    liquidity: r.liquidity,
+    liquidityTier: r.liquidityTier,
   }));
 }
 

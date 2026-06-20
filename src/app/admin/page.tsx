@@ -198,6 +198,13 @@ function MarketSettingsCard() {
               min={0.0001}
               step={0.0001}
             />
+            <DecimalField
+              label="Trade fee multiplier"
+              value={settings.tradeFeeMultiplier}
+              onChange={(n) => patch({ tradeFeeMultiplier: n })}
+              min={0}
+              step={0.05}
+            />
           </div>
 
           <div className="flex justify-end">

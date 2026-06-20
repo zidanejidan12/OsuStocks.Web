@@ -282,6 +282,10 @@ export interface StockAnalytics {
   activeTraders: number;
   /** currentPrice × outstanding shares. */
   marketCap: number;
+  /** Float + recent volume — how easily the stock trades without moving its price. */
+  liquidity: number;
+  /** Qualitative liquidity band: "Thin" | "Moderate" | "Deep". */
+  liquidityTier: string;
 }
 
 // --- OHLC history (GET /market/stocks/{id}/history?range=…) -----------------
@@ -304,6 +308,8 @@ export interface MarketSettings {
   tradeMultiplier: number;
   /** Multiplier applied to idle price decay. */
   decayMultiplier: number;
+  /** Scales the progressive trade fee live (0 = fees off, 1 = configured rates, 2 = double). */
+  tradeFeeMultiplier: number;
   /** When true, trading is halted for maintenance. */
   isMaintenanceMode: boolean;
 }
