@@ -101,6 +101,18 @@
   }
 }
 
+/* Market ticker marquee — the track holds two copies of the movers, so a -50%
+   shift loops seamlessly. Only applied when motion is allowed (the component
+   renders a static strip under prefers-reduced-motion). */
+@keyframes ticker-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -8,6 +8,7 @@ import { ToastProvider } from "@/components/ui/Toast";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { Backdrop } from "@/components/Backdrop";
+import { MarketTicker } from "@/components/MarketTicker";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -138,6 +139,7 @@ export default function RootLayout({
                   {children}
                 </main>
                 <Footer />
+                <MarketTicker />
               </NotificationsProvider>
             </AuthProvider>
           </ToastProvider>
