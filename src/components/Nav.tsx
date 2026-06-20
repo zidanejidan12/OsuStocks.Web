@@ -162,6 +162,9 @@ export function Nav() {
             </span>
           </Link>
 
+          {/* Authenticated nav links — hidden for guests so they aren't sent into
+              login-walled pages; logged-out visitors only see the landing page. */}
+          {user && (
           <ul className="ml-2 hidden items-center gap-1 text-sm lg:flex">
             {LINKS.map(({ href, label, Icon }) => {
               const active = isActiveHref(pathname, href);
@@ -190,6 +193,7 @@ export function Nav() {
               );
             })}
           </ul>
+          )}
 
           {/* Desktop auth cluster (lg+) */}
           <div className="ml-auto hidden items-center gap-2 text-sm sm:gap-3 lg:flex">
@@ -240,20 +244,34 @@ export function Nav() {
             )}
           </div>
 
-          {/* Mobile cluster (below lg): quick bell + hamburger */}
+          {/* Mobile cluster (below lg): guests get a Login button; signed-in users get bell + menu */}
           <div className="ml-auto flex items-center gap-2 lg:hidden">
-            {user && <NotificationBell />}
-            <button
-              ref={triggerRef}
-              type="button"
-              onClick={() => setOpen(true)}
-              aria-label="Open menu"
-              aria-expanded={open}
-              aria-controls="mobile-nav"
-              className="grid h-9 w-9 place-items-center rounded-lg text-zinc-300 transition-colors hover:bg-zinc-800/60 hover:text-zinc-100"
-            >
-              <List size={20} weight="bold" />
-            </button>
+            {loading ? (
+              <Spinner />
+            ) : user ? (
+              <>
+                <NotificationBell />
+                <button
+                  ref={triggerRef}
+                  type="button"
+                  onClick={() => setOpen(true)}
+                  aria-label="Open menu"
+                  aria-expanded={open}
+                  aria-controls="mobile-nav"
+                  className="grid h-9 w-9 place-items-center rounded-lg text-zinc-300 transition-colors hover:bg-zinc-800/60 hover:text-zinc-100"
+                >
+                  <List size={20} weight="bold" />
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/login"
+                className={buttonClasses({ variant: "primary", size: "sm" })}
+              >
+                <SignIn size={16} weight="bold" />
+                Login
+              </Link>
+            )}
           </div>
         </nav>
       </header>
