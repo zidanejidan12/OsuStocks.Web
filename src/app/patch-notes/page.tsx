@@ -75,6 +75,27 @@ export default function PatchNotesPage() {
             </p>
           </LegalSection>
 
+          <LegalSection title="🌊 Liquidity matters now">
+            <p>
+              Stocks now have <strong>liquidity</strong> — a measure of how heavily
+              a player is held and traded. It changes how trades behave:
+            </p>
+            <ul>
+              <li>
+                <strong>Deep, popular stocks barely move</strong> when you trade
+                them and have tighter spreads — they can absorb big orders.
+              </li>
+              <li>
+                <strong>Thin, obscure stocks swing hard</strong> and cost more to
+                trade in and out of. High risk, high reward.
+              </li>
+            </ul>
+            <p>
+              You&rsquo;ll see a liquidity indicator (Thin / Moderate / Deep) on
+              each stock&rsquo;s page so you know what you&rsquo;re getting into.
+            </p>
+          </LegalSection>
+
           <LegalSection title="💸 A small service fee on trades">
             <p>
               To keep the economy healthy and prices meaningful, trades now carry a

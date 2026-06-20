@@ -408,6 +408,10 @@ function AnalyticsPanel({ stockId }: { stockId: string }) {
             }
           />
           <MiniStat label="Active Traders" value={formatNumber(data.activeTraders)} />
+          <MiniStat
+            label="Liquidity"
+            value={`${data.liquidityTier} · ${formatCompact(data.liquidity)}`}
+          />
         </div>
       )}
     </Card>
