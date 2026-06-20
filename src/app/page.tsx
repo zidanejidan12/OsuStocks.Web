@@ -153,8 +153,10 @@ export default function Home() {
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: clear any stale error before refetching
+    /* eslint-disable react-hooks/set-state-in-effect -- intentional: clear stale error/unauthorized before refetching */
     setOverviewError(null);
+    setUnauthorized(false);
+    /* eslint-enable react-hooks/set-state-in-effect */
 
     getMarketOverview()
       .then((data) => {
@@ -185,6 +187,7 @@ export default function Home() {
     /* eslint-disable react-hooks/set-state-in-effect */
     setStocksLoading(true);
     setStocksError(null);
+    setUnauthorized(false);
     /* eslint-enable react-hooks/set-state-in-effect */
 
     getStocks({

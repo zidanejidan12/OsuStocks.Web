@@ -1,29 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { AnimatePresence, motion } from "framer-motion";
 import {
   SignIn,
   TrendUp,
   ChartPieSlice,
   Wallet,
-  Flask,
-  WarningCircle,
 } from "@phosphor-icons/react";
 import { Card } from "@/components/ui/Card";
-import { Button, buttonClasses } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
+import { buttonClasses } from "@/components/ui/Button";
 import { MagneticButton } from "@/components/ui/MagneticButton";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion/Reveal";
-import { fadeUp } from "@/lib/motion";
 import { useAuth } from "@/lib/auth/auth-context";
-import { setAuth } from "@/lib/auth/token";
-
-function twoHoursFromNow(): string {
-  return new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
-}
 
 const FEATURES = [
   {
@@ -43,29 +31,8 @@ const FEATURES = [
   },
 ];
 
-const INPUT_CLASS =
-  "w-full rounded-xl border border-zinc-800 bg-zinc-900/60 px-3.5 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-colors focus:border-pink-500/50 focus:outline-none focus:ring-2 focus:ring-pink-500/20";
-
 export default function LoginPage() {
-  const router = useRouter();
   const { login } = useAuth();
-  const [token, setToken] = useState("");
-  const [expiresAt, setExpiresAt] = useState("");
-  const [error, setError] = useState<string | null>(null);
-
-  function useDevToken() {
-    const trimmed = token.trim();
-    if (!trimmed) {
-      setError("Paste an access token first.");
-      return;
-    }
-    setError(null);
-    setAuth({
-      accessToken: trimmed,
-      expiresAt: expiresAt.trim() || twoHoursFromNow(),
-    });
-    router.push("/");
-  }
 
   return (
     <main className="bg-zinc-950 text-zinc-100">
@@ -144,86 +111,6 @@ export default function LoginPage() {
                   </Link>
                   .
                 </p>
-
-                <div className="flex items-center gap-3">
-                  <span className="h-px flex-1 bg-zinc-800" />
-                  <span className="text-xs uppercase tracking-wider text-zinc-600">
-                    or
-                  </span>
-                  <span className="h-px flex-1 bg-zinc-800" />
-                </div>
-
-                {/* Development-only token flow */}
-                <div className="space-y-4 rounded-xl border border-zinc-800/80 bg-zinc-900/40 p-4">
-                  <div className="space-y-2">
-                    <Badge tone="accent">
-                      <Flask size={14} weight="bold" />
-                      Development only
-                    </Badge>
-                    <p className="text-xs leading-relaxed text-zinc-500">
-                      Paste a JWT to sign in without OAuth.
-                    </p>
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label
-                      htmlFor="dev-access-token"
-                      className="text-xs uppercase tracking-wider text-zinc-500"
-                    >
-                      Access token
-                    </label>
-                    <textarea
-                      id="dev-access-token"
-                      value={token}
-                      onChange={(e) => setToken(e.target.value)}
-                      rows={3}
-                      placeholder="eyJhbGciOiJ..."
-                      className={`${INPUT_CLASS} resize-y font-mono`}
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label
-                      htmlFor="dev-expires-at"
-                      className="text-xs uppercase tracking-wider text-zinc-500"
-                    >
-                      Expires at (ISO, optional)
-                    </label>
-                    <input
-                      id="dev-expires-at"
-                      type="text"
-                      value={expiresAt}
-                      onChange={(e) => setExpiresAt(e.target.value)}
-                      placeholder="defaults to 2 hours from now"
-                      className={INPUT_CLASS}
-                    />
-                  </div>
-
-                  <AnimatePresence initial={false}>
-                    {error && (
-                      <motion.p
-                        variants={fadeUp}
-                        initial="hidden"
-                        animate="show"
-                        exit={{ opacity: 0, y: -6 }}
-                        className="flex items-center gap-1.5 text-xs text-rose-400"
-                      >
-                        <WarningCircle size={14} weight="bold" />
-                        {error}
-                      </motion.p>
-                    )}
-                  </AnimatePresence>
-
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    className="w-full"
-                    onClick={useDevToken}
-                  >
-                    Use this token
-                  </Button>
-                </div>
               </div>
             </Card>
           </Reveal>

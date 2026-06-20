@@ -12,7 +12,7 @@ import {
 } from "@phosphor-icons/react";
 import { getTradeHistory, ApiError } from "@/lib/api/client";
 import type { Trade } from "@/lib/api/types";
-import { formatCurrency, formatDateTime, formatNumber } from "@/lib/format";
+import { formatCurrency, formatDateTime, formatShares } from "@/lib/format";
 import { Card } from "@/components/ui/Card";
 import { Coin } from "@/components/ui/Coin";
 import { Money } from "@/components/ui/Money";
@@ -199,7 +199,9 @@ export default function TradesPage() {
                   <th className="px-4 py-3 font-medium">Player</th>
                   <th className="px-4 py-3 font-medium">Type</th>
                   <th className="px-4 py-3 text-right font-medium">Qty</th>
-                  <th className="px-4 py-3 text-right font-medium">Unit</th>
+                  <th className="hidden px-4 py-3 text-right font-medium sm:table-cell">
+                    Unit
+                  </th>
                   <th className="px-4 py-3 text-right font-medium">Total</th>
                   <th className="hidden px-4 py-3 text-right font-medium sm:table-cell">
                     Date
@@ -242,9 +244,9 @@ export default function TradesPage() {
                         </Badge>
                       </td>
                       <td className="px-4 py-3.5 text-right font-mono tabular-nums text-zinc-300">
-                        {formatNumber(t.quantity)}
+                        {formatShares(t.quantity)}
                       </td>
-                      <td className="px-4 py-3.5 text-right font-mono tabular-nums text-zinc-400">
+                      <td className="hidden px-4 py-3.5 text-right font-mono tabular-nums text-zinc-400 sm:table-cell">
                         <Coin />
                         {formatCurrency(t.unitPrice)}
                       </td>

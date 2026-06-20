@@ -27,6 +27,7 @@ import {
   ApiError,
 } from "@/lib/api/client";
 import type { MarketSettings, TrackedPlayer, TrackingTier } from "@/lib/api/types";
+import { formatNumber } from "@/lib/format";
 import { Card } from "@/components/ui/Card";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
@@ -150,6 +151,9 @@ function MarketSettingsCard() {
         <div className="space-y-5">
           <button
             type="button"
+            role="switch"
+            aria-checked={settings.isMaintenanceMode}
+            aria-label="Maintenance mode"
             onClick={() => patch({ isMaintenanceMode: !settings.isMaintenanceMode })}
             className="flex w-full items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 text-left transition-colors hover:border-zinc-700"
           >
@@ -234,6 +238,8 @@ function TrackedPlayersCard() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  // Tracked-player id awaiting a remove confirmation, if any.
+  const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
@@ -321,6 +327,7 @@ function TrackedPlayersCard() {
   };
 
   const onRemove = async (p: TrackedPlayer) => {
+    setConfirmRemoveId(null);
     const snapshot = players;
     setPlayers((prev) => prev.filter((x) => x.trackedPlayerId !== p.trackedPlayerId));
     setTotalCount((c) => Math.max(0, c - 1));
@@ -400,7 +407,7 @@ function TrackedPlayersCard() {
         </div>
         {loaded && !unavailable && (
           <span className="shrink-0 font-mono text-xs tabular-nums text-zinc-500">
-            {totalCount.toLocaleString()} tracked
+            {formatNumber(totalCount)} tracked
           </span>
         )}
       </div>
@@ -459,25 +466,51 @@ function TrackedPlayersCard() {
                   #{p.osuUserId}
                 </span>
               </div>
-              <button
-                type="button"
-                onClick={() => onToggleActive(p)}
-                className={`rounded-lg px-2.5 py-1 text-xs font-medium ring-1 ring-inset transition-colors ${
-                  p.isActive
-                    ? "bg-emerald-500/15 text-emerald-300 ring-emerald-500/30 hover:bg-emerald-500/25"
-                    : "bg-zinc-800/70 text-zinc-400 ring-zinc-700/50 hover:bg-zinc-800"
-                }`}
-              >
-                {p.isActive ? "Active" : "Paused"}
-              </button>
-              <button
-                type="button"
-                onClick={() => onRemove(p)}
-                aria-label={`Remove ${p.username || p.osuUserId}`}
-                className="rounded-lg p-2 text-zinc-500 transition-colors hover:bg-rose-500/10 hover:text-rose-400"
-              >
-                <Trash size={16} weight="bold" />
-              </button>
+              {confirmRemoveId === p.trackedPlayerId ? (
+                <div className="flex shrink-0 items-center gap-2">
+                  <span className="text-xs text-zinc-400">Remove?</span>
+                  <button
+                    type="button"
+                    onClick={() => onRemove(p)}
+                    aria-label={`Confirm remove ${p.username || p.osuUserId}`}
+                    className="rounded-lg bg-rose-500/15 px-2.5 py-1.5 text-xs font-medium text-rose-300 ring-1 ring-inset ring-rose-500/30 transition-colors hover:bg-rose-500/25"
+                  >
+                    Yes
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmRemoveId(null)}
+                    aria-label="Cancel remove"
+                    className="rounded-lg bg-zinc-800/70 px-2.5 py-1.5 text-xs font-medium text-zinc-300 ring-1 ring-inset ring-zinc-700/50 transition-colors hover:bg-zinc-800"
+                  >
+                    No
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => onToggleActive(p)}
+                    aria-pressed={p.isActive}
+                    aria-label={`${p.isActive ? "Pause" : "Activate"} ${p.username || p.osuUserId}`}
+                    className={`rounded-lg px-2.5 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors ${
+                      p.isActive
+                        ? "bg-emerald-500/15 text-emerald-300 ring-emerald-500/30 hover:bg-emerald-500/25"
+                        : "bg-zinc-800/70 text-zinc-400 ring-zinc-700/50 hover:bg-zinc-800"
+                    }`}
+                  >
+                    {p.isActive ? "Active" : "Paused"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmRemoveId(p.trackedPlayerId)}
+                    aria-label={`Remove ${p.username || p.osuUserId}`}
+                    className="rounded-lg p-2 text-zinc-500 transition-colors hover:bg-rose-500/10 hover:text-rose-400"
+                  >
+                    <Trash size={16} weight="bold" />
+                  </button>
+                </>
+              )}
             </motion.li>
           ))}
         </motion.ul>

@@ -13,6 +13,8 @@ import {
   Lock,
   ArrowUp,
   ArrowDown,
+  Minus,
+  Plus,
   Coins,
   Users,
   Pulse,
@@ -33,6 +35,8 @@ import {
   getStockCandles,
   getStockAnalytics,
   getStockTopPlays,
+  getHoldings,
+  getWallet,
   buy,
   sell,
   ApiError,
@@ -54,6 +58,7 @@ import { Flag } from "@/components/ui/Flag";
 import { scaleIn, EASE_OUT_EXPO } from "@/lib/motion";
 import {
   formatNumber,
+  formatShares,
   formatCompact,
   formatPercent,
   formatDateTime,
@@ -183,7 +188,13 @@ function LineChart({ candles }: { candles: Candle[] }) {
   );
 }
 
-function PriceChartCard({ stockId }: { stockId: string }) {
+function PriceChartCard({
+  stockId,
+  refreshKey,
+}: {
+  stockId: string;
+  refreshKey: number;
+}) {
   const [range, setRange] = useState<HistoryRange>("24h");
   const [mode, setMode] = useState<"candle" | "line">("candle");
   const [candles, setCandles] = useState<Candle[]>([]);
@@ -208,6 +219,21 @@ function PriceChartCard({ stockId }: { stockId: string }) {
       cancelled = true;
     };
   }, [stockId, range]);
+
+  // Silent refetch after a trade moves the price — no skeleton flash.
+  useEffect(() => {
+    if (refreshKey === 0) return;
+    let cancelled = false;
+    getStockCandles(stockId, range)
+      .then((data) => {
+        if (!cancelled) setCandles(data);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshKey]);
 
   const first = candles[0];
   const last = candles[candles.length - 1];
@@ -234,7 +260,7 @@ function PriceChartCard({ stockId }: { stockId: string }) {
                   type="button"
                   onClick={() => setMode(m)}
                   aria-label={m === "candle" ? "Candlestick" : "Line"}
-                  className={`grid h-7 w-7 place-items-center rounded-md transition-colors ${
+                  className={`grid h-8 w-8 place-items-center rounded-md transition-colors ${
                     mode === m
                       ? "bg-zinc-800 text-zinc-100"
                       : "text-zinc-500 hover:text-zinc-300"
@@ -252,7 +278,7 @@ function PriceChartCard({ stockId }: { stockId: string }) {
                 key={r}
                 type="button"
                 onClick={() => setRange(r)}
-                className={`rounded-md px-2.5 py-1 text-xs font-medium tabular-nums transition-colors ${
+                className={`rounded-md px-2.5 py-1.5 text-xs font-medium tabular-nums transition-colors ${
                   range === r
                     ? "bg-zinc-800 text-zinc-100"
                     : "text-zinc-500 hover:text-zinc-300"
@@ -343,7 +369,13 @@ function MiniStat({
   );
 }
 
-function AnalyticsPanel({ stockId }: { stockId: string }) {
+function AnalyticsPanel({
+  stockId,
+  refreshKey,
+}: {
+  stockId: string;
+  refreshKey: number;
+}) {
   const [data, setData] = useState<StockAnalytics | null>(null);
   const [loaded, setLoaded] = useState(false);
 
@@ -366,6 +398,21 @@ function AnalyticsPanel({ stockId }: { stockId: string }) {
       cancelled = true;
     };
   }, [stockId]);
+
+  // Silent refetch after a trade — keep the panel mounted, no skeleton flash.
+  useEffect(() => {
+    if (refreshKey === 0) return;
+    let cancelled = false;
+    getStockAnalytics(stockId)
+      .then((d) => {
+        if (!cancelled) setData(d);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshKey]);
 
   // Frontend-ahead: if analytics isn't available yet, skip the panel quietly.
   if (loaded && data === null) return null;
@@ -418,7 +465,20 @@ function AnalyticsPanel({ stockId }: { stockId: string }) {
   );
 }
 
-function TradePanel({ stockId }: { stockId: string }) {
+/** Position cap (matches the backend's MaxOwnershipPercentage, default 25%). */
+const POSITION_LIMIT = 0.25;
+
+function TradePanel({
+  stockId,
+  currentPrice,
+  onTraded,
+}: {
+  stockId: string;
+  /** Latest unit price — drives the live cost preview and the "max you can buy". */
+  currentPrice: number;
+  /** Fired after a successful trade so the parent can refresh price/chart/analytics. */
+  onTraded?: () => void;
+}) {
   const { user } = useAuth();
   const { notify } = useToast();
   // Raw input string so decimals (incl. a trailing ".") type smoothly; `quantity` is the
@@ -427,8 +487,97 @@ function TradePanel({ stockId }: { stockId: string }) {
   const quantity = Math.round((Number(quantityInput) || 0) * 100) / 100;
   const [pending, setPending] = useState<"buy" | "sell" | null>(null);
   const [result, setResult] = useState<TradeResult | null>(null);
+  // The quantity actually traded, snapshotted at execution time so the receipt is
+  // frozen (the API's TradeResult doesn't echo quantity — flagged as a BE gap).
+  const [resultQty, setResultQty] = useState<number | null>(null);
+  // Shares the user holds of this stock (null = unknown/not yet loaded).
+  const [owned, setOwned] = useState<number | null>(null);
+  // Wallet balance and the stock's outstanding supply (null = unknown/not yet loaded),
+  // used to estimate how much the user can afford / is allowed to buy.
+  const [balance, setBalance] = useState<number | null>(null);
+  const [marketCap, setMarketCap] = useState<number | null>(null);
   const [cooldownUntil, setCooldownUntil] = useState(0);
   const [now, setNow] = useState(0);
+
+  const loadOwned = useCallback(() => {
+    if (!user) return;
+    getHoldings()
+      .then((page) => {
+        const holding = page.items.find((h) => h.stockId === stockId);
+        setOwned(holding ? holding.quantity : 0);
+      })
+      .catch(() => setOwned(null));
+  }, [user, stockId]);
+
+  const loadWallet = useCallback(() => {
+    if (!user) return;
+    getWallet()
+      .then((w) => setBalance(w.balance))
+      .catch(() => setBalance(null));
+  }, [user]);
+
+  useEffect(() => {
+    loadOwned();
+    loadWallet();
+  }, [loadOwned, loadWallet]);
+
+  // Outstanding supply for the position cap is derived from marketCap / price.
+  // Analytics is frontend-ahead, so a missing value just disables the cap hint.
+  useEffect(() => {
+    let cancelled = false;
+    getStockAnalytics(stockId)
+      .then((a) => {
+        if (!cancelled) setMarketCap(a.marketCap);
+      })
+      .catch(() => {
+        if (!cancelled) setMarketCap(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [stockId]);
+
+  // Outstanding shares = marketCap / price (marketCap = price × supply on the BE).
+  const totalSupply =
+    marketCap != null && currentPrice > 0 ? marketCap / currentPrice : null;
+  // How many more shares the 25% per-trader cap allows, solving
+  // (owned + q)/(supply + q) ≤ 0.25  →  q ≤ (0.25·supply − owned)/0.75.
+  // Only applies once a supply exists (the first buyer is unrestricted on the BE).
+  const positionHeadroom =
+    totalSupply != null && totalSupply > 0 && owned != null
+      ? Math.max(0, (POSITION_LIMIT * totalSupply - owned) / (1 - POSITION_LIMIT))
+      : null;
+  // What the wallet can afford. The BE prices a buy at the *average* over the move
+  // (slippage), so balance/price slightly overshoots — trim 0.5% so "Max" doesn't
+  // trip INSUFFICIENT_BALANCE.
+  const affordable =
+    balance != null && currentPrice > 0 ? (balance / currentPrice) * 0.995 : null;
+  const maxBuyRaw = Math.min(
+    affordable ?? Infinity,
+    positionHeadroom ?? Infinity,
+  );
+  const maxBuy = Number.isFinite(maxBuyRaw)
+    ? Math.floor(maxBuyRaw * 100) / 100
+    : null;
+
+  // Live order estimate (at the current price — actual fill includes slippage).
+  const estCost =
+    currentPrice > 0 && Number.isFinite(quantity) ? quantity * currentPrice : 0;
+  const overBalance = balance != null && estCost > balance;
+
+  function adjustQty(delta: number) {
+    const next = Math.max(
+      0.01,
+      Math.round(((Number(quantityInput) || 0) + delta) * 100) / 100,
+    );
+    setQuantityInput(String(next));
+  }
+
+  function setFraction(fraction: number) {
+    if (maxBuy == null || maxBuy <= 0) return;
+    const q = Math.max(0.01, Math.floor(maxBuy * fraction * 100) / 100);
+    setQuantityInput(String(q));
+  }
 
   // Tick once a cooldown is armed; clear it (and the timer) when it elapses.
   useEffect(() => {
@@ -501,12 +650,22 @@ function TradePanel({ stockId }: { stockId: string }) {
       notify({ tone: "danger", title: "Invalid quantity", message: "Quantity must be at least 0.01." });
       return;
     }
+    // Client-side guard so an oversell doesn't burn a round-trip for a vague error.
+    if (action === "sell" && owned != null && quantity > owned) {
+      notify({
+        tone: "danger",
+        title: "Not enough shares",
+        message: `You only own ${formatShares(owned)} share${owned === 1 ? "" : "s"} of this stock.`,
+      });
+      return;
+    }
     setPending(action);
     setResult(null);
     try {
       const fn = action === "buy" ? buy : sell;
       const res = await fn({ stockId, quantity });
       setResult(res);
+      setResultQty(quantity);
       setCooldownUntil(Date.now() + COOLDOWN_MS);
       analytics.track("trade_executed", {
         stockId,
@@ -516,8 +675,12 @@ function TradePanel({ stockId }: { stockId: string }) {
       });
       notify({
         tone: "success",
-        title: `${action === "buy" ? "Bought" : "Sold"} ${quantity} share${quantity === 1 ? "" : "s"}`,
+        title: `${action === "buy" ? "Bought" : "Sold"} ${formatShares(quantity)} share${quantity === 1 ? "" : "s"}`,
       });
+      // Refresh the user's holding + wallet here and the parent's price/chart/analytics.
+      loadOwned();
+      loadWallet();
+      onTraded?.();
     } catch (err) {
       const code = err instanceof ApiError ? err.code : "UNKNOWN";
       if (code === "TRADE_COOLDOWN") setCooldownUntil(Date.now() + COOLDOWN_MS);
@@ -534,33 +697,127 @@ function TradePanel({ stockId }: { stockId: string }) {
         Trade
       </h2>
 
-      <div className="mt-5 flex flex-col gap-2">
-        <label
-          htmlFor="trade-quantity"
-          className="text-xs uppercase tracking-wider text-zinc-500"
-        >
-          Quantity
-        </label>
-        <input
-          id="trade-quantity"
-          type="number"
-          min={0.01}
-          step={0.01}
-          value={quantityInput}
-          onChange={(e) => setQuantityInput(e.target.value)}
-          className="w-full rounded-xl border border-zinc-800 bg-zinc-900/60 px-3.5 py-2.5 text-sm font-mono tabular-nums text-zinc-100 placeholder:text-zinc-500 transition-colors focus:border-pink-500/50 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
-        />
-        {/* Position-limit hint, surfaced before the user commits. */}
-        <p className="text-xs text-zinc-500">
-          Limit: up to 25% of a player&apos;s outstanding shares per trader.
-        </p>
+      <div className="mt-5 flex flex-col gap-2.5">
+        <div className="flex items-baseline justify-between">
+          <label
+            htmlFor="trade-quantity"
+            className="text-xs uppercase tracking-wider text-zinc-500"
+          >
+            Quantity
+          </label>
+          {balance != null && (
+            <span className="text-xs text-zinc-500">
+              Balance{" "}
+              <span className="font-mono tabular-nums text-zinc-300">
+                <Money value={balance} />
+              </span>
+            </span>
+          )}
+        </div>
+
+        {/* −/+ stepper around the input — replaces the native number spinners. */}
+        <div className="flex items-stretch gap-2">
+          <button
+            type="button"
+            onClick={() => adjustQty(-1)}
+            disabled={quantity <= 0.01}
+            aria-label="Decrease quantity"
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-zinc-800 bg-zinc-900/60 text-zinc-300 transition-colors hover:border-zinc-700 hover:bg-zinc-800/70 hover:text-zinc-100 active:scale-[0.97] disabled:pointer-events-none disabled:opacity-40"
+          >
+            <Minus size={16} weight="bold" />
+          </button>
+          <input
+            id="trade-quantity"
+            type="number"
+            inputMode="decimal"
+            min={0.01}
+            step={0.01}
+            value={quantityInput}
+            onChange={(e) => setQuantityInput(e.target.value)}
+            className="no-spinner h-11 min-w-0 flex-1 rounded-xl border border-zinc-800 bg-zinc-900/60 px-3.5 text-center text-sm font-mono tabular-nums text-zinc-100 placeholder:text-zinc-500 transition-colors focus:border-pink-500/50 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
+          />
+          <button
+            type="button"
+            onClick={() => adjustQty(1)}
+            aria-label="Increase quantity"
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-zinc-800 bg-zinc-900/60 text-zinc-300 transition-colors hover:border-zinc-700 hover:bg-zinc-800/70 hover:text-zinc-100 active:scale-[0.97]"
+          >
+            <Plus size={16} weight="bold" />
+          </button>
+        </div>
+
+        {/* Quick-size presets — fractions of the most you're allowed to buy. */}
+        {maxBuy != null && maxBuy > 0 && (
+          <div className="flex items-center gap-2">
+            {[
+              { label: "25%", fraction: 0.25 },
+              { label: "50%", fraction: 0.5 },
+              { label: "Max", fraction: 1 },
+            ].map((preset) => (
+              <button
+                key={preset.label}
+                type="button"
+                onClick={() => setFraction(preset.fraction)}
+                className="flex-1 rounded-lg border border-zinc-800 bg-zinc-900/60 px-2 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:border-pink-500/40 hover:bg-zinc-800/70 hover:text-pink-200 active:scale-[0.97]"
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Live order estimate so the cost is obvious before committing. */}
+        {quantity > 0 && currentPrice > 0 && (
+          <div className="flex items-center justify-between rounded-xl border border-zinc-800/70 bg-zinc-900/40 px-3.5 py-2.5 text-xs">
+            <span className="text-zinc-500">Est. cost</span>
+            <span
+              className={`font-mono tabular-nums ${overBalance ? "text-rose-300" : "text-zinc-200"}`}
+            >
+              &asymp; <Money value={estCost} />
+            </span>
+          </div>
+        )}
+
+        {/* Concrete buying power when known, else the generic cap note. */}
+        {maxBuy != null && maxBuy > 0 ? (
+          <p className="text-xs text-zinc-500">
+            You can buy up to{" "}
+            <button
+              type="button"
+              onClick={() => setFraction(1)}
+              className="font-mono tabular-nums text-zinc-300 underline-offset-2 transition-colors hover:text-pink-300 hover:underline"
+            >
+              {formatShares(maxBuy)}
+            </button>{" "}
+            share{maxBuy === 1 ? "" : "s"} — capped by your balance and the 25%
+            per-trader limit.
+          </p>
+        ) : (
+          <p className="text-xs text-zinc-500">
+            Limit: up to 25% of a player&apos;s outstanding shares per trader.
+          </p>
+        )}
+
+        {owned != null && owned > 0 && (
+          <button
+            type="button"
+            onClick={() => setQuantityInput(String(owned))}
+            className="self-start text-xs text-zinc-400 transition-colors hover:text-zinc-200"
+          >
+            You own{" "}
+            <span className="font-mono tabular-nums text-zinc-200">
+              {formatShares(owned)}
+            </span>{" "}
+            — sell max
+          </button>
+        )}
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-3">
         <Button
           variant="primary"
           onClick={() => execute("buy")}
-          disabled={pending !== null || onCooldown}
+          disabled={pending !== null || onCooldown || overBalance}
           className="!bg-emerald-500 hover:!bg-emerald-400 !shadow-[0_10px_30px_-12px_rgba(16,185,129,0.7)]"
         >
           <ArrowUp size={16} weight="bold" />
@@ -569,7 +826,7 @@ function TradePanel({ stockId }: { stockId: string }) {
         <Button
           variant="secondary"
           onClick={() => execute("sell")}
-          disabled={pending !== null || onCooldown}
+          disabled={pending !== null || onCooldown || owned === 0}
           className="!border-rose-500/40 !text-rose-300 hover:!border-rose-500/60 hover:!bg-rose-500/10"
         >
           <ArrowDown size={16} weight="bold" />
@@ -618,7 +875,8 @@ function TradePanel({ stockId }: { stockId: string }) {
               <div className="flex items-center justify-between">
                 <dt className="text-emerald-300/70">Quantity</dt>
                 <dd className="font-mono tabular-nums text-emerald-200">
-                  {formatNumber(quantity)} share{quantity === 1 ? "" : "s"}
+                  {formatShares(result.quantity ?? resultQty ?? 0)} share
+                  {(result.quantity ?? resultQty) === 1 ? "" : "s"}
                 </dd>
               </div>
               <div className="flex items-center justify-between">
@@ -627,6 +885,14 @@ function TradePanel({ stockId }: { stockId: string }) {
                   <Money value={result.unitPrice} />
                 </dd>
               </div>
+              {(result.fee ?? 0) > 0 && (
+                <div className="flex items-center justify-between">
+                  <dt className="text-emerald-300/70">Service fee</dt>
+                  <dd className="font-mono tabular-nums text-emerald-200">
+                    <Money value={result.fee ?? 0} />
+                  </dd>
+                </div>
+              )}
               <div className="flex items-center justify-between border-t border-emerald-500/20 pt-2">
                 <dt className="text-emerald-300/70">Total</dt>
                 <dd className="font-mono text-base font-semibold tabular-nums text-emerald-100">
@@ -726,7 +992,11 @@ function RecentTopPlays({ stockId }: { stockId: string }) {
 
                 <div className="flex shrink-0 items-center gap-3">
                   {play.percentChange != null && (
-                    <PriceChange value={play.percentChange} className="text-sm" />
+                    <PriceChange
+                      value={play.percentChange}
+                      format="percent"
+                      className="text-sm"
+                    />
                   )}
                   {play.scoreId > 0 && (
                     <a
@@ -749,12 +1019,65 @@ function RecentTopPlays({ stockId }: { stockId: string }) {
   );
 }
 
+/**
+ * osu!-userpage-style cover. Renders the player's real osu! profile banner when
+ * the API supplies one (`cover.url`), and falls back to osu!'s pink-gradient
+ * default otherwise — so it degrades cleanly until the backend syncs covers, and
+ * recovers gracefully if a banner URL 404s.
+ */
+function ProfileCover({ bannerUrl }: { bannerUrl?: string | null }) {
+  const [failed, setFailed] = useState(false);
+  const showBanner = Boolean(bannerUrl) && !failed;
+
+  return (
+    <div className="relative h-28 sm:h-36">
+      {showBanner ? (
+        <>
+          {/* osu! covers redirect to arbitrary hosts; a plain <img> tolerates any
+              host and degrades to the gradient on error (same rationale as Avatar). */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={bannerUrl as string}
+            alt=""
+            aria-hidden="true"
+            onError={() => setFailed(true)}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          {/* Bottom-up scrim keeps the badge + overlapping avatar/name legible. */}
+          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/35 to-zinc-950/5" />
+          <div className="absolute inset-0 bg-gradient-to-br from-pink-600/20 to-transparent" />
+        </>
+      ) : (
+        <>
+          <div className="absolute inset-0 bg-gradient-to-br from-pink-600/45 via-pink-500/10 to-zinc-950" />
+          <div className="absolute inset-0 bg-[radial-gradient(120%_150%_at_12%_-30%,rgba(236,72,153,0.40),transparent_55%)]" />
+        </>
+      )}
+      <div className="grain pointer-events-none absolute inset-0 opacity-[0.12]" />
+      <span className="absolute left-5 top-4 rounded-md bg-zinc-950/40 px-2 py-1 text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-200 backdrop-blur">
+        Player Stock
+      </span>
+    </div>
+  );
+}
+
 export function StockDetail({ stockId }: { stockId: string }) {
   const [stock, setStock] = useState<StockSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [unauthorized, setUnauthorized] = useState(false);
+  // Bumped after a trade so the price/volume header + chart + analytics refresh.
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const handleTraded = useCallback(() => {
+    // Silently refresh the header price/volume so it isn't stale after the
+    // trade the user just made (no skeleton — keep the page in place).
+    getStock(stockId)
+      .then((data) => setStock(data))
+      .catch(() => {});
+    setRefreshKey((k) => k + 1);
+  }, [stockId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -896,15 +1219,8 @@ export function StockDetail({ stockId }: { stockId: string }) {
       <Reveal className="mt-8">
         {/* osu!-userpage-style profile header: cover banner, overlapping avatar, stat tiles. */}
         <header className="overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900/40">
-          {/* Cover banner — osu!'s default cover is a pink gradient, so we lean into that. */}
-          <div className="relative h-28 sm:h-36">
-            <div className="absolute inset-0 bg-gradient-to-br from-pink-600/45 via-pink-500/10 to-zinc-950" />
-            <div className="absolute inset-0 bg-[radial-gradient(120%_150%_at_12%_-30%,rgba(236,72,153,0.40),transparent_55%)]" />
-            <div className="grain pointer-events-none absolute inset-0 opacity-[0.12]" />
-            <span className="absolute left-5 top-4 rounded-md bg-zinc-950/40 px-2 py-1 text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-200 backdrop-blur">
-              Player Stock
-            </span>
-          </div>
+          {/* Cover banner — real osu! profile cover when available, else gradient. */}
+          <ProfileCover bannerUrl={stock.bannerUrl} />
 
           <div className="px-5 pb-6 sm:px-7">
             {/* Identity row — avatar overlaps the banner */}
@@ -991,11 +1307,11 @@ export function StockDetail({ stockId }: { stockId: string }) {
       <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
         <div className="flex flex-col gap-6 md:col-span-2">
           <Reveal delay={0.08}>
-            <PriceChartCard stockId={stockId} />
+            <PriceChartCard stockId={stockId} refreshKey={refreshKey} />
           </Reveal>
 
           <Reveal delay={0.12}>
-            <AnalyticsPanel stockId={stockId} />
+            <AnalyticsPanel stockId={stockId} refreshKey={refreshKey} />
           </Reveal>
 
           <Reveal delay={0.14}>
@@ -1005,7 +1321,11 @@ export function StockDetail({ stockId }: { stockId: string }) {
 
         <div className="md:col-span-1">
           <Reveal delay={0.16}>
-            <TradePanel stockId={stockId} />
+            <TradePanel
+              stockId={stockId}
+              currentPrice={stock.currentPrice}
+              onTraded={handleTraded}
+            />
           </Reveal>
         </div>
       </div>

@@ -9,20 +9,34 @@ _Empty — nothing in flight._
 
 ## To Do
 
-- [ ] Reconcile the frontend-ahead API contracts (trending, market events, notifications, leaderboard, stock analytics, OHLC history, admin) with the real backend DTOs once the endpoints land — see the contracts note in `src/lib/api/types.ts`.
-- [ ] Confirm the OAuth callback token hand-off against the live API (the exact token param name/shape) — `/auth/callback` now also hardens `returnTo` against open redirects.
+- [ ] Add `quantity` to the trade response (`POST /trading/buy|sell` → `TradeResult`) on the backend, then render `result.quantity` in the trade receipt instead of the client-side snapshot in `StockDetail.tsx` (also guards against server-side rounding / partial fills). Verified 2026-06-20 still missing: `BuyStockResponse`/`SellStockResponse` expose only `TradeId`/`UnitPrice`/`TotalAmount`. Frontend snapshots the submitted quantity as a stopgap.
+- [ ] **Backend: sync osu! profile cover/banner.** The frontend now renders `StockSummary.bannerUrl` (optional) on the stock-detail header with a gradient fallback, but the API doesn't supply it yet — and unlike the avatar it can't be derived from the user id. Mirror the avatarUrl/countryCode path: map osu! `cover.url` in `OsuApiClient` → `banner_url` column on `tracked_players` (migration) → `PlayerSynchronizationService` → market read models/DTOs (`MarketStockDetailsReadModel`, `GetMarketStockDetailsResponse`, list + top-mover models) → `MarketEndpoints`.
 - [ ] Full legal review of Terms/Privacy by a qualified person — optional contact-email + governing-law clause are now env-wired, and the Privacy Policy was corrected to disclose the optional PostHog analytics.
 - [ ] Replace `public/osu-coin.svg` with real (licensed) osu! coin artwork — the current SVG is a refined placeholder.
 - [ ] Run the Playwright e2e smoke once browsers are available (`npx playwright install` → `npm run test:e2e`); wire it into CI.
 
 ## Backlog
 
-_Empty — everything's queued in To Do._
+- [ ] Surface backend-ahead features the frontend doesn't use yet (confirmed present in `OsuStocks.API`, 2026-06-20): daily-login reward (`GET /daily-login`, `POST /daily-login/claim`), the profit & most-active-trader leaderboards (`/leaderboards/profit`, `/leaderboards/traders` — only `/wealth` is wired), and the investor level returned inline on `/auth/me` (the `InvestorLevel` type exists but isn't surfaced).
 
 ## Done (Archived)
 
 _Newest first._
 
+- [x] 2026-06-20 -- Trade-panel buy sizing + osu! profile banners + About page (verified: lint, `next build` typecheck, `npm test` 10/10; About page + footer confirmed in preview — trade panel not exercised live, no local backend):
+  - **Buy sizing (`StockDetail.tsx`):** the trade panel loads wallet balance + outstanding supply and shows a live est. cost, quick `25% / 50% / Max` presets, and a concrete clickable "you can buy up to N shares" — the min of balance affordability and the 25% per-trader cap (`supply = marketCap/price`, solving `(owned+q)/(supply+q) ≤ 0.25`). Buy disables when the estimate exceeds balance; a 0.5% slippage margin keeps Max from tripping `INSUFFICIENT_BALANCE` on the bonding curve.
+  - **Quantity stepper:** replaced the native number-input spin arrows (suppressed via a `.no-spinner` utility) with a styled −/+ stepper matching the design system.
+  - **Profile banners:** `StockSummary.bannerUrl` wired optional and rendered on the stock-detail cover via a new `ProfileCover` (real osu! `cover.url` when present, osu! gradient fallback + graceful 404 recovery). Lights up once the backend syncs covers (tracked in To Do).
+  - **About page:** new `/about` with a project overview + the dev-team credit; removed the Development Team block from the sitewide footer and linked `/about` from the footer Game nav.
+  - **Login:** removed the development-only "paste a JWT" sign-in path from `/login` — osu! OAuth is the only sign-in now.
+- [x] 2026-06-20 -- Frontend critique fixes (verified: lint, `next build`, `npm test`, mobile/desktop preview):
+  - **Mobile nav:** added a `lg:hidden` hamburger + slide-in drawer exposing all destinations (+ notifications/admin/profile, login/logout) in both auth states, with Escape/scroll-lock/aria — fixes the 5 unreachable destinations below 1024px. Logout now has an `aria-label`.
+  - **Trade feedback:** receipt quantity is now snapshotted at execution time (no longer live-bound to the input); after a successful trade the header price/volume, chart, and analytics silently refresh, and the user's holding reloads. Sell is validated against shares owned (with a "sell max" affordance) and disabled at zero.
+  - **Fractional shares:** new `formatShares` helper used for all quantities (receipt, trades, portfolio) so 0.5/1.25 shares no longer round to whole numbers.
+  - **PriceChange:** added a `percent` mode (no coin, `%` suffix) for top-play impact; Trending Most Bought/Most Sold now render trade **counts**, not coin amounts; direction exposed to assistive tech.
+  - **Resilience:** graceful `?? []` guards in `getTrending` (per-bucket), `getMarketEvents`/`getStockEvents`, `getLeaderboard`, `getTrackedPlayers`; notification type cast falls back to `System`.
+  - **State/UX:** home clears `unauthorized` on refetch; activity poll race guarded by a request-sequence id + timestamp now visible on mobile; notifications mark-read failures surface a toast, `markAllRead` uses a functional snapshot, and polling pauses on hidden tabs / debounces focus; admin "Remove player" now has an inline confirm, maintenance/active toggles got switch/`aria-pressed` semantics.
+  - **Responsive/perf/a11y:** portfolio (6→4 cols) and trades (hide Unit) tables collapse on phones; chart controls and pagination enlarged for touch; `MotionConfig reducedMotion="user"` honors OS reduce-motion; danger toasts announce assertively; `optimizePackageImports` for `@phosphor-icons/react`.
 - [x] 2026-06-08 -- Tests: Vitest unit suite for `lib/format` + `lib/api` client (10 passing via `npm test`); Playwright e2e smoke scaffold (`npm run test:e2e`). `tests/` excluded from the Next typecheck.
 - [x] 2026-06-08 -- Admin UI (`/admin`, admin-gated): market settings (trading toggle, cooldown, position limit) + tracked-player management (add / pause / remove) with optimistic updates + toasts.
 - [x] 2026-06-08 -- Stock detail: OHLC candlestick chart with candle/line toggle + 1h/24h/7d/30d range selector (replaces the sparkline), plus an analytics panel (market cap, 24h/7d volume, 7d volatility, holders, active traders).

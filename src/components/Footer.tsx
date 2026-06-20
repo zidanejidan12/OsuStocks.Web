@@ -1,14 +1,6 @@
 import Link from "next/link";
-import { Avatar } from "@/components/ui/Avatar";
 
 const API_REPO = "https://github.com/zidanejidan12/OsuStocks.API";
-
-// Cosmetic credit — links to each member's osu! profile; avatars come from osu!'s CDN.
-const TEAM = [
-  { id: 3484548, name: "Almond Eye" },
-  { id: 11421465, name: "Verxina" },
-  { id: 6560131, name: "Nishino Flower" },
-];
 
 export function Footer() {
   return (
@@ -25,35 +17,16 @@ export function Footer() {
           </p>
         </div>
 
-        <div className="flex flex-col gap-3 text-sm">
-          <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-600">
-            Development Team
-          </span>
-          <ul className="flex flex-col gap-2.5">
-            {TEAM.map((member) => (
-              <li key={member.id}>
-                <a
-                  href={`https://osu.ppy.sh/users/${member.id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2.5 text-zinc-400 transition-colors hover:text-pink-300"
-                >
-                  <Avatar
-                    src={`https://a.ppy.sh/${member.id}`}
-                    name={member.name}
-                    size="sm"
-                  />
-                  <span>{member.name}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-
         <nav className="flex flex-col gap-2.5 text-sm">
           <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-600">
             Game
           </span>
+          <Link
+            href="/about"
+            className="text-zinc-400 transition-colors hover:text-zinc-100"
+          >
+            About
+          </Link>
           <Link
             href="/patch-notes"
             className="text-zinc-400 transition-colors hover:text-zinc-100"
