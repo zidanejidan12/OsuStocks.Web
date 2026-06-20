@@ -13,6 +13,7 @@ import { buttonClasses } from "@/components/ui/Button";
 import { MagneticButton } from "@/components/ui/MagneticButton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Reveal } from "@/components/motion/Reveal";
+import { SponsorCredit } from "@/components/SponsorCredit";
 import { MarketOverviewCards } from "@/components/market/MarketOverviewCards";
 import { StockList } from "@/components/market/StockList";
 import { LiveMarketPanel } from "@/components/market/LiveMarketPanel";
@@ -76,13 +77,9 @@ function Hero({ onLogin }: { onLogin: () => void }) {
               Get started
               <ArrowRight size={18} weight="bold" />
             </MagneticButton>
-            <Link
-              href="/login"
-              className={buttonClasses({ variant: "ghost", size: "lg" })}
-            >
-              I have a token
-            </Link>
           </div>
+
+          <SponsorCredit className="mt-8 text-sm text-zinc-500" avatarSize="sm" />
         </Reveal>
 
         {/* RIGHT: decorative live-market panel */}

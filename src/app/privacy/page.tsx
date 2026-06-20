@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     "What OsuStocks does with your data. A fan-made game with no payments and no third-party tracking.",
 };
 
-const LAST_UPDATED = "June 7, 2026";
+const LAST_UPDATED = "June 21, 2026";
 const API_REPO = "https://github.com/zidanejidan12/OsuStocks.API";
 
 export default function PrivacyPage() {
@@ -46,9 +46,7 @@ export default function PrivacyPage() {
           <p>
             <strong>Stored in your browser.</strong> To keep you signed in, we
             store a session access token (a JWT) and its expiry in your
-            browser&rsquo;s <code>localStorage</code>. If you use the optional
-            developer token field, the token you paste is stored the same way. This
-            stays on your device.
+            browser&rsquo;s <code>localStorage</code>. This stays on your device.
           </p>
         </LegalSection>
 

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SponsorCredit } from "@/components/SponsorCredit";
 
 const API_REPO = "https://github.com/zidanejidan12/OsuStocks.API";
 
@@ -63,9 +64,12 @@ export function Footer() {
       </div>
 
       <div className="border-t border-white/5">
-        <div className="mx-auto max-w-6xl px-4 py-4 text-xs text-zinc-600">
-          OsuStocks &middot; virtual entertainment only &mdash; no real money, no
-          payouts, not gambling.
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 text-xs text-zinc-600 sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            OsuStocks &middot; virtual entertainment only &mdash; no real money,
+            no payouts, not gambling.
+          </p>
+          <SponsorCredit className="text-xs text-zinc-600" />
         </div>
       </div>
     </footer>
