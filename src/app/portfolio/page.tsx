@@ -25,7 +25,7 @@ import type {
   Me,
   StockSummary,
 } from "@/lib/api/types";
-import { formatNumber } from "@/lib/format";
+import { formatNumber, formatShares } from "@/lib/format";
 import { Card } from "@/components/ui/Card";
 import { Money } from "@/components/ui/Money";
 import { Avatar } from "@/components/ui/Avatar";
@@ -391,8 +391,12 @@ function HoldingsTable({ portfolio }: { portfolio: Portfolio }) {
           <tr className="border-b border-zinc-800 text-[11px] uppercase tracking-wider text-zinc-500">
             <th className="px-4 py-3 text-left font-medium">Player</th>
             <th className="px-4 py-3 text-right font-medium">Quantity</th>
-            <th className="px-4 py-3 text-right font-medium">Avg Price</th>
-            <th className="px-4 py-3 text-right font-medium">Current</th>
+            <th className="hidden px-4 py-3 text-right font-medium sm:table-cell">
+              Avg Price
+            </th>
+            <th className="hidden px-4 py-3 text-right font-medium sm:table-cell">
+              Current
+            </th>
             <th className="px-4 py-3 text-right font-medium">Value</th>
             <th className="px-4 py-3 text-right font-medium">P&amp;L</th>
           </tr>
@@ -428,12 +432,12 @@ function HoldingsTable({ portfolio }: { portfolio: Portfolio }) {
                 </Link>
               </td>
               <td className="px-4 py-3 text-right font-mono tabular-nums text-zinc-300">
-                {formatNumber(h.quantity)}
+                {formatShares(h.quantity)}
               </td>
-              <td className="px-4 py-3 text-right font-mono tabular-nums text-zinc-300">
+              <td className="hidden px-4 py-3 text-right font-mono tabular-nums text-zinc-300 sm:table-cell">
                 <Money value={h.averagePrice} />
               </td>
-              <td className="px-4 py-3 text-right font-mono tabular-nums text-zinc-300">
+              <td className="hidden px-4 py-3 text-right font-mono tabular-nums text-zinc-300 sm:table-cell">
                 <Money value={h.currentPrice} />
               </td>
               <td className="px-4 py-3 text-right font-mono tabular-nums text-zinc-100">

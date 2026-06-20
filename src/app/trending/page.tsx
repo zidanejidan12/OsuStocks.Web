@@ -14,7 +14,7 @@ import {
 } from "@phosphor-icons/react";
 import { getTrending, ApiError } from "@/lib/api/client";
 import type { Trending, TrendingStock } from "@/lib/api/types";
-import { formatCompact } from "@/lib/format";
+import { formatCompact, formatNumber } from "@/lib/format";
 import { Card } from "@/components/ui/Card";
 import { Money } from "@/components/ui/Money";
 import { Avatar } from "@/components/ui/Avatar";
@@ -33,20 +33,33 @@ interface Bucket {
   metric: (s: TrendingStock) => ReactNode;
 }
 
+// A buy/sell trade count for the most-bought / most-sold buckets — a plain
+// count, not a coin amount.
+function TradeCount({ value, label }: { value?: number; label: string }) {
+  return (
+    <span className="font-mono text-sm tabular-nums text-zinc-200">
+      {formatNumber(value ?? 0)}
+      <span className="ml-1 text-[10px] uppercase tracking-wide text-zinc-500">
+        {label}
+      </span>
+    </span>
+  );
+}
+
 const BUCKETS: Bucket[] = [
   {
     key: "mostBought",
     title: "Most Bought",
     Icon: ShoppingCart,
     iconClass: "text-emerald-400",
-    metric: (s) => <PriceChange value={s.priceChange24h} />,
+    metric: (s) => <TradeCount value={s.tradeCount} label="buys" />,
   },
   {
     key: "mostSold",
     title: "Most Sold",
     Icon: Tag,
     iconClass: "text-rose-400",
-    metric: (s) => <PriceChange value={s.priceChange24h} />,
+    metric: (s) => <TradeCount value={s.tradeCount} label="sells" />,
   },
   {
     key: "fastestRising",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -113,8 +113,14 @@ export default function ActivityPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Monotonic request id: if a newer loadPage starts before an older one's
+  // response lands (e.g. the 30s poll racing a "Load more"), the stale response
+  // is dropped instead of clobbering the freshly-appended rows.
+  const seqRef = useRef(0);
   const loadPage = useCallback(async (nextPage: number) => {
+    const seq = ++seqRef.current;
     const result = await getMarketEvents({ page: nextPage, pageSize: PAGE_SIZE });
+    if (seq !== seqRef.current) return;
     setEvents((prev) =>
       nextPage === 1 ? result.items : [...prev, ...result.items],
     );
@@ -230,7 +236,7 @@ export default function ActivityPage() {
                       <div className="text-xs text-zinc-500">{eventLabel(e)}</div>
                     </div>
                     <div className="shrink-0 text-right">{eventDetail(e)}</div>
-                    <span className="hidden w-16 shrink-0 text-right text-xs text-zinc-600 sm:block">
+                    <span className="w-12 shrink-0 text-right text-[11px] text-zinc-600 sm:w-16 sm:text-xs">
                       {formatRelativeTime(e.occurredAt)}
                     </span>
                   </Link>

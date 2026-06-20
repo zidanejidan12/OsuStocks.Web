@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { MotionProvider } from "@/components/MotionProvider";
 import { AuthProvider } from "@/lib/auth/auth-context";
 import { NotificationsProvider } from "@/lib/notifications/notifications-context";
 import { ToastProvider } from "@/components/ui/Toast";
@@ -52,16 +53,18 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} antialiased`}
     >
       <body className="flex min-h-screen flex-col bg-zinc-950 font-sans text-zinc-100">
-        <Backdrop />
-        <ToastProvider>
-          <AuthProvider>
-            <NotificationsProvider>
-              <Nav />
-              <main className="relative flex-1">{children}</main>
-              <Footer />
-            </NotificationsProvider>
-          </AuthProvider>
-        </ToastProvider>
+        <MotionProvider>
+          <Backdrop />
+          <ToastProvider>
+            <AuthProvider>
+              <NotificationsProvider>
+                <Nav />
+                <main className="relative flex-1">{children}</main>
+                <Footer />
+              </NotificationsProvider>
+            </AuthProvider>
+          </ToastProvider>
+        </MotionProvider>
       </body>
     </html>
   );

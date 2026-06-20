@@ -10,6 +10,12 @@ const apiTarget =
   "http://localhost:5152";
 
 const nextConfig: NextConfig = {
+  // Rewrite the barrel `import { X } from "@phosphor-icons/react"` to per-icon
+  // module paths so only the icons actually used are bundled (and dev/build
+  // compiles stay fast). Phosphor isn't in Next's default optimize list.
+  experimental: {
+    optimizePackageImports: ["@phosphor-icons/react"],
+  },
   async rewrites() {
     return [
       {

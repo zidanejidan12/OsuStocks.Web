@@ -55,6 +55,13 @@ export interface StockSummary {
   playerName: string;
   /** osu! profile image URL. Optional until the API returns it. */
   avatarUrl?: string | null;
+  /**
+   * osu! profile cover/banner image URL (the osu! API `cover.url`). Optional —
+   * the backend does not sync osu! covers yet (flagged in TASKS.md), and unlike
+   * the avatar it can't be derived from the user id, so it only renders once the
+   * API supplies it; the stock-detail header falls back to its gradient meanwhile.
+   */
+  bannerUrl?: string | null;
   /** osu! profile country, ISO 3166-1 alpha-2 (e.g. "US"). Optional until the API returns it. */
   countryCode?: string | null;
   currentPrice: number;

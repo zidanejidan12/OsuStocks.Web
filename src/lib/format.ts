@@ -19,6 +19,21 @@ export function formatNumber(n: number): string {
   return integerFormatter.format(n);
 }
 
+const sharesFormatter = new Intl.NumberFormat("en-US", {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
+});
+
+/**
+ * Share quantities, which can be fractional (the API allows 2-dp shares).
+ * Shows up to 2 dp with trailing zeros trimmed — 1 → "1", 1.5 → "1.5",
+ * 1.25 → "1.25". Use this for any `quantity`, never `formatNumber` (which
+ * rounds to whole shares and misrepresents fractional holdings).
+ */
+export function formatShares(n: number): string {
+  return sharesFormatter.format(n);
+}
+
 export function formatChange(n: number): string {
   const sign = n >= 0 ? "+" : "-";
   return sign + currencyFormatter.format(Math.abs(n));

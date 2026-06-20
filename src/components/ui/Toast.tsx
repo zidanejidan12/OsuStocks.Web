@@ -96,7 +96,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 exit={{ opacity: 0, y: 8, scale: 0.96 }}
                 transition={spring}
                 className={`pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-xl border border-zinc-800/80 bg-zinc-900/95 p-4 shadow-[0_24px_50px_-20px_rgba(0,0,0,0.85)] ring-1 ring-inset backdrop-blur-md ${ring}`}
-                role="status"
+                // Errors interrupt (assertive); success/info wait their turn (polite).
+                role={t.tone === "danger" ? "alert" : "status"}
+                aria-live={t.tone === "danger" ? "assertive" : "polite"}
               >
                 <Icon size={18} weight="bold" className={`mt-0.5 shrink-0 ${icon}`} />
                 <div className="min-w-0 flex-1">
