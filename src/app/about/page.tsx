@@ -2,9 +2,17 @@ import type { Metadata } from "next";
 import { Avatar } from "@/components/ui/Avatar";
 
 export const metadata: Metadata = {
-  title: "About",
+  title: "About — the osu! stock market game",
   description:
-    "About OsuStocks — a fan-made osu! stock-market game, and the team building it.",
+    "What is OsuStocks? A fan-made osu! stock market where you trade osu! players like stocks — prices move with pp, rank, and trading. Learn how it works.",
+  keywords: [
+    "osu stocks",
+    "osu stock market",
+    "what is osustocks",
+    "osu trading game",
+    "osu fantasy",
+  ],
+  alternates: { canonical: "/about" },
 };
 
 // Development-team credit — links to each member's osu! profile; avatars come
