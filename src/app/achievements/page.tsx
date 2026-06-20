@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   Medal,
   SealCheck,
@@ -70,14 +70,23 @@ function ProgressBar({
   value,
   total,
   unlocked,
+  label,
 }: {
   value: number;
   total: number;
   unlocked: boolean;
+  label: string;
 }) {
   const pct = total > 0 ? Math.min(100, (value / total) * 100) : unlocked ? 100 : 0;
   return (
-    <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-800">
+    <div
+      role="progressbar"
+      aria-label={`${label} progress`}
+      aria-valuenow={Math.round(pct)}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-800"
+    >
       <div
         className={`h-full rounded-full ${unlocked ? "bg-emerald-400" : "bg-pink-500"}`}
         style={{ width: `${pct}%` }}
@@ -92,7 +101,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
   return (
     <Card
       className={`flex h-full flex-col ${
-        unlocked ? "ring-1 ring-inset ring-emerald-500/30 bg-emerald-500/[0.04]" : "opacity-90"
+        unlocked ? "ring-1 ring-inset ring-emerald-500/30 bg-emerald-500/[0.04]" : ""
       }`}
     >
       <div className="mb-3 flex items-start justify-between gap-2">
@@ -124,7 +133,12 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
             {formatNumber(Math.min(currentValue, threshold))} / {formatNumber(threshold)}
           </span>
         </div>
-        <ProgressBar value={currentValue} total={threshold} unlocked={unlocked} />
+        <ProgressBar
+          value={currentValue}
+          total={threshold}
+          unlocked={unlocked}
+          label={name}
+        />
       </div>
 
       <div className="mt-4 flex items-center justify-between border-t border-zinc-800/60 pt-3">
@@ -179,6 +193,7 @@ function AchievementsSkeleton() {
 
 export default function AchievementsPage() {
   const { user, loading: authLoading } = useAuth();
+  const reduceMotion = useReducedMotion();
   const [data, setData] = useState<AchievementsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -265,12 +280,15 @@ export default function AchievementsPage() {
       {!loading && !error && data && data.items.length > 0 && (
         <motion.div
           className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
-          variants={staggerContainer}
-          initial="hidden"
-          animate="show"
+          variants={reduceMotion ? undefined : staggerContainer}
+          initial={reduceMotion ? false : "hidden"}
+          animate={reduceMotion ? false : "show"}
         >
           {data.items.map((a) => (
-            <motion.div key={a.code} variants={fadeUp}>
+            <motion.div
+              key={a.code}
+              variants={reduceMotion ? undefined : fadeUp}
+            >
               <AchievementCard achievement={a} />
             </motion.div>
           ))}

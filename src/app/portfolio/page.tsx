@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   ChartPieSlice,
   CaretRight,
@@ -86,6 +86,7 @@ function ProfileHeader({
 }) {
   return (
     <Reveal>
+      <h1 className="sr-only">Portfolio</h1>
       <header className="overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900/40">
         <div className="relative h-28 sm:h-36">
           <div className="absolute inset-0 bg-gradient-to-br from-pink-600/45 via-pink-500/10 to-zinc-950" />
@@ -103,9 +104,9 @@ function ProfileHeader({
                 <Avatar src={user.avatarUrl} name={user.username} size="xl" />
               </div>
               <div className="pb-1">
-                <h1 className="text-3xl font-semibold tracking-tighter text-zinc-50 md:text-4xl">
+                <h2 className="text-3xl font-semibold tracking-tighter text-zinc-50 md:text-4xl">
                   {user.username}
-                </h1>
+                </h2>
                 <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm">
                   {user.countryCode && (
                     <span className="inline-flex items-center rounded-md bg-zinc-800/70 px-1.5 py-1 ring-1 ring-inset ring-zinc-700/50">
@@ -125,7 +126,11 @@ function ProfileHeader({
               href={`https://osu.ppy.sh/users/${user.osuUserId}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 self-start rounded-lg border border-zinc-700/60 bg-zinc-900/60 px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:border-pink-500/40 hover:text-pink-300 sm:self-auto"
+              className={buttonClasses({
+                variant: "secondary",
+                size: "sm",
+                className: "gap-1.5 self-start sm:self-auto",
+              })}
             >
               View on osu!
               <ArrowSquareOut size={14} weight="bold" />
@@ -216,7 +221,7 @@ function YourStockCard({ user }: { user: Me }) {
         <div className="mb-4 flex items-center gap-2">
           <ChartPieSlice size={18} weight="bold" className="text-pink-400" />
           <h2 className="text-sm font-semibold text-zinc-100">Your Stock</h2>
-          <span className="text-xs text-zinc-500">
+          <span className="text-xs text-zinc-400">
             You&apos;re a tracked player — this is your market stock.
           </span>
         </div>
@@ -331,7 +336,7 @@ function InvestorLevelCard() {
               {level.title}
             </span>
           </div>
-          <div className="mt-0.5 text-xs text-zinc-500">
+          <div className="mt-0.5 text-xs text-zinc-400">
             {formatNumber(level.totalXp)} total XP
           </div>
         </div>
@@ -343,7 +348,7 @@ function InvestorLevelCard() {
       </div>
 
       <div className="mt-4 space-y-1.5">
-        <div className="flex items-center justify-between text-xs tabular-nums text-zinc-500">
+        <div className="flex items-center justify-between text-xs tabular-nums text-zinc-400">
           <span>{atMax ? "Max level reached" : "Next level"}</span>
           {!atMax && (
             <span className="font-mono text-zinc-400">
@@ -351,7 +356,14 @@ function InvestorLevelCard() {
             </span>
           )}
         </div>
-        <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-800">
+        <div
+          role="progressbar"
+          aria-label={`Investor level ${level.level} progress`}
+          aria-valuenow={Math.round(pct)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-800"
+        >
           <div
             className="h-full rounded-full bg-pink-500"
             style={{ width: `${pct}%` }}
@@ -384,9 +396,14 @@ function HoldingsEmpty() {
 }
 
 function HoldingsTable({ portfolio }: { portfolio: Portfolio }) {
+  const reduceMotion = useReducedMotion();
   return (
     <div className="overflow-x-auto rounded-2xl border border-zinc-800/80">
       <table className="w-full text-sm">
+        <caption className="sr-only">
+          Your holdings: player, quantity, average price, current price, value,
+          and profit or loss.
+        </caption>
         <thead>
           <tr className="border-b border-zinc-800 text-[11px] uppercase tracking-wider text-zinc-500">
             <th className="px-4 py-3 text-left font-medium">Player</th>
@@ -411,7 +428,7 @@ function HoldingsTable({ portfolio }: { portfolio: Portfolio }) {
             <motion.tr
               key={h.holdingId}
               variants={fadeUp}
-              whileHover={{ y: -2 }}
+              whileHover={reduceMotion ? undefined : { y: -2 }}
               transition={spring}
               className="group transition-colors hover:bg-zinc-900/50"
             >

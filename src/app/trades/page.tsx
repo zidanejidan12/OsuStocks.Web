@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   Receipt,
   ArrowDownLeft,
@@ -22,6 +22,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Button, buttonClasses } from "@/components/ui/Button";
 import { Reveal } from "@/components/motion/Reveal";
+import { useToast } from "@/components/ui/Toast";
 import { spring, fadeUp, staggerContainer } from "@/lib/motion";
 import { useAuth } from "@/lib/auth/auth-context";
 
@@ -72,6 +73,8 @@ function TradesSkeleton() {
 
 export default function TradesPage() {
   const { user, loading: authLoading } = useAuth();
+  const { notify } = useToast();
+  const reduceMotion = useReducedMotion();
   const [trades, setTrades] = useState<Trade[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
@@ -127,8 +130,15 @@ export default function TradesPage() {
   const onLoadMore = () => {
     setLoadingMore(true);
     loadPage(page + 1)
-      .catch(() => {
-        /* keep what we have; a transient failure shouldn't wipe the list */
+      .catch((err) => {
+        // Keep what we have — a transient failure shouldn't wipe the list —
+        // but surface it so the user knows the action didn't take.
+        notify({
+          tone: "danger",
+          title: "Couldn't load more trades",
+          message:
+            err instanceof ApiError ? err.message : "Please try again.",
+        });
       })
       .finally(() => setLoadingMore(false));
   };
@@ -194,6 +204,10 @@ export default function TradesPage() {
         <Reveal>
           <div className="overflow-x-auto rounded-2xl border border-zinc-800/80">
             <table className="w-full text-sm">
+              <caption className="sr-only">
+                Your trade history: player, trade type, quantity, unit price,
+                total, and date.
+              </caption>
               <thead>
                 <tr className="border-b border-zinc-800 text-left text-[11px] uppercase tracking-wider text-zinc-500">
                   <th className="px-4 py-3 font-medium">Player</th>
@@ -220,14 +234,18 @@ export default function TradesPage() {
                     <motion.tr
                       key={t.tradeId}
                       variants={fadeUp}
-                      whileHover={{ backgroundColor: "rgba(24,24,27,0.5)" }}
+                      whileHover={
+                        reduceMotion
+                          ? undefined
+                          : { backgroundColor: "rgba(24,24,27,0.5)" }
+                      }
                       transition={spring}
                       className="transition-colors"
                     >
                       <td className="px-4 py-3.5">
                         <Link
                           href={`/stocks/${t.stockId}`}
-                          className="flex items-center gap-3 text-zinc-100 hover:text-pink-300"
+                          className="flex items-center gap-3 text-zinc-100 transition-colors hover:text-pink-400"
                         >
                           <Avatar src={t.avatarUrl} name={t.playerName} size="sm" />
                           <span className="font-medium">{t.playerName}</span>

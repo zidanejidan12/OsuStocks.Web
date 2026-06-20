@@ -1,8 +1,9 @@
 import type { MarketOverview } from "@/lib/api/types";
 import { Card } from "@/components/ui/Card";
 import { Stat } from "@/components/ui/Stat";
+import { Coin } from "@/components/ui/Coin";
 import { MoverCard } from "@/components/market/MoverCard";
-import { formatNumber } from "@/lib/format";
+import { formatNumber, formatCompact } from "@/lib/format";
 
 export function MarketOverviewCards({ overview }: { overview: MarketOverview }) {
   return (
@@ -14,7 +15,15 @@ export function MarketOverviewCards({ overview }: { overview: MarketOverview }) 
           <Stat label="Total Stocks" value={formatNumber(overview.totalStocks)} />
         </Card>
         <Card>
-          <Stat label="Total Volume" value={formatNumber(overview.totalVolume)} />
+          <Stat
+            label="Total Volume"
+            value={
+              <span className="inline-flex items-center gap-1.5">
+                <Coin />
+                {formatCompact(overview.totalVolume)}
+              </span>
+            }
+          />
         </Card>
       </div>
 

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { LegalSection } from "@/components/legal/LegalSection";
 
 export const metadata: Metadata = {
@@ -6,6 +7,30 @@ export const metadata: Metadata = {
   description:
     "What's new in OsuStocks — market updates, trading changes, and new features.",
 };
+
+// Same typography as LegalSection, but the leading emoji in the heading is
+// wrapped in an aria-hidden span so screen readers don't announce emoji names
+// (e.g. "globe showing Europe-Africa") before the real title text.
+function PatchSection({
+  emoji,
+  title,
+  children,
+}: {
+  emoji: string;
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="space-y-3">
+      <h2 className="text-lg font-semibold tracking-tight text-zinc-100">
+        <span aria-hidden="true">{emoji}</span> {title}
+      </h2>
+      <div className="space-y-3 text-sm leading-relaxed text-zinc-400 [&_a:hover]:text-pink-300 [&_a]:text-pink-400 [&_a]:underline [&_a]:underline-offset-2 [&_strong]:font-semibold [&_strong]:text-zinc-200 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-5">
+        {children}
+      </div>
+    </section>
+  );
+}
 
 export default function PatchNotesPage() {
   return (
@@ -32,7 +57,7 @@ export default function PatchNotesPage() {
         </div>
 
         <div className="mt-8 space-y-9">
-          <LegalSection title="🌍 The market is 5,000 players bigger">
+          <PatchSection emoji="🌍" title="The market is 5,000 players bigger">
             <p>
               OsuStocks now tracks the <strong>top 5,000 osu! players</strong>{" "}
               by performance. That&rsquo;s thousands of new stocks to discover and
@@ -40,9 +65,9 @@ export default function PatchNotesPage() {
               New players opening for the first time are priced by their global
               rank, so stronger players list higher.
             </p>
-          </LegalSection>
+          </PatchSection>
 
-          <LegalSection title="⚖️ Fairer trading — your orders now move the price">
+          <PatchSection emoji="⚖️" title="Fairer trading — your orders now move the price">
             <p>
               We&rsquo;ve changed how buying and selling affects a stock&rsquo;s
               price, to keep the market fair and stop price manipulation:
@@ -73,9 +98,9 @@ export default function PatchNotesPage() {
               trade, and splitting a very large order gets you a better average
               price.
             </p>
-          </LegalSection>
+          </PatchSection>
 
-          <LegalSection title="🌊 Liquidity matters now">
+          <PatchSection emoji="🌊" title="Liquidity matters now">
             <p>
               Stocks now have <strong>liquidity</strong> — a measure of how heavily
               a player is held and traded. It changes how trades behave:
@@ -94,9 +119,9 @@ export default function PatchNotesPage() {
               You&rsquo;ll see a liquidity indicator (Thin / Moderate / Deep) on
               each stock&rsquo;s page so you know what you&rsquo;re getting into.
             </p>
-          </LegalSection>
+          </PatchSection>
 
-          <LegalSection title="💸 A small service fee on trades">
+          <PatchSection emoji="💸" title="A small service fee on trades">
             <p>
               To keep the economy healthy and prices meaningful, trades now carry a
               small <strong>service fee</strong> (think of it like a transaction
@@ -111,9 +136,9 @@ export default function PatchNotesPage() {
                 paid to anyone.
               </li>
             </ul>
-          </LegalSection>
+          </PatchSection>
 
-          <LegalSection title="✨ Also live">
+          <PatchSection emoji="✨" title="Also live">
             <ul>
               <li>
                 <strong>Sign in with osu!</strong> &mdash; log in with your osu!
@@ -128,7 +153,7 @@ export default function PatchNotesPage() {
                 milestones and daily/weekly goals that reward you with credits.
               </li>
             </ul>
-          </LegalSection>
+          </PatchSection>
 
           <LegalSection title="A reminder">
             <p>

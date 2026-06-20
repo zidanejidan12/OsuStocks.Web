@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   MagnifyingGlass,
   CaretRight,
@@ -65,6 +65,15 @@ export function StockList({
   totalCount,
   onPageChange,
 }: Props) {
+  const reduceMotion = useReducedMotion();
+  // Only run the per-row entrance stagger on the very first mount — not on every
+  // refetch/sort/search (which would re-animate the whole table on each keystroke).
+  const hasAnimatedRef = useRef(false);
+  const animateRows = !reduceMotion && !hasAnimatedRef.current;
+  useEffect(() => {
+    hasAnimatedRef.current = true;
+  }, []);
+
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const canPrev = page > 1;
   const canNext = page < totalPages;
@@ -93,16 +102,21 @@ export function StockList({
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative w-full sm:max-w-xs">
+          <label htmlFor="stock-search" className="sr-only">
+            Search players
+          </label>
           <MagnifyingGlass
             size={16}
             weight="bold"
             className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500"
           />
           <input
+            id="stock-search"
             type="search"
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search players..."
+            aria-label="Search players"
             className="w-full rounded-xl border border-zinc-800 bg-zinc-900/60 py-2.5 pl-10 pr-3.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-colors focus:border-pink-500/50 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
           />
         </div>
@@ -125,9 +139,14 @@ export function StockList({
               ))}
             </select>
           </div>
+          <label htmlFor="stock-sort" className="sr-only">
+            Sort stocks
+          </label>
           <select
+            id="stock-sort"
             value={sort}
             onChange={(e) => onSortChange(e.target.value as StockSort)}
+            aria-label="Sort stocks"
             className="w-full rounded-xl border border-zinc-800 bg-zinc-900/60 px-3.5 py-2.5 text-sm text-zinc-100 transition-colors focus:border-pink-500/50 focus:outline-none focus:ring-2 focus:ring-pink-500/20 sm:w-auto"
           >
             {SORT_OPTIONS.map((opt) => (
@@ -141,7 +160,7 @@ export function StockList({
 
       <div className="overflow-x-auto rounded-2xl border border-zinc-800/80">
         {loading ? (
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[480px] text-sm">
             <thead>
               <tr className="border-b border-zinc-800 text-left text-[11px] uppercase tracking-wider text-zinc-500">
                 <th className="px-4 py-3 font-medium">Player</th>
@@ -181,7 +200,7 @@ export function StockList({
             />
           </div>
         ) : (
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[480px] text-sm">
             <thead>
               <tr className="border-b border-zinc-800 text-left text-[11px] uppercase tracking-wider text-zinc-500">
                 <th className="px-4 py-3 font-medium">Player</th>
@@ -194,12 +213,13 @@ export function StockList({
               {stocks.map((stock, i) => (
                 <motion.tr
                   key={stock.stockId}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    ...spring,
-                    delay: Math.min(i, 12) * 0.025,
-                  }}
+                  initial={animateRows ? { opacity: 0, y: 6 } : false}
+                  animate={animateRows ? { opacity: 1, y: 0 } : undefined}
+                  transition={
+                    animateRows
+                      ? { ...spring, delay: Math.min(i, 12) * 0.025 }
+                      : undefined
+                  }
                   className="group transition-colors hover:bg-zinc-900/50"
                 >
                   <td className="px-4 py-3.5">

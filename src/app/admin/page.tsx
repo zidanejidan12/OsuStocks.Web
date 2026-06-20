@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -12,7 +12,6 @@ import {
   Power,
   Lock,
   ShieldWarning,
-  WarningCircle,
   MagnifyingGlass,
   CaretLeft,
   CaretRight,
@@ -57,14 +56,39 @@ function DecimalField({
   value,
   onChange,
   min,
+  max,
   step,
+  hint,
 }: {
   label: string;
   value: number;
   onChange: (n: number) => void;
   min: number;
+  max?: number;
   step: number;
+  hint?: string;
 }) {
+  // Track the raw text so the user can freely type partial decimals like "0.",
+  // "0.0", or "0.0001" without each keystroke being clamped/parsed back into a
+  // number (which would, e.g., snap "0." to the min). We only clamp + commit on
+  // blur, and re-sync the text when the committed value changes externally.
+  const [text, setText] = useState(() => String(value));
+  const [editing, setEditing] = useState(false);
+
+  useEffect(() => {
+    if (!editing) setText(String(value));
+  }, [value, editing]);
+
+  const commit = () => {
+    setEditing(false);
+    const parsed = Number(text);
+    let next = Number.isFinite(parsed) ? parsed : min;
+    next = Math.max(min, next);
+    if (typeof max === "number") next = Math.min(max, next);
+    setText(String(next));
+    if (next !== value) onChange(next);
+  };
+
   return (
     <label className="flex flex-col gap-1.5">
       <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">
@@ -72,12 +96,17 @@ function DecimalField({
       </span>
       <input
         type="number"
+        inputMode="decimal"
         min={min}
+        max={max}
         step={step}
-        value={value}
-        onChange={(e) => onChange(Math.max(min, Number(e.target.value) || min))}
+        value={text}
+        onFocus={() => setEditing(true)}
+        onChange={(e) => setText(e.target.value)}
+        onBlur={commit}
         className={inputClass}
       />
+      {hint && <span className="text-[11px] leading-snug text-zinc-600">{hint}</span>}
     </label>
   );
 }
@@ -86,6 +115,8 @@ function DecimalField({
 function MarketSettingsCard() {
   const { notify } = useToast();
   const [settings, setSettings] = useState<MarketSettings | null>(null);
+  // Last-saved snapshot, used to detect unsaved edits.
+  const [savedSettings, setSavedSettings] = useState<MarketSettings | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -94,7 +125,10 @@ function MarketSettingsCard() {
     let cancelled = false;
     getMarketSettings()
       .then((s) => {
-        if (!cancelled) setSettings(s);
+        if (!cancelled) {
+          setSettings(s);
+          setSavedSettings(s);
+        }
       })
       .catch(() => {
         if (!cancelled) setUnavailable(true);
@@ -110,12 +144,18 @@ function MarketSettingsCard() {
   const patch = (p: Partial<MarketSettings>) =>
     setSettings((prev) => (prev ? { ...prev, ...p } : prev));
 
+  const dirty =
+    settings !== null &&
+    savedSettings !== null &&
+    JSON.stringify(settings) !== JSON.stringify(savedSettings);
+
   const save = async () => {
     if (!settings) return;
     setSaving(true);
     try {
       // PUT returns 204 — keep the locally-edited values rather than clearing state.
       await updateMarketSettings(settings);
+      setSavedSettings(settings);
       notify({ tone: "success", title: "Market settings saved" });
     } catch (err) {
       notify({
@@ -207,12 +247,20 @@ function MarketSettingsCard() {
               value={settings.tradeFeeMultiplier}
               onChange={(n) => patch({ tradeFeeMultiplier: n })}
               min={0}
+              max={10}
               step={0.05}
+              hint="Scales the progressive trade fee. 1 = baseline, 0 = no fee. Max 10×."
             />
           </div>
 
-          <div className="flex justify-end">
-            <Button onClick={save} disabled={saving}>
+          <div className="flex items-center justify-end gap-3">
+            {dirty && !saving && (
+              <span className="flex items-center gap-1.5 text-xs text-amber-400" aria-live="polite">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-400" aria-hidden="true" />
+                Unsaved changes
+              </span>
+            )}
+            <Button onClick={save} disabled={saving || !dirty} loading={saving}>
               <FloppyDisk size={16} weight="bold" />
               {saving ? "Saving…" : "Save settings"}
             </Button>
@@ -240,6 +288,12 @@ function TrackedPlayersCard() {
   const [totalCount, setTotalCount] = useState(0);
   // Tracked-player id awaiting a remove confirmation, if any.
   const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
+  // When the confirm prompt appears, move focus to the safe "No" button so an
+  // accidental Enter/Space cancels rather than destroys.
+  const cancelRemoveRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (confirmRemoveId) cancelRemoveRef.current?.focus();
+  }, [confirmRemoveId]);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
@@ -478,6 +532,7 @@ function TrackedPlayersCard() {
                     Yes
                   </button>
                   <button
+                    ref={cancelRemoveRef}
                     type="button"
                     onClick={() => setConfirmRemoveId(null)}
                     aria-label="Cancel remove"
@@ -628,12 +683,6 @@ export default function AdminPage() {
           <TrackedPlayersCard />
         </Reveal>
       </div>
-
-      <p className="mt-6 flex items-center gap-2 text-xs text-zinc-600">
-        <WarningCircle size={14} weight="bold" />
-        Admin endpoints follow the assumed <code>/admin</code> contract — reconcile
-        with the API once finalized.
-      </p>
     </PageShell>
   );
 }

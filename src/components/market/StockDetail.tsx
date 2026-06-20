@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   CaretLeft,
   ChartLineUp,
@@ -79,6 +79,7 @@ function chartBounds(min: number, max: number) {
 
 /** Candlestick chart over OHLC data — emerald up / rose down. */
 function CandleChart({ candles }: { candles: Candle[] }) {
+  const reduceMotion = useReducedMotion();
   const min = Math.min(...candles.map((c) => c.low));
   const max = Math.max(...candles.map((c) => c.high));
   const { yFor } = chartBounds(min, max);
@@ -93,7 +94,11 @@ function CandleChart({ candles }: { candles: Candle[] }) {
       role="img"
       aria-label="Price history candlestick chart"
     >
-      <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
+      <motion.g
+        initial={reduceMotion ? false : { opacity: 0 }}
+        animate={reduceMotion ? undefined : { opacity: 1 }}
+        transition={reduceMotion ? undefined : { duration: 0.5 }}
+      >
         {candles.map((c, i) => {
           const cx = CHART_PAD + slot * i + slot / 2;
           const up = c.close >= c.open;
@@ -103,7 +108,7 @@ function CandleChart({ candles }: { candles: Candle[] }) {
           const bodyY = Math.min(yOpen, yClose);
           const bodyH = Math.max(1, Math.abs(yOpen - yClose));
           return (
-            <g key={c.timestamp + i}>
+            <g key={`${c.timestamp}-${i}`}>
               <line
                 x1={cx}
                 x2={cx}
@@ -131,6 +136,7 @@ function CandleChart({ candles }: { candles: Candle[] }) {
 
 /** Smooth area/line view over candle closes. */
 function LineChart({ candles }: { candles: Candle[] }) {
+  const reduceMotion = useReducedMotion();
   const closes = candles.map((c) => c.close);
   const min = Math.min(...closes);
   const max = Math.max(...closes);
@@ -168,9 +174,11 @@ function LineChart({ candles }: { candles: Candle[] }) {
       <motion.path
         d={areaPath}
         fill={`url(#${gradientId})`}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8, ease: EASE_OUT_EXPO, delay: 0.15 }}
+        initial={reduceMotion ? false : { opacity: 0 }}
+        animate={reduceMotion ? undefined : { opacity: 1 }}
+        transition={
+          reduceMotion ? undefined : { duration: 0.8, ease: EASE_OUT_EXPO, delay: 0.15 }
+        }
       />
       <motion.path
         d={linePath}
@@ -180,9 +188,9 @@ function LineChart({ candles }: { candles: Candle[] }) {
         strokeLinejoin="round"
         strokeLinecap="round"
         vectorEffect="non-scaling-stroke"
-        initial={{ pathLength: 0 }}
-        animate={{ pathLength: 1 }}
-        transition={{ duration: 1.1, ease: EASE_OUT_EXPO }}
+        initial={reduceMotion ? false : { pathLength: 0 }}
+        animate={reduceMotion ? undefined : { pathLength: 1 }}
+        transition={reduceMotion ? undefined : { duration: 1.1, ease: EASE_OUT_EXPO }}
       />
     </svg>
   );
@@ -313,10 +321,10 @@ function PriceChartCard({
             ) : (
               <LineChart candles={candles} />
             )}
-            <span className="pointer-events-none absolute right-0 top-0 font-mono text-[11px] tabular-nums text-zinc-500">
+            <span className="pointer-events-none absolute right-0 top-0 rounded-md bg-zinc-950/60 px-1.5 py-0.5 font-mono text-[11px] tabular-nums text-zinc-400 backdrop-blur-sm">
               <Money value={max} />
             </span>
-            <span className="pointer-events-none absolute bottom-0 right-0 font-mono text-[11px] tabular-nums text-zinc-500">
+            <span className="pointer-events-none absolute bottom-0 right-0 rounded-md bg-zinc-950/60 px-1.5 py-0.5 font-mono text-[11px] tabular-nums text-zinc-400 backdrop-blur-sm">
               <Money value={min} />
             </span>
           </div>
@@ -328,7 +336,7 @@ function PriceChartCard({
               <span className="font-mono text-xs tabular-nums text-zinc-300">
                 <Money value={first.open} />
               </span>
-              <span className="font-mono text-[10px] tabular-nums text-zinc-600">
+              <span className="font-mono text-[10px] tabular-nums text-zinc-500">
                 {formatDateTime(first.timestamp)}
               </span>
             </div>
@@ -339,7 +347,7 @@ function PriceChartCard({
               <span className="font-mono text-xs tabular-nums text-zinc-300">
                 <Money value={last.close} />
               </span>
-              <span className="font-mono text-[10px] tabular-nums text-zinc-600">
+              <span className="font-mono text-[10px] tabular-nums text-zinc-500">
                 {formatDateTime(last.timestamp)}
               </span>
             </div>
@@ -601,6 +609,10 @@ function TradePanel({
     cooldownUntil > 0 ? Math.max(0, Math.ceil((cooldownUntil - now) / 1000)) : 0;
   const onCooldown = cooldownRemaining > 0;
 
+  // Single source for the receipt quantity: the server-echoed value when present
+  // (OsuStocks.API #31), else the quantity snapshotted at execution time.
+  const receiptQty = result?.quantity ?? resultQty ?? 0;
+
   const messageForError = useCallback((err: unknown): string => {
     if (!(err instanceof ApiError)) return "Something went wrong. Please try again.";
     switch (err.code) {
@@ -785,7 +797,7 @@ function TradePanel({
             <button
               type="button"
               onClick={() => setFraction(1)}
-              className="font-mono tabular-nums text-zinc-300 underline-offset-2 transition-colors hover:text-pink-300 hover:underline"
+              className="rounded font-mono tabular-nums text-zinc-300 underline-offset-2 transition-colors hover:text-pink-300 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/50"
             >
               {formatShares(maxBuy)}
             </button>{" "}
@@ -802,7 +814,7 @@ function TradePanel({
           <button
             type="button"
             onClick={() => setQuantityInput(String(owned))}
-            className="self-start text-xs text-zinc-400 transition-colors hover:text-zinc-200"
+            className="self-start rounded text-xs text-zinc-400 transition-colors hover:text-zinc-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/50"
           >
             You own{" "}
             <span className="font-mono tabular-nums text-zinc-200">
@@ -815,26 +827,37 @@ function TradePanel({
 
       <div className="mt-4 grid grid-cols-2 gap-3">
         <Button
-          variant="primary"
+          variant="success"
           onClick={() => execute("buy")}
-          disabled={pending !== null || onCooldown || overBalance}
-          className="!bg-emerald-500 hover:!bg-emerald-400 !shadow-[0_10px_30px_-12px_rgba(16,185,129,0.7)]"
+          loading={pending === "buy"}
+          disabled={pending !== null || onCooldown || overBalance || quantity <= 0}
+          aria-describedby={overBalance ? "buy-balance-hint" : undefined}
         >
-          <ArrowUp size={16} weight="bold" />
+          {pending !== "buy" && <ArrowUp size={16} weight="bold" />}
           {pending === "buy" ? "Buying..." : "Buy"}
         </Button>
         <Button
-          variant="secondary"
+          variant="danger"
           onClick={() => execute("sell")}
-          disabled={pending !== null || onCooldown || owned === 0}
-          className="!border-rose-500/40 !text-rose-300 hover:!border-rose-500/60 hover:!bg-rose-500/10"
+          loading={pending === "sell"}
+          disabled={
+            pending !== null || onCooldown || owned == null || owned === 0 || quantity <= 0
+          }
         >
-          <ArrowDown size={16} weight="bold" />
+          {pending !== "sell" && <ArrowDown size={16} weight="bold" />}
           {pending === "sell" ? "Selling..." : "Sell"}
         </Button>
       </div>
 
-      <AnimatePresence mode="wait">
+      {/* Explain why Buy is disabled when the order exceeds the wallet balance. */}
+      {overBalance && (
+        <p id="buy-balance-hint" className="mt-2 text-xs text-rose-300">
+          This order costs more than your balance. Lower the quantity or use a
+          quick-size preset to buy what you can afford.
+        </p>
+      )}
+
+      <AnimatePresence>
         {onCooldown && (
           <motion.div
             key="cooldown"
@@ -853,7 +876,9 @@ function TradePanel({
             </span>
           </motion.div>
         )}
+      </AnimatePresence>
 
+      <AnimatePresence>
         {result && (
           <motion.div
             key="trade-result"
@@ -875,8 +900,7 @@ function TradePanel({
               <div className="flex items-center justify-between">
                 <dt className="text-emerald-300/70">Quantity</dt>
                 <dd className="font-mono tabular-nums text-emerald-200">
-                  {formatShares(result.quantity ?? resultQty ?? 0)} share
-                  {(result.quantity ?? resultQty) === 1 ? "" : "s"}
+                  {formatShares(receiptQty)} share{receiptQty === 1 ? "" : "s"}
                 </dd>
               </div>
               <div className="flex items-center justify-between">
@@ -962,6 +986,8 @@ function RecentTopPlays({ stockId }: { stockId: string }) {
                     alt=""
                     aria-hidden="true"
                     loading="lazy"
+                    width={900}
+                    height={250}
                     className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-[2px]"
                   />
                   <div className="absolute inset-0 bg-gradient-to-r from-zinc-950/95 via-zinc-950/80 to-zinc-950/40" />
@@ -1041,6 +1067,8 @@ function ProfileCover({ bannerUrl }: { bannerUrl?: string | null }) {
             alt=""
             aria-hidden="true"
             onError={() => setFailed(true)}
+            width={1500}
+            height={500}
             className="absolute inset-0 h-full w-full object-cover"
           />
           {/* Bottom-up scrim keeps the badge + overlapping avatar/name legible. */}

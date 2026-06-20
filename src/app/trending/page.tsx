@@ -115,6 +115,7 @@ function BucketCard({ bucket, stocks }: { bucket: Bucket; stocks: TrendingStock[
             <motion.li key={s.stockId} variants={fadeUp}>
               <Link
                 href={`/stocks/${s.stockId}`}
+                aria-label={`${s.playerName}, view stock`}
                 className="flex items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-zinc-800/50"
               >
                 <span className="w-4 shrink-0 text-center font-mono text-xs tabular-nums text-zinc-600">

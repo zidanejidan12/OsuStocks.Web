@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { ArrowRight, WarningCircle, Lock } from "@phosphor-icons/react";
 import type { MarketOverview, Paged, StockSort, StockSummary } from "@/lib/api/types";
 import { getMarketOverview, getStocks, ApiError } from "@/lib/api/client";
@@ -87,14 +86,9 @@ function Hero({ onLogin }: { onLogin: () => void }) {
         </Reveal>
 
         {/* RIGHT: decorative live-market panel */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-          className="md:pl-4"
-        >
+        <Reveal delay={0.1} className="md:pl-4">
           <LiveMarketPanel />
-        </motion.div>
+        </Reveal>
       </div>
     </section>
   );
