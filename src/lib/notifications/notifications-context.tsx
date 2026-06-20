@@ -15,6 +15,7 @@ import {
   markNotificationRead,
 } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/auth-context";
+import { useToast } from "@/components/ui/Toast";
 
 interface NotificationsContextValue {
   notifications: AppNotification[];
@@ -33,6 +34,7 @@ const POLL_INTERVAL_MS = 60_000;
 
 export function NotificationsProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
+  const { notify } = useToast();
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [loading, setLoading] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
@@ -66,8 +68,19 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     refresh();
     /* eslint-enable react-hooks/set-state-in-effect */
 
-    const interval = setInterval(refresh, POLL_INTERVAL_MS);
-    const onFocus = () => refresh();
+    // Poll only while the tab is visible — a backgrounded tab stops hammering
+    // the endpoint. Debounce the focus refetch so rapid alt-tabbing can't fire
+    // back-to-back requests.
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") refresh();
+    }, POLL_INTERVAL_MS);
+    let lastFocusRefresh = 0;
+    const onFocus = () => {
+      const now = Date.now();
+      if (now - lastFocusRefresh < 10_000) return;
+      lastFocusRefresh = now;
+      refresh();
+    };
     window.addEventListener("focus", onFocus);
     return () => {
       clearInterval(interval);
@@ -75,30 +88,48 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     };
   }, [user, refresh]);
 
-  const markRead = useCallback(async (id: string) => {
-    // Optimistic — flip locally, then tell the server.
-    setNotifications((prev) =>
-      prev.map((n) => (n.notificationId === id ? { ...n, isRead: true } : n)),
-    );
-    try {
-      await markNotificationRead(id);
-    } catch {
-      // Roll back on failure.
+  const markRead = useCallback(
+    async (id: string) => {
+      // Optimistic — flip locally, then tell the server.
       setNotifications((prev) =>
-        prev.map((n) => (n.notificationId === id ? { ...n, isRead: false } : n)),
+        prev.map((n) => (n.notificationId === id ? { ...n, isRead: true } : n)),
       );
-    }
-  }, []);
+      try {
+        await markNotificationRead(id);
+      } catch {
+        // Roll back on failure and tell the user (don't fail silently).
+        setNotifications((prev) =>
+          prev.map((n) => (n.notificationId === id ? { ...n, isRead: false } : n)),
+        );
+        notify({
+          tone: "danger",
+          title: "Couldn't mark as read",
+          message: "Please try again.",
+        });
+      }
+    },
+    [notify],
+  );
 
   const markAllRead = useCallback(async () => {
-    const snapshot = notifications;
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    // Capture the snapshot at call time via the functional updater so a poll
+    // landing mid-request can't be clobbered by a stale closure on rollback.
+    let snapshot: AppNotification[] = [];
+    setNotifications((prev) => {
+      snapshot = prev;
+      return prev.map((n) => ({ ...n, isRead: true }));
+    });
     try {
       await markAllNotificationsRead();
     } catch {
       setNotifications(snapshot);
+      notify({
+        tone: "danger",
+        title: "Couldn't mark all as read",
+        message: "Please try again.",
+      });
     }
-  }, [notifications]);
+  }, [notify]);
 
   const unreadCount = useMemo(
     () => notifications.reduce((acc, n) => acc + (n.isRead ? 0 : 1), 0),

@@ -247,40 +247,46 @@ export function StockList({
         )}
       </div>
 
-      <div className="flex items-center justify-between gap-3 text-sm">
-        <span className="font-mono tabular-nums text-zinc-500">
-          Page {page} of {totalPages}
-          {totalCount > 0 ? ` · ${formatNumber(totalCount)} stocks` : ""}
-        </span>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => onPageChange(page - 1)}
-            disabled={!canPrev}
-            className={buttonClasses({
-              variant: "secondary",
-              size: "sm",
-              className: "disabled:pointer-events-none disabled:opacity-40",
-            })}
-          >
-            <CaretLeft size={14} weight="bold" />
-            Prev
-          </button>
-          <button
-            type="button"
-            onClick={() => onPageChange(page + 1)}
-            disabled={!canNext}
-            className={buttonClasses({
-              variant: "secondary",
-              size: "sm",
-              className: "disabled:pointer-events-none disabled:opacity-40",
-            })}
-          >
-            Next
-            <CaretRight size={14} weight="bold" />
-          </button>
+      {(totalPages > 1 || totalCount > 0) && (
+        <div className="flex items-center justify-between gap-3 text-sm">
+          <span className="font-mono tabular-nums text-zinc-500">
+            {totalPages > 1 ? `Page ${page} of ${totalPages}` : ""}
+            {totalCount > 0
+              ? `${totalPages > 1 ? " · " : ""}${formatNumber(totalCount)} stocks`
+              : ""}
+          </span>
+          {totalPages > 1 && (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => onPageChange(page - 1)}
+                disabled={!canPrev}
+                className={buttonClasses({
+                  variant: "secondary",
+                  size: "md",
+                  className: "disabled:pointer-events-none disabled:opacity-40",
+                })}
+              >
+                <CaretLeft size={14} weight="bold" />
+                Prev
+              </button>
+              <button
+                type="button"
+                onClick={() => onPageChange(page + 1)}
+                disabled={!canNext}
+                className={buttonClasses({
+                  variant: "secondary",
+                  size: "md",
+                  className: "disabled:pointer-events-none disabled:opacity-40",
+                })}
+              >
+                Next
+                <CaretRight size={14} weight="bold" />
+              </button>
+            </div>
+          )}
         </div>
-      </div>
+      )}
     </div>
   );
 }

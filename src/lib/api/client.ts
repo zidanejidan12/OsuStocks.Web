@@ -290,14 +290,18 @@ export function getTrending(): Promise<Trending> {
     volume: 0,
     priceChange24h: 0,
   });
-  return request<Record<keyof Trending, RawTrendingStock[]>>(
+  // Partial + `?? []` per bucket: a missing/renamed bucket degrades to empty
+  // instead of throwing and failing the whole Trending page.
+  return request<Partial<Record<keyof Trending, RawTrendingStock[]>>>(
     "/market/trending",
   ).then((raw) => ({
-    mostBought: raw.mostBought.map((r) => ({ ...base(r), priceChange24h: r.metricValue })),
-    mostSold: raw.mostSold.map((r) => ({ ...base(r), priceChange24h: r.metricValue })),
-    fastestRising: raw.fastestRising.map((r) => ({ ...base(r), priceChange24h: r.metricValue })),
-    fastestFalling: raw.fastestFalling.map((r) => ({ ...base(r), priceChange24h: r.metricValue })),
-    highestVolume: raw.highestVolume.map((r) => ({ ...base(r), volume: r.metricValue })),
+    // most bought / most sold carry a *trade count*, not a price delta — keep it
+    // in tradeCount so the UI renders a count, not a misleading coin amount.
+    mostBought: (raw.mostBought ?? []).map((r) => ({ ...base(r), tradeCount: r.metricValue })),
+    mostSold: (raw.mostSold ?? []).map((r) => ({ ...base(r), tradeCount: r.metricValue })),
+    fastestRising: (raw.fastestRising ?? []).map((r) => ({ ...base(r), priceChange24h: r.metricValue })),
+    fastestFalling: (raw.fastestFalling ?? []).map((r) => ({ ...base(r), priceChange24h: r.metricValue })),
+    highestVolume: (raw.highestVolume ?? []).map((r) => ({ ...base(r), volume: r.metricValue })),
   }));
 }
 
@@ -341,7 +345,7 @@ export function getMarketEvents(params?: {
 }): Promise<Paged<MarketEvent>> {
   return request<Paged<RawMarketEvent>>(
     "/market/events" + buildQuery(params),
-  ).then((page) => ({ ...page, items: page.items.map(toMarketEvent) }));
+  ).then((page) => ({ ...page, items: (page.items ?? []).map(toMarketEvent) }));
 }
 
 export function getStockEvents(
@@ -350,7 +354,7 @@ export function getStockEvents(
 ): Promise<Paged<MarketEvent>> {
   return request<Paged<RawMarketEvent>>(
     "/market/events/" + stockId + buildQuery(params),
-  ).then((page) => ({ ...page, items: page.items.map(toMarketEvent) }));
+  ).then((page) => ({ ...page, items: (page.items ?? []).map(toMarketEvent) }));
 }
 
 // BE route is /leaderboards/wealth and uses `value` / `periodChange` per entry.
@@ -372,7 +376,7 @@ export function getLeaderboard(params?: {
     page: number;
     pageSize: number;
   }>("/leaderboards/wealth" + buildQuery(params)).then((raw) => ({
-    items: raw.items.map((e) => ({
+    items: (raw.items ?? []).map((e) => ({
       rank: e.rank,
       userId: e.userId,
       username: e.username,
@@ -399,6 +403,13 @@ interface RawNotification {
   createdAt: string;
 }
 
+const KNOWN_NOTIFICATION_TYPES = new Set<AppNotification["type"]>([
+  "TradeExecuted",
+  "PriceAlert",
+  "Reward",
+  "System",
+]);
+
 export function getNotifications(params?: {
   page?: number;
   pageSize?: number;
@@ -407,9 +418,13 @@ export function getNotifications(params?: {
     "/notifications" + buildQuery(params),
   ).then((page) => ({
     ...page,
-    items: page.items.map((n) => ({
+    items: (page.items ?? []).map((n) => ({
       notificationId: n.id,
-      type: n.type as AppNotification["type"],
+      // Keep the union truthful: an unknown server type falls back to "System"
+      // (rendered with the generic icon) instead of a lying cast.
+      type: KNOWN_NOTIFICATION_TYPES.has(n.type as AppNotification["type"])
+        ? (n.type as AppNotification["type"])
+        : "System",
       title: n.title,
       message: n.body,
       isRead: n.isRead,
@@ -470,7 +485,7 @@ export function getTrackedPlayers(params?: {
     pageSize?: number;
     totalCount?: number;
   }>(`/admin/tracked-players?${qs.toString()}`).then((raw) => ({
-    items: raw.items.map((p) => ({
+    items: (raw.items ?? []).map((p) => ({
       trackedPlayerId: p.trackedPlayerId,
       osuUserId: p.osuUserId,
       username: p.username,
