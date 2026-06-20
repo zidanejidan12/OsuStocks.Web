@@ -10,6 +10,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Money } from "@/components/ui/Money";
 import { PriceChange } from "@/components/ui/PriceChange";
 import { StatusDot } from "@/components/ui/StatusDot";
+import { SponsorCredit } from "@/components/SponsorCredit";
 import { useAuth } from "@/lib/auth/auth-context";
 
 const STORAGE_KEY = "osustocks.ticker.hidden";
@@ -138,6 +139,12 @@ export function MarketTicker() {
           <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500">
             Live
           </span>
+        </div>
+
+        {/* Pinned sponsor slug — doesn't scroll with the marquee; hidden on the
+            narrowest screens so the moving strip keeps room. */}
+        <div className="hidden h-full shrink-0 items-center border-r border-white/10 px-3 sm:flex">
+          <SponsorCredit className="text-[11px] text-zinc-500" />
         </div>
 
         <div className="relative flex-1 overflow-hidden">
