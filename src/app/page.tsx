@@ -69,6 +69,16 @@ function Hero({ onLogin }: { onLogin: () => void }) {
             market, build a portfolio, and ride every rank-up.
           </p>
 
+          {/* Upfront disclaimer: this is a free fan game with fictional currency, not a real
+              trading/investment service — keeps the "stocks/buy/sell" framing from reading as
+              a deceptive financial platform. */}
+          <p className="mt-5 max-w-[52ch] text-sm leading-relaxed text-zinc-500">
+            A free, fan-made game for fun. All credits, prices, and holdings are
+            <span className="text-zinc-300"> virtual</span> — they have no real-world
+            value, can&apos;t be bought or cashed out, and this isn&apos;t real
+            investing or gambling. Not affiliated with osu! or ppy&nbsp;Pty&nbsp;Ltd.
+          </p>
+
           <div className="mt-9 flex flex-wrap items-center gap-3">
             <MagneticButton
               onClick={onLogin}
