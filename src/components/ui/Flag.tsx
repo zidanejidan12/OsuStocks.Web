@@ -56,7 +56,10 @@ export function Flag({
       width={20}
       height={15}
       onError={() => setFailed(true)}
-      className={`inline-block aspect-[4/3] rounded-[3px] object-cover ring-1 ring-zinc-700/50 ${className}`}
+      // w-auto is essential: callers set only a height (e.g. h-2.5), and without
+      // it the width falls back to the width={20} attribute, giving a stretched
+      // 20x10 box that overrides aspect-[4/3]. w-auto lets the ratio drive width.
+      className={`inline-block aspect-[4/3] w-auto rounded-[3px] object-cover ring-1 ring-zinc-700/50 ${className}`}
     />
   );
 }
