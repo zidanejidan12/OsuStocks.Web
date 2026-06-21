@@ -24,7 +24,6 @@ import { useNotifications } from "@/lib/notifications/notifications-context";
 import { Spinner } from "@/components/ui/Spinner";
 import { buttonClasses } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
-import { SponsorCredit } from "@/components/SponsorCredit";
 import { spring } from "@/lib/motion";
 
 const LINKS = [
@@ -196,23 +195,10 @@ export function Nav() {
           </ul>
           )}
 
-          {/* Desktop auth cluster (lg+) */}
+          {/* Desktop auth cluster (lg+) — sponsor credit lives sitewide in the
+              ticker + footer (and prominently on the landing/About pages), so the
+              nav stays uncluttered. */}
           <div className="ml-auto hidden items-center gap-2 text-sm sm:gap-3 lg:flex">
-            {/* Sponsor — full phrase for guests (room to spare); a compact chip
-                for signed-in users, where the nav is busy, at xl+ only. */}
-            <span
-              className={
-                user
-                  ? "hidden items-center gap-3 xl:flex"
-                  : "flex items-center gap-3"
-              }
-            >
-              <SponsorCredit
-                className="text-[13px] text-zinc-500"
-                labelClassName={user ? "hidden" : ""}
-              />
-              <span aria-hidden="true" className="h-5 w-px bg-white/10" />
-            </span>
             {loading ? (
               <Spinner />
             ) : user ? (

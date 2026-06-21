@@ -13,7 +13,7 @@ import { buttonClasses } from "@/components/ui/Button";
 import { MagneticButton } from "@/components/ui/MagneticButton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Reveal } from "@/components/motion/Reveal";
-import { SponsorCredit } from "@/components/SponsorCredit";
+import { SponsorCard } from "@/components/SponsorCredit";
 import { MarketOverviewCards } from "@/components/market/MarketOverviewCards";
 import { StockList } from "@/components/market/StockList";
 import { LiveMarketPanel } from "@/components/market/LiveMarketPanel";
@@ -78,13 +78,14 @@ function Hero({ onLogin }: { onLogin: () => void }) {
               <ArrowRight size={18} weight="bold" />
             </MagneticButton>
           </div>
-
-          <SponsorCredit className="mt-8 text-sm text-zinc-500" avatarSize="sm" />
         </Reveal>
 
-        {/* RIGHT: decorative live-market panel */}
+        {/* RIGHT: prominent sponsor box above the decorative live-market panel */}
         <Reveal delay={0.1} className="md:pl-4">
-          <LiveMarketPanel />
+          <div className="flex flex-col gap-4">
+            <SponsorCard />
+            <LiveMarketPanel />
+          </div>
         </Reveal>
       </div>
     </section>
