@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Avatar } from "@/components/ui/Avatar";
+import { SponsorCard } from "@/components/SponsorCredit";
 
 export const metadata: Metadata = {
   title: "About — the osu! stock market game",
@@ -63,6 +64,18 @@ export default function AboutPage() {
             &mdash; they have no real-world value and can never be exchanged for
             money. Not affiliated with osu! or ppy Pty Ltd.
           </p>
+        </div>
+      </section>
+
+      <section className="mt-12">
+        <h2 className="text-lg font-semibold tracking-tight text-zinc-100">
+          Sponsor
+        </h2>
+        <p className="mt-2 text-sm text-zinc-500">
+          OsuStocks is proudly sponsored by Raids.
+        </p>
+        <div className="mt-5 sm:max-w-sm">
+          <SponsorCard />
         </div>
       </section>
 
