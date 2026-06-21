@@ -142,6 +142,18 @@ export interface TradeResult {
   status: string;
 }
 
+/** Pre-trade estimate matching execution: exact fill + progressive fee. */
+export interface TradeQuote {
+  quantity: number;
+  unitPrice: number;
+  grossAmount: number;
+  fee: number;
+  /** Wallet debit when buying (gross + fee) or net proceeds when selling (gross − fee). */
+  total: number;
+  newPrice: number;
+  isSell: boolean;
+}
+
 export interface Trade {
   tradeId: string;
   stockId: string;

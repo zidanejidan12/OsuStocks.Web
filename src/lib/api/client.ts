@@ -22,6 +22,7 @@ import type {
   TopPlay,
   HoldingFlat,
   StockAnalytics,
+  TradeQuote,
   StockSort,
   StockSummary,
   Trade,
@@ -275,6 +276,18 @@ export function getStockCandles(
 }
 
 /** BE splits volume into shares/value and names the trader count activeTraders24h. */
+// Accurate pre-trade estimate (fill incl. slippage/spread + the progressive fee),
+// computed server-side with the same engine as a real trade.
+export function getTradeQuote(
+  stockId: string,
+  quantity: number,
+  side: "buy" | "sell",
+): Promise<TradeQuote> {
+  return request<TradeQuote>(
+    "/market/stocks/" + stockId + "/quote" + buildQuery({ quantity, side }),
+  );
+}
+
 export function getStockAnalytics(stockId: string): Promise<StockAnalytics> {
   return request<{
     volume24hShares: number;
