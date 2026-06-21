@@ -29,6 +29,7 @@ import type {
   StockSummary,
   TopPlay,
   TradeResult,
+  TradeQuote,
 } from "@/lib/api/types";
 import {
   getStock,
@@ -37,6 +38,7 @@ import {
   getStockTopPlays,
   getHoldings,
   getWallet,
+  getTradeQuote,
   buy,
   sell,
   ApiError,
@@ -509,6 +511,27 @@ function TradePanel({
   const [ownershipCapPct, setOwnershipCapPct] = useState<number | null>(null);
   const [cooldownUntil, setCooldownUntil] = useState(0);
   const [now, setNow] = useState(0);
+  // Accurate, fee-inclusive buy estimate from the server (debounced). Computed with the
+  // same engine as a real trade, so the shown total matches what the wallet is charged.
+  const [quote, setQuote] = useState<TradeQuote | null>(null);
+
+  useEffect(() => {
+    if (!user || !(quantity > 0) || !(currentPrice > 0)) return;
+    let cancelled = false;
+    const t = setTimeout(() => {
+      getTradeQuote(stockId, quantity, "buy")
+        .then((q) => {
+          if (!cancelled) setQuote(q);
+        })
+        .catch(() => {
+          /* leave the last good quote; the local fallback covers the estimate */
+        });
+    }, 300);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [user, stockId, quantity, currentPrice]);
 
   const loadOwned = useCallback(() => {
     if (!user) return;
@@ -565,11 +588,21 @@ function TradePanel({
     totalShares != null && totalShares > 0 && owned != null
       ? Math.max(0, (capFraction * totalShares - owned) / (1 - capFraction))
       : null;
-  // What the wallet can afford. The BE prices a buy at the *average* over the move
-  // (slippage), so balance/price slightly overshoots — trim 0.5% so "Max" doesn't
-  // trip INSUFFICIENT_BALANCE.
+  // Only trust the quote when it's for the currently-entered quantity (ignore in-flight/stale).
+  const liveQuote = quote && quote.quantity === quantity ? quote : null;
+  // Effective fee rate from the latest quote (progressive, so size-dependent); 0 until one loads.
+  const quoteFeeRate =
+    liveQuote && liveQuote.grossAmount > 0
+      ? liveQuote.fee / liveQuote.grossAmount
+      : 0;
+
+  // What the wallet can afford, now fee-aware: the BE prices a buy at the *average* over the
+  // move (slippage) AND charges the progressive fee on top, so discount by both. Trim 0.5%
+  // so "Max" doesn't trip INSUFFICIENT_BALANCE.
   const affordable =
-    balance != null && currentPrice > 0 ? (balance / currentPrice) * 0.995 : null;
+    balance != null && currentPrice > 0
+      ? (balance / (currentPrice * (1 + quoteFeeRate))) * 0.995
+      : null;
   const maxBuyRaw = Math.min(
     affordable ?? Infinity,
     positionHeadroom ?? Infinity,
@@ -578,10 +611,12 @@ function TradePanel({
     ? Math.floor(maxBuyRaw * 100) / 100
     : null;
 
-  // Live order estimate (at the current price — actual fill includes slippage).
-  const estCost =
+  // Estimated total debit: the exact fee-inclusive figure from the quote when available,
+  // else a local cost (qty × price) as a fallback while the quote is loading.
+  const localCost =
     currentPrice > 0 && Number.isFinite(quantity) ? quantity * currentPrice : 0;
-  const overBalance = balance != null && estCost > balance;
+  const estTotal = liveQuote ? liveQuote.total : localCost;
+  const overBalance = balance != null && estTotal > balance;
 
   function adjustQty(delta: number) {
     const next = Math.max(
@@ -791,23 +826,30 @@ function TradePanel({
         {/* Live order estimate so the cost is obvious before committing. */}
         {quantity > 0 && currentPrice > 0 && (
           <div className="flex items-center justify-between rounded-xl border border-zinc-800/70 bg-zinc-900/40 px-3.5 py-2.5 text-xs">
-            <span className="text-zinc-500">Est. cost</span>
+            <span className="text-zinc-500">Est. cost{liveQuote ? " (incl. fee)" : ""}</span>
             <span
               className={`font-mono tabular-nums ${overBalance ? "text-rose-300" : "text-zinc-200"}`}
             >
-              &asymp; <Money value={estCost} />
+              &asymp; <Money value={estTotal} />
             </span>
           </div>
         )}
 
-        {/* The progressive service fee is charged on top of the cost (and the price
-            moves as you fill), so the wallet must cover more than the estimate —
-            disclose it so an under-balance Est. cost can still fail as INSUFFICIENT_BALANCE. */}
+        {/* The buy estimate now includes the progressive service fee (quoted server-side with
+            the same engine as a real trade), so it matches what the wallet is charged. */}
         {quantity > 0 && currentPrice > 0 && (
           <p className="text-[11px] leading-relaxed text-zinc-500">
-            A progressive service fee is added on top of a buy (and taken from a
-            sale&apos;s proceeds) and isn&apos;t included above — keep a little balance
-            spare beyond the estimate.
+            {liveQuote ? (
+              <>
+                Includes a <Money value={liveQuote.fee} /> progressive service fee
+                (added on top when buying; taken from proceeds when selling).
+              </>
+            ) : (
+              <>
+                A progressive service fee is added on top of a buy — keep a little
+                balance spare beyond the estimate.
+              </>
+            )}
           </p>
         )}
 
@@ -822,8 +864,8 @@ function TradePanel({
             >
               {formatShares(maxBuy)}
             </button>{" "}
-            share{maxBuy === 1 ? "" : "s"} — capped by your balance (before the
-            service fee) and the {capPctLabel}% per-trader limit.
+            share{maxBuy === 1 ? "" : "s"} — capped by your balance (fee included)
+            and the {capPctLabel}% per-trader limit.
           </p>
         ) : (
           <p className="text-xs text-zinc-500">
