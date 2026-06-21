@@ -11,12 +11,20 @@ import {
   Coins,
   Medal,
   ArrowSquareOut,
+  Trophy,
+  Lightning,
+  Check,
+  PencilSimple,
+  X,
 } from "@phosphor-icons/react";
 import {
   getPortfolio,
   getInvestorLevel,
   getStocks,
   getStock,
+  getAchievements,
+  getMissions,
+  updateProfileShowcase,
   ApiError,
 } from "@/lib/api/client";
 import type {
@@ -24,6 +32,8 @@ import type {
   InvestorLevel,
   Me,
   StockSummary,
+  Achievement,
+  Mission,
 } from "@/lib/api/types";
 import { formatNumber, formatShares } from "@/lib/format";
 import { Card } from "@/components/ui/Card";
@@ -77,6 +87,46 @@ function PleaseLogIn() {
 
 // osu!-userpage-style profile header for the signed-in investor: cover banner,
 // overlapping avatar, country flag, and portfolio stats as tiles.
+// Profile banner: renders the osu! cover when present (darkening overlays keep the
+// avatar/name legible), falling back to the pink gradient when absent or on load error.
+function ProfileBanner({
+  coverUrl,
+  children,
+}: {
+  coverUrl?: string | null;
+  children?: React.ReactNode;
+}) {
+  const [failed, setFailed] = useState(false);
+  const show = Boolean(coverUrl) && !failed;
+  return (
+    <div className="relative h-28 sm:h-36">
+      {show ? (
+        <>
+          {/* osu! CDN cover; plain <img> (no host whitelist), degrades to gradient on error. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={coverUrl as string}
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            onError={() => setFailed(true)}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-zinc-950/10" />
+          <div className="absolute inset-0 bg-gradient-to-br from-pink-600/20 to-transparent" />
+        </>
+      ) : (
+        <>
+          <div className="absolute inset-0 bg-gradient-to-br from-pink-600/45 via-pink-500/10 to-zinc-950" />
+          <div className="absolute inset-0 bg-[radial-gradient(120%_150%_at_12%_-30%,rgba(236,72,153,0.40),transparent_55%)]" />
+        </>
+      )}
+      <div className="grain pointer-events-none absolute inset-0 opacity-[0.12]" />
+      {children}
+    </div>
+  );
+}
+
 function ProfileHeader({
   user,
   portfolio,
@@ -88,14 +138,11 @@ function ProfileHeader({
     <Reveal>
       <h1 className="sr-only">Portfolio</h1>
       <header className="overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900/40">
-        <div className="relative h-28 sm:h-36">
-          <div className="absolute inset-0 bg-gradient-to-br from-pink-600/45 via-pink-500/10 to-zinc-950" />
-          <div className="absolute inset-0 bg-[radial-gradient(120%_150%_at_12%_-30%,rgba(236,72,153,0.40),transparent_55%)]" />
-          <div className="grain pointer-events-none absolute inset-0 opacity-[0.12]" />
+        <ProfileBanner coverUrl={user.coverUrl}>
           <span className="absolute left-5 top-4 rounded-md bg-zinc-950/40 px-2 py-1 text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-200 backdrop-blur">
             Investor
           </span>
-        </div>
+        </ProfileBanner>
 
         <div className="px-5 pb-6 sm:px-7">
           <div className="-mt-12 flex flex-col gap-4 sm:-mt-14 sm:flex-row sm:items-end sm:justify-between">
@@ -108,6 +155,12 @@ function ProfileHeader({
                   {user.username}
                 </h2>
                 <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm">
+                  {user.equippedTitle && (
+                    <span className="inline-flex items-center gap-1 rounded-md bg-pink-500/10 px-2 py-0.5 text-xs font-medium text-pink-300 ring-1 ring-inset ring-pink-500/25">
+                      <Trophy size={12} weight="fill" />
+                      {user.equippedTitle}
+                    </span>
+                  )}
                   {user.countryCode && (
                     <span className="inline-flex items-center rounded-md bg-zinc-800/70 px-1.5 py-1 ring-1 ring-inset ring-zinc-700/50">
                       <Flag countryCode={user.countryCode} className="h-3.5" />
@@ -180,6 +233,266 @@ function ProfileHeader({
           </div>
         </div>
       </header>
+    </Reveal>
+  );
+}
+
+const MAX_SHOWCASE = 3;
+
+// Achievement showcase: pinned badges + an inline editor to equip a title and pick up
+// to 3 showcased achievements (only ones you've unlocked). Saves via the profile endpoint
+// and refreshes /auth/me so the header title updates immediately.
+function ShowcaseCard({ user }: { user: Me }) {
+  const { refresh } = useAuth();
+  const [data, setData] = useState<Achievement[] | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [draftTitle, setDraftTitle] = useState<string | null>(null);
+  const [draftShowcase, setDraftShowcase] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getAchievements()
+      .then((r) => {
+        if (!cancelled) setData(r.items);
+      })
+      .catch(() => {
+        if (!cancelled) setData([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (data === null || data.length === 0) return null;
+
+  const byCode = new Map(data.map((a) => [a.code, a]));
+  const unlocked = data.filter((a) => a.unlocked);
+  const showcased = user.showcasedAchievementCodes
+    .map((c) => byCode.get(c))
+    .filter((a): a is Achievement => Boolean(a));
+
+  const openEditor = () => {
+    setDraftTitle(user.equippedTitleCode ?? null);
+    setDraftShowcase([...user.showcasedAchievementCodes]);
+    setError(null);
+    setEditing(true);
+  };
+
+  const toggleShowcase = (code: string) => {
+    setDraftShowcase((prev) =>
+      prev.includes(code)
+        ? prev.filter((c) => c !== code)
+        : prev.length >= MAX_SHOWCASE
+          ? prev
+          : [...prev, code],
+    );
+  };
+
+  const save = async () => {
+    setSaving(true);
+    setError(null);
+    try {
+      await updateProfileShowcase({
+        equippedTitleCode: draftTitle,
+        showcasedAchievementCodes: draftShowcase,
+      });
+      await refresh();
+      setEditing(false);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Couldn't save your showcase.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Reveal>
+      <Card>
+        <div className="mb-4 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Trophy size={18} weight="fill" className="text-pink-400" />
+            <h2 className="text-sm font-semibold text-zinc-100">Showcase</h2>
+            <span className="text-xs text-zinc-400">
+              {unlocked.length}/{data.length} achievements
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => (editing ? setEditing(false) : openEditor())}
+            disabled={unlocked.length === 0}
+            className={buttonClasses({ variant: "secondary", size: "sm", className: "gap-1.5" })}
+          >
+            {editing ? <X size={14} weight="bold" /> : <PencilSimple size={14} weight="bold" />}
+            {editing ? "Close" : "Edit"}
+          </button>
+        </div>
+
+        {!editing && (
+          <>
+            {unlocked.length === 0 ? (
+              <p className="text-sm text-zinc-400">
+                Unlock achievements by trading — then pin your favourites here.{" "}
+                <Link href="/achievements" className="text-pink-300 hover:text-pink-200">
+                  Browse achievements
+                </Link>
+              </p>
+            ) : showcased.length === 0 ? (
+              <p className="text-sm text-zinc-400">
+                No achievements showcased yet. Hit <span className="text-zinc-200">Edit</span> to pin up to {MAX_SHOWCASE}.
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {showcased.map((a) => (
+                  <span
+                    key={a.code}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-pink-500/25 bg-pink-500/10 px-2.5 py-1.5 text-sm text-pink-200"
+                    title={a.description}
+                  >
+                    <Trophy size={14} weight="fill" className="text-pink-400" />
+                    {a.name}
+                  </span>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {editing && (
+          <div className="space-y-4">
+            <p className="text-xs text-zinc-500">
+              Pick a title and up to {MAX_SHOWCASE} achievements to feature ({draftShowcase.length}/{MAX_SHOWCASE} selected).
+            </p>
+            <ul className="divide-y divide-zinc-800/60 overflow-hidden rounded-xl border border-zinc-800/70">
+              {unlocked.map((a) => {
+                const picked = draftShowcase.includes(a.code);
+                const isTitle = draftTitle === a.code;
+                return (
+                  <li key={a.code} className="flex items-center justify-between gap-3 px-3 py-2.5">
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-medium text-zinc-100">{a.name}</div>
+                      <div className="truncate text-xs text-zinc-500">{a.description}</div>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setDraftTitle(isTitle ? null : a.code)}
+                        aria-pressed={isTitle}
+                        className={`rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset transition-colors ${
+                          isTitle
+                            ? "bg-pink-500/20 text-pink-200 ring-pink-500/40"
+                            : "text-zinc-400 ring-zinc-700/60 hover:text-zinc-200"
+                        }`}
+                      >
+                        Title
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => toggleShowcase(a.code)}
+                        aria-pressed={picked}
+                        disabled={!picked && draftShowcase.length >= MAX_SHOWCASE}
+                        className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset transition-colors disabled:opacity-40 ${
+                          picked
+                            ? "bg-emerald-500/20 text-emerald-200 ring-emerald-500/40"
+                            : "text-zinc-400 ring-zinc-700/60 hover:text-zinc-200"
+                        }`}
+                      >
+                        {picked && <Check size={12} weight="bold" />}
+                        {picked ? "Pinned" : "Pin"}
+                      </button>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+            {error && (
+              <p role="alert" className="text-xs text-rose-300">
+                {error}
+              </p>
+            )}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={save}
+                disabled={saving}
+                className={buttonClasses({ size: "sm", className: "gap-1.5" })}
+              >
+                {saving ? "Saving…" : "Save showcase"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setDraftTitle(null)}
+                className="text-xs text-zinc-500 hover:text-zinc-300"
+              >
+                Clear title
+              </button>
+            </div>
+          </div>
+        )}
+      </Card>
+    </Reveal>
+  );
+}
+
+// Compact "today's missions" summary for the profile, linking to the full /missions page.
+function MissionsSummary() {
+  const [missions, setMissions] = useState<Mission[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getMissions()
+      .then((m) => {
+        if (!cancelled) setMissions(m);
+      })
+      .catch(() => {
+        if (!cancelled) setMissions([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (missions === null || missions.length === 0) return null;
+
+  const daily = missions.filter((m) => m.period === "Daily");
+  const done = daily.filter((m) => m.completed).length;
+
+  return (
+    <Reveal>
+      <Card>
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Lightning size={18} weight="fill" className="text-pink-400" />
+            <h2 className="text-sm font-semibold text-zinc-100">Daily missions</h2>
+            <span className="text-xs text-zinc-400">{done}/{daily.length} done</span>
+          </div>
+          <Link href="/missions" className="text-xs font-medium text-pink-300 hover:text-pink-200">
+            View all
+          </Link>
+        </div>
+        <div className="space-y-2.5">
+          {daily.map((m) => {
+            const pct = Math.min(100, Math.max(0, (m.currentValue / m.target) * 100));
+            return (
+              <div key={m.code}>
+                <div className="flex items-center justify-between gap-2 text-xs">
+                  <span className={m.completed ? "text-emerald-300" : "text-zinc-300"}>{m.name}</span>
+                  <span className="font-mono tabular-nums text-zinc-500">
+                    {formatNumber(Math.min(m.currentValue, m.target))}/{formatNumber(m.target)}
+                  </span>
+                </div>
+                <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-zinc-800">
+                  <div
+                    className={`h-full rounded-full ${m.completed ? "bg-emerald-400" : "bg-pink-500"}`}
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
     </Reveal>
   );
 }
@@ -604,6 +917,10 @@ export default function PortfolioPage() {
           <Reveal>
             <InvestorLevelCard />
           </Reveal>
+
+          <ShowcaseCard user={user} />
+
+          <MissionsSummary />
 
           <Reveal delay={0.05}>
             <h2 className="mb-3 text-[11px] font-medium uppercase tracking-wider text-zinc-500">
