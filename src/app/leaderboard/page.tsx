@@ -109,6 +109,11 @@ function PodiumCard({
           <Flag countryCode={entry.countryCode} className="h-3 shrink-0" />
         )}
       </div>
+      {entry.equippedTitle && (
+        <div className="mt-1 max-w-full truncate text-[11px] font-medium text-pink-300">
+          {entry.equippedTitle}
+        </div>
+      )}
       {isMe && (
         <div className="mt-1">
           <Badge tone="accent">You</Badge>
@@ -294,6 +299,11 @@ export default function LeaderboardPage() {
                         {isMe && <Badge tone="accent">You</Badge>}
                         {e.countryCode && (
                           <Flag countryCode={e.countryCode} className="h-3" />
+                        )}
+                        {e.equippedTitle && (
+                          <span className="hidden shrink-0 truncate rounded bg-pink-500/10 px-1.5 py-0.5 text-[10px] font-medium text-pink-300 ring-1 ring-inset ring-pink-500/25 sm:inline">
+                            {e.equippedTitle}
+                          </span>
                         )}
                       </div>
                       {typeof e.profitLoss === "number" && (

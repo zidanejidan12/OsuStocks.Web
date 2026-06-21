@@ -225,6 +225,8 @@ export interface LeaderboardEntry {
   username: string;
   avatarUrl?: string | null;
   countryCode?: string | null;
+  /** Equipped achievement title shown as a flair next to the name. Optional. */
+  equippedTitle?: string | null;
   /** Mark-to-market value of the user's holdings. */
   portfolioValue: number;
   /** Holdings + wallet balance. Optional until the API supplies it. */
