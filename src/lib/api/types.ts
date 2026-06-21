@@ -10,7 +10,10 @@ export type WalletTransactionType =
   | "SellStock"
   | "DailyReward"
   | "AdminGrant"
-  | "AdminDeduction";
+  | "AdminDeduction"
+  | "MissionReward"
+  | "AchievementReward"
+  | "TradeFee";
 
 export type TrackingTier = "Tier1" | "Tier2" | "Tier3";
 

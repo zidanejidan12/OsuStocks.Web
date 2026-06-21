@@ -38,6 +38,8 @@ const CREDIT_TYPES: ReadonlySet<WalletTransactionType> = new Set([
   "SellStock",
   "DailyReward",
   "AdminGrant",
+  "MissionReward",
+  "AchievementReward",
 ]);
 
 const TYPE_LABELS: Record<WalletTransactionType, string> = {
@@ -47,6 +49,9 @@ const TYPE_LABELS: Record<WalletTransactionType, string> = {
   DailyReward: "Daily Reward",
   AdminGrant: "Admin Grant",
   AdminDeduction: "Admin Deduction",
+  MissionReward: "Mission Reward",
+  AchievementReward: "Achievement Reward",
+  TradeFee: "Trade Fee",
 };
 
 function humanizeType(type: WalletTransactionType): string {
@@ -284,7 +289,11 @@ export default function WalletPage() {
                         const TypeIcon: PhosphorIcon = isCredit
                           ? ArrowDownLeft
                           : ArrowUpRight;
-                        const positive = tx.amount >= 0;
+                        // Amounts are stored as positive magnitudes; the sign is
+                        // relative to the wallet — debits (Buy, Fee, Deduction)
+                        // are money out, so render them negative + red.
+                        const signedAmount =
+                          (isCredit ? 1 : -1) * Math.abs(tx.amount);
 
                         return (
                           <motion.tr
@@ -306,10 +315,10 @@ export default function WalletPage() {
                             </td>
                             <td
                               className={`px-4 py-3.5 text-right font-mono tabular-nums ${
-                                positive ? "text-emerald-400" : "text-rose-400"
+                                isCredit ? "text-emerald-400" : "text-rose-400"
                               }`}
                             >
-                              {<><Coin />{formatChange(tx.amount)}</>}
+                              {<><Coin />{formatChange(signedAmount)}</>}
                             </td>
                             <td className="px-4 py-3.5 text-right font-mono tabular-nums text-zinc-500">
                               {formatDateTime(tx.createdAt)}
