@@ -147,33 +147,36 @@ function ProfileHeader({
         </ProfileBanner>
 
         <div className="px-5 pb-6 sm:px-7">
-          <div className="-mt-12 flex flex-col gap-4 sm:-mt-14 sm:flex-row sm:items-end sm:justify-between">
-            <div className="flex items-end gap-4">
-              <div className="shrink-0 rounded-full ring-4 ring-zinc-900 shadow-xl shadow-black/40">
-                <Avatar src={user.avatarUrl} name={user.username} size="xl" />
-              </div>
-              <div className="pb-1">
-                <h2 className="text-3xl font-semibold tracking-tighter text-zinc-50 [text-shadow:0_2px_10px_rgba(0,0,0,0.85)] md:text-4xl">
-                  {user.username}
-                </h2>
-                <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm">
-                  {user.equippedTitle && (
-                    <span className="inline-flex items-center gap-1 rounded-md bg-pink-500/10 px-2 py-0.5 text-xs font-medium text-pink-300 ring-1 ring-inset ring-pink-500/25">
-                      <Trophy size={12} weight="fill" />
-                      {user.equippedTitle}
-                    </span>
-                  )}
-                  {user.countryCode && (
-                    <span className="inline-flex items-center rounded-md bg-zinc-800/70 px-1.5 py-1 ring-1 ring-inset ring-zinc-700/50">
-                      <Flag countryCode={user.countryCode} className="h-3.5" />
-                    </span>
-                  )}
-                  {user.role === "Admin" && (
-                    <span className="rounded-md bg-pink-500/10 px-2 py-0.5 text-xs font-medium uppercase tracking-wide text-pink-300 ring-1 ring-inset ring-pink-500/25">
-                      Admin
-                    </span>
-                  )}
-                </div>
+          {/* Only the avatar overlaps the banner; the name + chips sit below on the dark
+              content area so they stay legible over any (possibly light) osu! cover. */}
+          <div className="-mt-12 sm:-mt-14">
+            <div className="inline-block rounded-full ring-4 ring-zinc-900 shadow-xl shadow-black/40">
+              <Avatar src={user.avatarUrl} name={user.username} size="xl" />
+            </div>
+          </div>
+
+          <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h2 className="text-3xl font-semibold tracking-tighter text-zinc-50 md:text-4xl">
+                {user.username}
+              </h2>
+              <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm">
+                {user.equippedTitle && (
+                  <span className="inline-flex items-center gap-1 rounded-md bg-pink-500/10 px-2 py-0.5 text-xs font-medium text-pink-300 ring-1 ring-inset ring-pink-500/25">
+                    <Trophy size={12} weight="fill" />
+                    {user.equippedTitle}
+                  </span>
+                )}
+                {user.countryCode && (
+                  <span className="inline-flex items-center rounded-md bg-zinc-800/70 px-1.5 py-1 ring-1 ring-inset ring-zinc-700/50">
+                    <Flag countryCode={user.countryCode} className="h-3.5" />
+                  </span>
+                )}
+                {user.role === "Admin" && (
+                  <span className="rounded-md bg-pink-500/10 px-2 py-0.5 text-xs font-medium uppercase tracking-wide text-pink-300 ring-1 ring-inset ring-pink-500/25">
+                    Admin
+                  </span>
+                )}
               </div>
             </div>
 
