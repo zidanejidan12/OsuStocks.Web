@@ -112,7 +112,9 @@ function ProfileBanner({
             onError={() => setFailed(true)}
             className="absolute inset-0 h-full w-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-zinc-950/10" />
+          {/* Strong bottom scrim so the avatar + username (which overlap the banner) stay
+              legible over any cover — osu! covers can be light. */}
+          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/70 to-zinc-950/20" />
           <div className="absolute inset-0 bg-gradient-to-br from-pink-600/20 to-transparent" />
         </>
       ) : (
@@ -151,7 +153,7 @@ function ProfileHeader({
                 <Avatar src={user.avatarUrl} name={user.username} size="xl" />
               </div>
               <div className="pb-1">
-                <h2 className="text-3xl font-semibold tracking-tighter text-zinc-50 md:text-4xl">
+                <h2 className="text-3xl font-semibold tracking-tighter text-zinc-50 [text-shadow:0_2px_10px_rgba(0,0,0,0.85)] md:text-4xl">
                   {user.username}
                 </h2>
                 <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm">
