@@ -394,6 +394,7 @@ export function getLeaderboard(params?: {
       username: string;
       avatarUrl?: string | null;
       countryCode?: string | null;
+      equippedTitle?: string | null;
       value: number;
       periodChange?: number | null;
     }>;
@@ -406,6 +407,7 @@ export function getLeaderboard(params?: {
       username: e.username,
       avatarUrl: e.avatarUrl,
       countryCode: e.countryCode,
+      equippedTitle: e.equippedTitle,
       portfolioValue: e.value,
       profitLoss: e.periodChange ?? undefined,
     })),
@@ -442,19 +444,31 @@ export function getNotifications(params?: {
     "/notifications" + buildQuery(params),
   ).then((page) => ({
     ...page,
-    items: (page.items ?? []).map((n) => ({
-      notificationId: n.id,
-      // Keep the union truthful: an unknown server type falls back to "System"
-      // (rendered with the generic icon) instead of a lying cast.
-      type: KNOWN_NOTIFICATION_TYPES.has(n.type as AppNotification["type"])
-        ? (n.type as AppNotification["type"])
-        : "System",
-      title: n.title,
-      message: n.body,
-      isRead: n.isRead,
-      createdAt: n.createdAt,
-      link: null,
-    })),
+    items: (page.items ?? []).map((n) => {
+      // Event notifications carry { stockId } in `data` — deep-link them to the stock page.
+      let link: string | null = null;
+      if (n.data) {
+        try {
+          const parsed = JSON.parse(n.data) as { stockId?: string };
+          if (parsed?.stockId) link = `/stocks/${parsed.stockId}`;
+        } catch {
+          /* malformed data — leave the notification non-clickable */
+        }
+      }
+      return {
+        notificationId: n.id,
+        // Keep the union truthful: an unknown server type falls back to "System"
+        // (rendered with the generic icon) instead of a lying cast.
+        type: KNOWN_NOTIFICATION_TYPES.has(n.type as AppNotification["type"])
+          ? (n.type as AppNotification["type"])
+          : "System",
+        title: n.title,
+        message: n.body,
+        isRead: n.isRead,
+        createdAt: n.createdAt,
+        link,
+      };
+    }),
   }));
 }
 
