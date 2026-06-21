@@ -36,6 +36,14 @@ export interface Me {
   role: UserRole;
   /** osu! profile country, ISO 3166-1 alpha-2 (e.g. "US"). Optional until the API returns it. */
   countryCode?: string | null;
+  /** osu! profile banner (cover.url). Optional. */
+  coverUrl?: string | null;
+  /** Equipped achievement code whose name is shown as the player's title (null = use level title). */
+  equippedTitleCode?: string | null;
+  /** Resolved display name of the equipped title (null when none equipped). */
+  equippedTitle?: string | null;
+  /** Achievement codes pinned to the profile showcase (max 3). */
+  showcasedAchievementCodes: string[];
 }
 
 export interface TopMover {

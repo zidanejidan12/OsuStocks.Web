@@ -227,6 +227,22 @@ export function getMissions(): Promise<Mission[]> {
   return request<{ items: Mission[] }>("/missions").then((r) => r.items);
 }
 
+// Sets the player's equipped title + showcased achievements. The server validates
+// that every code is one the caller has actually unlocked.
+export function updateProfileShowcase(body: {
+  equippedTitleCode: string | null;
+  showcasedAchievementCodes: string[];
+}): Promise<{
+  equippedTitleCode: string | null;
+  equippedTitle: string | null;
+  showcasedAchievementCodes: string[];
+}> {
+  return request("/profile/showcase", {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+}
+
 // --- Frontend-ahead endpoints --------------------------------------------------
 // These adapt the real API wire shapes to the types the UI consumes (same pattern
 // as getNotifications), so components stay decoupled from the backend field names.
