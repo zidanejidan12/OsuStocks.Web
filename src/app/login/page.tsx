@@ -47,6 +47,10 @@ export default function LoginPage() {
               Trade your favorite osu! players like stocks. Build a portfolio,
               follow the meta, and outsmart the market.
             </p>
+            <p className="mt-3 max-w-md text-sm leading-relaxed text-zinc-500">
+              A free fan-made game — credits are virtual, with no real-world value.
+              Not affiliated with osu! or ppy&nbsp;Pty&nbsp;Ltd.
+            </p>
           </Reveal>
 
           <Stagger className="mt-10 flex flex-col gap-5">
@@ -79,6 +83,10 @@ export default function LoginPage() {
                   </h2>
                   <p className="text-sm text-zinc-400">
                     Continue with your osu! account to start trading.
+                  </p>
+                  <p className="text-xs leading-relaxed text-zinc-500">
+                    Uses osu!&apos;s official login (OAuth) on osu.ppy.sh — we never
+                    see or store your password.
                   </p>
                 </div>
 
