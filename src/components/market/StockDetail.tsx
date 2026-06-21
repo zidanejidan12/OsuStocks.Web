@@ -800,6 +800,17 @@ function TradePanel({
           </div>
         )}
 
+        {/* The progressive service fee is charged on top of the cost (and the price
+            moves as you fill), so the wallet must cover more than the estimate —
+            disclose it so an under-balance Est. cost can still fail as INSUFFICIENT_BALANCE. */}
+        {quantity > 0 && currentPrice > 0 && (
+          <p className="text-[11px] leading-relaxed text-zinc-500">
+            A progressive service fee is added on top of a buy (and taken from a
+            sale&apos;s proceeds) and isn&apos;t included above — keep a little balance
+            spare beyond the estimate.
+          </p>
+        )}
+
         {/* Concrete buying power when known, else the generic cap note. */}
         {maxBuy != null && maxBuy > 0 ? (
           <p className="text-xs text-zinc-500">
@@ -811,8 +822,8 @@ function TradePanel({
             >
               {formatShares(maxBuy)}
             </button>{" "}
-            share{maxBuy === 1 ? "" : "s"} — capped by your balance and the{" "}
-            {capPctLabel}% per-trader limit.
+            share{maxBuy === 1 ? "" : "s"} — capped by your balance (before the
+            service fee) and the {capPctLabel}% per-trader limit.
           </p>
         ) : (
           <p className="text-xs text-zinc-500">
