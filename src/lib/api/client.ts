@@ -3,6 +3,8 @@
 import { getAccessToken } from "@/lib/auth/token";
 import type {
   AchievementsResponse,
+  AdminTrade,
+  AdminWalletTransaction,
   AppNotification,
   Candle,
   HealthStatus,
@@ -29,10 +31,12 @@ import type {
   TrackedPlayer,
   TradeRequest,
   TradeResult,
+  TradeType,
   Trending,
   TrendingStock,
   Wallet,
   WalletTransaction,
+  WalletTransactionType,
 } from "@/lib/api/types";
 
 // Empty by default → requests are relative (same-origin): the browser only ever
@@ -595,4 +599,68 @@ export function removeTrackedPlayer(trackedPlayerId: string): Promise<void> {
   return request<void>("/admin/tracked-players/" + trackedPlayerId, {
     method: "DELETE",
   });
+}
+
+// --- Admin transaction monitor --------------------------------------------
+// Read-only cross-user feeds. BE serializes items in the AdminTrade /
+// AdminWalletTransaction shape already (camelCase), so no field remapping.
+
+export function getAdminTrades(params?: {
+  userId?: string;
+  stockId?: string;
+  tradeType?: TradeType;
+  from?: string;
+  to?: string;
+  page?: number;
+  pageSize?: number;
+}): Promise<Paged<AdminTrade>> {
+  const qs = new URLSearchParams();
+  qs.set("page", String(params?.page ?? 1));
+  qs.set("pageSize", String(params?.pageSize ?? 25));
+  if (params?.userId) qs.set("userId", params.userId);
+  if (params?.stockId) qs.set("stockId", params.stockId);
+  if (params?.tradeType) qs.set("tradeType", params.tradeType);
+  if (params?.from) qs.set("from", params.from);
+  if (params?.to) qs.set("to", params.to);
+
+  return request<{
+    items: AdminTrade[];
+    page?: number;
+    pageSize?: number;
+    totalCount?: number;
+  }>(`/admin/transactions/trades?${qs.toString()}`).then((raw) => ({
+    items: raw.items ?? [],
+    page: raw.page,
+    pageSize: raw.pageSize,
+    totalCount: raw.totalCount,
+  }));
+}
+
+export function getAdminWalletTransactions(params?: {
+  userId?: string;
+  type?: WalletTransactionType;
+  from?: string;
+  to?: string;
+  page?: number;
+  pageSize?: number;
+}): Promise<Paged<AdminWalletTransaction>> {
+  const qs = new URLSearchParams();
+  qs.set("page", String(params?.page ?? 1));
+  qs.set("pageSize", String(params?.pageSize ?? 25));
+  if (params?.userId) qs.set("userId", params.userId);
+  if (params?.type) qs.set("type", params.type);
+  if (params?.from) qs.set("from", params.from);
+  if (params?.to) qs.set("to", params.to);
+
+  return request<{
+    items: AdminWalletTransaction[];
+    page?: number;
+    pageSize?: number;
+    totalCount?: number;
+  }>(`/admin/transactions/wallet?${qs.toString()}`).then((raw) => ({
+    items: raw.items ?? [],
+    page: raw.page,
+    pageSize: raw.pageSize,
+    totalCount: raw.totalCount,
+  }));
 }
