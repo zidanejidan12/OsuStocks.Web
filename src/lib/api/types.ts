@@ -326,6 +326,13 @@ export interface StockAnalytics {
   totalShares: number;
   /** Single-trader ownership cap, as a percentage (e.g. 25). */
   maxOwnershipPercentage: number;
+  /**
+   * Virtual "reference supply" added to the float when enforcing the cap, so the
+   * effective cap is `25% of (totalShares + referenceSupplyShares)`. Lets the
+   * "max you can buy" match the server on thin/new stocks. Optional until the API
+   * returns it (falls back to a client default).
+   */
+  referenceSupplyShares?: number;
 }
 
 // --- OHLC history (GET /market/stocks/{id}/history?range=…) -----------------

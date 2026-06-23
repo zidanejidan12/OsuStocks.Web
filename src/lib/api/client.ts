@@ -306,6 +306,7 @@ export function getStockAnalytics(stockId: string): Promise<StockAnalytics> {
     liquidityTier: string;
     totalShares: number;
     maxOwnershipPercentage: number;
+    referenceSupplyShares?: number;
   }>("/market/stocks/" + stockId + "/analytics").then((r) => ({
     volume24h: r.volume24hShares,
     volume7d: r.volume7dShares,
@@ -317,6 +318,7 @@ export function getStockAnalytics(stockId: string): Promise<StockAnalytics> {
     liquidityTier: r.liquidityTier,
     totalShares: r.totalShares,
     maxOwnershipPercentage: r.maxOwnershipPercentage,
+    referenceSupplyShares: r.referenceSupplyShares,
   }));
 }
 

@@ -477,6 +477,12 @@ function AnalyticsPanel({
 
 /** Position cap (matches the backend's MaxOwnershipPercentage, default 25%). */
 const POSITION_LIMIT = 0.25;
+/**
+ * Virtual reference supply added to the float when enforcing the cap (matches the
+ * backend's AntiAbuse:ReferenceSupplyShares). Fallback until analytics loads / for
+ * older APIs; kept in sync with the prod default.
+ */
+const REFERENCE_SUPPLY_DEFAULT = 50;
 
 function TradePanel({
   stockId,
@@ -509,6 +515,9 @@ function TradePanel({
   // matches what the server will allow).
   const [totalShares, setTotalShares] = useState<number | null>(null);
   const [ownershipCapPct, setOwnershipCapPct] = useState<number | null>(null);
+  // Virtual reference supply the cap is priced against (float + reference). Default until
+  // analytics loads so the headroom is right even on a thin/new stock.
+  const [referenceSupply, setReferenceSupply] = useState<number>(REFERENCE_SUPPLY_DEFAULT);
   const [cooldownUntil, setCooldownUntil] = useState(0);
   const [now, setNow] = useState(0);
   // Accurate, fee-inclusive buy estimate from the server (debounced). Computed with the
@@ -562,6 +571,7 @@ function TradePanel({
         if (cancelled) return;
         setTotalShares(a.totalShares);
         setOwnershipCapPct(a.maxOwnershipPercentage);
+        setReferenceSupply(a.referenceSupplyShares ?? REFERENCE_SUPPLY_DEFAULT);
       })
       .catch(() => {
         if (!cancelled) {
@@ -581,12 +591,14 @@ function TradePanel({
       ? ownershipCapPct / 100
       : POSITION_LIMIT;
   const capPctLabel = Math.round(capFraction * 100);
-  // How many more shares the cap allows, solving
-  // (owned + q)/(supply + q) ≤ cap  →  q ≤ (cap·supply − owned)/(1 − cap).
-  // Only applies once a supply exists (the first buyer is unrestricted on the BE).
+  // How many more shares the cap allows, solving against the EFFECTIVE supply
+  // (float + reference), matching the BE: (owned + q)/(effective + q) ≤ cap
+  //   →  q ≤ (cap·effective − owned)/(1 − cap),  effective = totalShares + referenceSupply.
+  // Applies from the first share (the reference supply means there's no first-buyer bypass).
+  const effectiveSupply = totalShares != null ? totalShares + referenceSupply : null;
   const positionHeadroom =
-    totalShares != null && totalShares > 0 && owned != null
-      ? Math.max(0, (capFraction * totalShares - owned) / (1 - capFraction))
+    effectiveSupply != null && owned != null
+      ? Math.max(0, (capFraction * effectiveSupply - owned) / (1 - capFraction))
       : null;
   // Only trust the quote when it's for the currently-entered quantity (ignore in-flight/stale).
   const liveQuote = quote && quote.quantity === quantity ? quote : null;
