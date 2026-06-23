@@ -365,6 +365,37 @@ export interface TrackedPlayer {
   stockId?: string | null;
 }
 
+// --- Admin transaction monitor (GET /admin/transactions/{trades,wallet}) ----
+/** A trade row across all users, for the admin monitor. */
+export interface AdminTrade {
+  tradeId: string;
+  /** The trader. */
+  userId: string;
+  username: string;
+  avatarUrl?: string | null;
+  /** The traded stock + the osu! player it tracks. */
+  stockId: string;
+  playerName?: string | null;
+  tradeType: TradeType;
+  quantity: number;
+  unitPrice: number;
+  totalAmount: number;
+  executedAt: string;
+}
+
+/** A wallet-ledger row across all users, for the admin monitor. */
+export interface AdminWalletTransaction {
+  id: string;
+  /** The wallet owner. */
+  userId: string;
+  username: string;
+  transactionType: WalletTransactionType;
+  /** Stored as a positive magnitude; sign is derived from the type (see CREDIT_TYPES). */
+  amount: number;
+  referenceId: string | null;
+  createdAt: string;
+}
+
 // --- Investor level (GET /investor/level) ----------------------------------
 export interface InvestorLevel {
   /** Current level, soft-capped at 100. */

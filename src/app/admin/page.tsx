@@ -15,6 +15,10 @@ import {
   MagnifyingGlass,
   CaretLeft,
   CaretRight,
+  Receipt,
+  ArrowDownLeft,
+  ArrowUpRight,
+  X,
 } from "@phosphor-icons/react";
 import {
   getMarketSettings,
@@ -23,13 +27,25 @@ import {
   addTrackedPlayer,
   updateTrackedPlayer,
   removeTrackedPlayer,
+  getAdminTrades,
+  getAdminWalletTransactions,
   ApiError,
 } from "@/lib/api/client";
-import type { MarketSettings, TrackedPlayer, TrackingTier } from "@/lib/api/types";
-import { formatNumber } from "@/lib/format";
+import type {
+  AdminTrade,
+  AdminWalletTransaction,
+  MarketSettings,
+  TrackedPlayer,
+  TrackingTier,
+  TradeType,
+  WalletTransactionType,
+} from "@/lib/api/types";
+import { formatNumber, formatShares, formatChange, formatDateTime } from "@/lib/format";
 import { Card } from "@/components/ui/Card";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
+import { Money } from "@/components/ui/Money";
+import { Coin } from "@/components/ui/Coin";
 import { Button, buttonClasses } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -40,8 +56,46 @@ import { useToast } from "@/components/ui/Toast";
 
 const TIERS: TrackingTier[] = ["Tier1", "Tier2", "Tier3"];
 
+// Wallet-ledger labels + which types are money IN (rest are money OUT). Mirrors /wallet.
+const WALLET_TYPES: WalletTransactionType[] = [
+  "InitialGrant",
+  "BuyStock",
+  "SellStock",
+  "DailyReward",
+  "AdminGrant",
+  "AdminDeduction",
+  "MissionReward",
+  "AchievementReward",
+  "TradeFee",
+];
+const WALLET_TYPE_LABELS: Record<WalletTransactionType, string> = {
+  InitialGrant: "Initial Grant",
+  BuyStock: "Buy Stock",
+  SellStock: "Sell Stock",
+  DailyReward: "Daily Reward",
+  AdminGrant: "Admin Grant",
+  AdminDeduction: "Admin Deduction",
+  MissionReward: "Mission Reward",
+  AchievementReward: "Achievement Reward",
+  TradeFee: "Trade Fee",
+};
+const WALLET_CREDIT_TYPES: ReadonlySet<WalletTransactionType> = new Set([
+  "InitialGrant",
+  "SellStock",
+  "DailyReward",
+  "AdminGrant",
+  "MissionReward",
+  "AchievementReward",
+]);
+
 const inputClass =
   "w-full rounded-xl border border-zinc-800 bg-zinc-900/60 px-3.5 py-2.5 text-sm font-mono tabular-nums text-zinc-100 transition-colors focus:border-pink-500/50 focus:outline-none focus:ring-2 focus:ring-pink-500/20";
+
+// Same look as inputClass but auto-width (for inline filter dropdowns). Defined
+// separately rather than overriding w-full — Tailwind precedence is by stylesheet
+// order, not className order, so "w-full w-auto" wouldn't reliably win.
+const filterSelectClass =
+  "rounded-xl border border-zinc-800 bg-zinc-900/60 px-3 py-2 text-sm text-zinc-100 transition-colors focus:border-pink-500/50 focus:outline-none focus:ring-2 focus:ring-pink-500/20";
 
 function PageShell({ children }: { children: React.ReactNode }) {
   return <div className="mx-auto max-w-5xl px-4 py-10 sm:py-14">{children}</div>;
@@ -600,6 +654,340 @@ function TrackedPlayersCard() {
   );
 }
 
+// --- Transaction monitor ---------------------------------------------------
+type MonitorTab = "trades" | "wallet";
+
+function FilterChip({ label, value, onClear }: { label: string; value: string; onClear: () => void }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-lg border border-pink-500/30 bg-pink-500/10 py-1 pl-2.5 pr-1 text-xs text-pink-200">
+      <span className="text-pink-400/70">{label}:</span>
+      <span className="max-w-[10rem] truncate font-medium">{value}</span>
+      <button
+        type="button"
+        onClick={onClear}
+        aria-label={`Clear ${label} filter`}
+        className="rounded-md p-0.5 text-pink-300/70 transition-colors hover:bg-pink-500/20 hover:text-pink-200"
+      >
+        <X size={13} weight="bold" />
+      </button>
+    </span>
+  );
+}
+
+function TransactionMonitorCard() {
+  const [tab, setTab] = useState<MonitorTab>("trades");
+  const [tradeType, setTradeType] = useState<"" | TradeType>("");
+  const [walletType, setWalletType] = useState<"" | WalletTransactionType>("");
+  // Filters set by clicking a row — let an admin pivot to "everything by this user/stock".
+  const [userFilter, setUserFilter] = useState<{ id: string; name: string } | null>(null);
+  const [stockFilter, setStockFilter] = useState<{ id: string; name: string } | null>(null);
+
+  const [trades, setTrades] = useState<AdminTrade[]>([]);
+  const [walletTx, setWalletTx] = useState<AdminWalletTransaction[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [unavailable, setUnavailable] = useState(false);
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+
+  const switchTab = (t: MonitorTab) => {
+    if (t === tab) return;
+    setTab(t);
+    setPage(1);
+    if (t === "wallet") setStockFilter(null); // stock filter is trades-only
+  };
+
+  const filterByUser = (id: string, name: string) => {
+    setUserFilter({ id, name });
+    setPage(1);
+  };
+  const filterByStock = (id: string, name: string) => {
+    setStockFilter({ id, name });
+    setPage(1);
+  };
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      if (tab === "trades") {
+        const res = await getAdminTrades({
+          page,
+          pageSize: PAGE_SIZE,
+          tradeType: tradeType || undefined,
+          userId: userFilter?.id,
+          stockId: stockFilter?.id,
+        });
+        setTrades(res.items);
+        setTotalCount(res.totalCount ?? res.items.length);
+      } else {
+        const res = await getAdminWalletTransactions({
+          page,
+          pageSize: PAGE_SIZE,
+          type: walletType || undefined,
+          userId: userFilter?.id,
+        });
+        setWalletTx(res.items);
+        setTotalCount(res.totalCount ?? res.items.length);
+      }
+      setUnavailable(false);
+    } catch {
+      setUnavailable(true);
+    } finally {
+      setLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, page, tradeType, walletType, userFilter, stockFilter]);
+
+  useEffect(() => {
+    /* eslint-disable-next-line react-hooks/set-state-in-effect */
+    load();
+  }, [load]);
+
+  const hasFilters = Boolean(userFilter || stockFilter || tradeType || walletType);
+  const clearAll = () => {
+    setUserFilter(null);
+    setStockFilter(null);
+    setTradeType("");
+    setWalletType("");
+    setPage(1);
+  };
+
+  const tabBtn = (t: MonitorTab, label: string) =>
+    `rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+      tab === t
+        ? "bg-pink-500/15 text-pink-300 ring-1 ring-inset ring-pink-500/30"
+        : "text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-200"
+    }`;
+
+  return (
+    <Card>
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Receipt size={18} weight="bold" className="text-pink-400" />
+          <h2 className="text-sm font-semibold text-zinc-100">Transaction Monitor</h2>
+        </div>
+        <div className="flex items-center gap-1 rounded-xl border border-zinc-800 bg-zinc-900/50 p-1">
+          <button type="button" onClick={() => switchTab("trades")} className={tabBtn("trades", "Trades")}>
+            Trades
+          </button>
+          <button type="button" onClick={() => switchTab("wallet")} className={tabBtn("wallet", "Wallet")}>
+            Wallet ledger
+          </button>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="mb-4 flex flex-wrap items-center gap-2.5">
+        {tab === "trades" ? (
+          <select
+            value={tradeType}
+            onChange={(e) => {
+              setTradeType(e.target.value as "" | TradeType);
+              setPage(1);
+            }}
+            aria-label="Filter by trade side"
+            className={filterSelectClass}
+          >
+            <option value="">All sides</option>
+            <option value="Buy">Buy</option>
+            <option value="Sell">Sell</option>
+          </select>
+        ) : (
+          <select
+            value={walletType}
+            onChange={(e) => {
+              setWalletType(e.target.value as "" | WalletTransactionType);
+              setPage(1);
+            }}
+            aria-label="Filter by transaction type"
+            className={filterSelectClass}
+          >
+            <option value="">All types</option>
+            {WALLET_TYPES.map((t) => (
+              <option key={t} value={t}>
+                {WALLET_TYPE_LABELS[t]}
+              </option>
+            ))}
+          </select>
+        )}
+
+        {userFilter && (
+          <FilterChip label="User" value={userFilter.name} onClear={() => { setUserFilter(null); setPage(1); }} />
+        )}
+        {tab === "trades" && stockFilter && (
+          <FilterChip label="Stock" value={stockFilter.name} onClear={() => { setStockFilter(null); setPage(1); }} />
+        )}
+        {hasFilters && (
+          <button
+            type="button"
+            onClick={clearAll}
+            className="text-xs text-zinc-500 underline underline-offset-2 transition-colors hover:text-zinc-300"
+          >
+            Clear all
+          </button>
+        )}
+        <span className="ml-auto shrink-0 font-mono text-xs tabular-nums text-zinc-500">
+          {formatNumber(totalCount)} {tab === "trades" ? "trades" : "entries"}
+        </span>
+      </div>
+
+      {loading ? (
+        <div className="space-y-2">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-12 w-full rounded-xl" />
+          ))}
+        </div>
+      ) : unavailable ? (
+        <p className="py-4 text-sm text-zinc-500">The transaction feed is unavailable right now.</p>
+      ) : (tab === "trades" ? trades.length === 0 : walletTx.length === 0) ? (
+        <EmptyState
+          icon={<Receipt size={20} weight="bold" />}
+          title="No transactions"
+          message={hasFilters ? "No transactions match the current filters." : "No activity recorded yet."}
+        />
+      ) : tab === "trades" ? (
+        <div className="overflow-x-auto rounded-xl border border-zinc-800/80">
+          <table className="w-full min-w-[44rem] text-sm">
+            <caption className="sr-only">Trades: trader, player, side, quantity, price, total, time.</caption>
+            <thead>
+              <tr className="border-b border-zinc-800 text-left text-[11px] uppercase tracking-wider text-zinc-500">
+                <th className="px-3 py-2.5 font-medium">Trader</th>
+                <th className="px-3 py-2.5 font-medium">Player</th>
+                <th className="px-3 py-2.5 font-medium">Side</th>
+                <th className="px-3 py-2.5 text-right font-medium">Qty</th>
+                <th className="px-3 py-2.5 text-right font-medium">Price</th>
+                <th className="px-3 py-2.5 text-right font-medium">Total</th>
+                <th className="px-3 py-2.5 text-right font-medium">Time</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-800/60">
+              {trades.map((t) => (
+                <tr key={t.tradeId} className="transition-colors hover:bg-zinc-900/40">
+                  <td className="px-3 py-2.5">
+                    <button
+                      type="button"
+                      onClick={() => filterByUser(t.userId, t.username)}
+                      className="flex items-center gap-2 text-left hover:text-pink-300"
+                      title="Filter by this user"
+                    >
+                      <Avatar src={t.avatarUrl} name={t.username} size="xs" />
+                      <span className="max-w-[8rem] truncate font-medium text-zinc-200">{t.username}</span>
+                    </button>
+                  </td>
+                  <td className="px-3 py-2.5">
+                    <button
+                      type="button"
+                      onClick={() => filterByStock(t.stockId, t.playerName ?? "stock")}
+                      className="max-w-[9rem] truncate text-left text-zinc-300 hover:text-pink-300"
+                      title="Filter by this stock"
+                    >
+                      {t.playerName ?? "—"}
+                    </button>
+                  </td>
+                  <td className="px-3 py-2.5">
+                    <Badge tone={t.tradeType === "Buy" ? "success" : "danger"}>{t.tradeType}</Badge>
+                  </td>
+                  <td className="px-3 py-2.5 text-right font-mono tabular-nums text-zinc-300">
+                    {formatShares(t.quantity)}
+                  </td>
+                  <td className="px-3 py-2.5 text-right text-zinc-300">
+                    <Money value={t.unitPrice} />
+                  </td>
+                  <td className="px-3 py-2.5 text-right text-zinc-100">
+                    <Money value={t.totalAmount} />
+                  </td>
+                  <td className="px-3 py-2.5 text-right font-mono text-xs tabular-nums text-zinc-500">
+                    {formatDateTime(t.executedAt)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="overflow-x-auto rounded-xl border border-zinc-800/80">
+          <table className="w-full min-w-[32rem] text-sm">
+            <caption className="sr-only">Wallet ledger: owner, type, amount, time.</caption>
+            <thead>
+              <tr className="border-b border-zinc-800 text-left text-[11px] uppercase tracking-wider text-zinc-500">
+                <th className="px-3 py-2.5 font-medium">Owner</th>
+                <th className="px-3 py-2.5 font-medium">Type</th>
+                <th className="px-3 py-2.5 text-right font-medium">Amount</th>
+                <th className="px-3 py-2.5 text-right font-medium">Time</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-800/60">
+              {walletTx.map((tx) => {
+                const isCredit = WALLET_CREDIT_TYPES.has(tx.transactionType);
+                const TypeIcon = isCredit ? ArrowDownLeft : ArrowUpRight;
+                const signedAmount = (isCredit ? 1 : -1) * Math.abs(tx.amount);
+                return (
+                  <tr key={tx.id} className="transition-colors hover:bg-zinc-900/40">
+                    <td className="px-3 py-2.5">
+                      <button
+                        type="button"
+                        onClick={() => filterByUser(tx.userId, tx.username)}
+                        className="max-w-[10rem] truncate text-left font-medium text-zinc-200 hover:text-pink-300"
+                        title="Filter by this user"
+                      >
+                        {tx.username}
+                      </button>
+                    </td>
+                    <td className="px-3 py-2.5">
+                      <Badge tone={isCredit ? "success" : "danger"}>
+                        <TypeIcon size={14} weight="bold" />
+                        {WALLET_TYPE_LABELS[tx.transactionType] ?? tx.transactionType}
+                      </Badge>
+                    </td>
+                    <td
+                      className={`px-3 py-2.5 text-right font-mono tabular-nums ${
+                        isCredit ? "text-emerald-400" : "text-rose-400"
+                      }`}
+                    >
+                      <Coin />
+                      {formatChange(signedAmount)}
+                    </td>
+                    <td className="px-3 py-2.5 text-right font-mono text-xs tabular-nums text-zinc-500">
+                      {formatDateTime(tx.createdAt)}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {!loading && !unavailable && totalPages > 1 && (
+        <div className="mt-4 flex items-center justify-between gap-3">
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page <= 1}
+            className="flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:border-zinc-700 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <CaretLeft size={14} weight="bold" />
+            Prev
+          </button>
+          <span className="font-mono text-xs tabular-nums text-zinc-500">
+            Page {page} / {totalPages}
+          </span>
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page >= totalPages}
+            className="flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:border-zinc-700 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Next
+            <CaretRight size={14} weight="bold" />
+          </button>
+        </div>
+      )}
+    </Card>
+  );
+}
+
 export default function AdminPage() {
   const { user, loading } = useAuth();
 
@@ -681,6 +1069,9 @@ export default function AdminPage() {
         </Reveal>
         <Reveal delay={0.1}>
           <TrackedPlayersCard />
+        </Reveal>
+        <Reveal delay={0.15}>
+          <TransactionMonitorCard />
         </Reveal>
       </div>
     </PageShell>
