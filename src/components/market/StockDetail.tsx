@@ -1147,8 +1147,9 @@ function ProfileCover({ bannerUrl }: { bannerUrl?: string | null }) {
             height={500}
             className="absolute inset-0 h-full w-full object-cover"
           />
-          {/* Bottom-up scrim keeps the badge + overlapping avatar/name legible. */}
-          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/35 to-zinc-950/5" />
+          {/* Strong bottom scrim so the badge + overlapping avatar stay legible over any
+              cover — osu! covers can be light. (Matches the portfolio banner.) */}
+          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/70 to-zinc-950/20" />
           <div className="absolute inset-0 bg-gradient-to-br from-pink-600/20 to-transparent" />
         </>
       ) : (
@@ -1327,35 +1328,37 @@ export function StockDetail({ stockId }: { stockId: string }) {
           <ProfileCover bannerUrl={stock.bannerUrl} />
 
           <div className="px-5 pb-6 sm:px-7">
-            {/* Identity row — avatar overlaps the banner */}
-            <div className="-mt-12 flex flex-col gap-4 sm:-mt-14 sm:flex-row sm:items-end sm:justify-between">
-              <div className="flex items-end gap-4">
-                <div className="shrink-0 rounded-full ring-4 ring-zinc-900 shadow-xl shadow-black/40">
-                  <Avatar src={stock.avatarUrl} name={stock.playerName} size="xl" />
-                </div>
-                <div className="pb-1">
-                  <h1 className="text-3xl font-semibold tracking-tighter text-zinc-50 md:text-4xl">
-                    {stock.playerName}
-                  </h1>
-                  <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm">
-                    {stock.countryCode && (
-                      <span className="inline-flex items-center rounded-md bg-zinc-800/70 px-1.5 py-1 ring-1 ring-inset ring-zinc-700/50">
-                        <Flag countryCode={stock.countryCode} className="h-3.5" />
-                      </span>
-                    )}
-                    {stock.globalRank != null && (
-                      <span className="inline-flex items-center gap-1 rounded-md bg-zinc-800/70 px-2 py-0.5 font-mono tabular-nums text-zinc-300 ring-1 ring-inset ring-zinc-700/50">
-                        <span className="text-zinc-500">#</span>
-                        {formatNumber(stock.globalRank)}
-                      </span>
-                    )}
-                    {stock.currentPp != null && (
-                      <span className="inline-flex items-center gap-1 rounded-md bg-pink-500/10 px-2 py-0.5 font-mono tabular-nums text-pink-300 ring-1 ring-inset ring-pink-500/25">
-                        {formatNumber(Math.round(stock.currentPp))}
-                        <span className="text-pink-400/70">pp</span>
-                      </span>
-                    )}
-                  </div>
+            {/* Only the avatar overlaps the banner; the name + chips sit below on the dark
+                content area so they stay legible over any (possibly light) osu! cover. */}
+            <div className="-mt-12 sm:-mt-14">
+              <div className="inline-block rounded-full ring-4 ring-zinc-900 shadow-xl shadow-black/40">
+                <Avatar src={stock.avatarUrl} name={stock.playerName} size="xl" />
+              </div>
+            </div>
+
+            <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h1 className="text-3xl font-semibold tracking-tighter text-zinc-50 md:text-4xl">
+                  {stock.playerName}
+                </h1>
+                <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm">
+                  {stock.countryCode && (
+                    <span className="inline-flex items-center rounded-md bg-zinc-800/70 px-1.5 py-1 ring-1 ring-inset ring-zinc-700/50">
+                      <Flag countryCode={stock.countryCode} className="h-3.5" />
+                    </span>
+                  )}
+                  {stock.globalRank != null && (
+                    <span className="inline-flex items-center gap-1 rounded-md bg-zinc-800/70 px-2 py-0.5 font-mono tabular-nums text-zinc-300 ring-1 ring-inset ring-zinc-700/50">
+                      <span className="text-zinc-500">#</span>
+                      {formatNumber(stock.globalRank)}
+                    </span>
+                  )}
+                  {stock.currentPp != null && (
+                    <span className="inline-flex items-center gap-1 rounded-md bg-pink-500/10 px-2 py-0.5 font-mono tabular-nums text-pink-300 ring-1 ring-inset ring-pink-500/25">
+                      {formatNumber(Math.round(stock.currentPp))}
+                      <span className="text-pink-400/70">pp</span>
+                    </span>
+                  )}
                 </div>
               </div>
 
