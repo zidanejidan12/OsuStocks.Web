@@ -1,4 +1,4 @@
-// Shared API types and interfaces. Types only — no runtime code.
+// Shared API types and interfaces. Types only, no runtime code.
 
 export type UserRole = "User" | "Admin";
 
@@ -67,7 +67,7 @@ export interface StockSummary {
   /** osu! profile image URL. Optional until the API returns it. */
   avatarUrl?: string | null;
   /**
-   * osu! profile cover/banner image URL (the osu! API `cover.url`). Optional —
+   * osu! profile cover/banner image URL (the osu! API `cover.url`). Optional:
    * the backend does not sync osu! covers yet (flagged in TASKS.md), and unlike
    * the avatar it can't be derived from the user id, so it only renders once the
    * API supplies it; the stock-detail header falls back to its gradient meanwhile.
@@ -318,11 +318,11 @@ export interface StockAnalytics {
   activeTraders: number;
   /** currentPrice × outstanding shares. */
   marketCap: number;
-  /** Float + recent volume — how easily the stock trades without moving its price. */
+  /** Float plus recent volume: how easily the stock trades without moving its price. */
   liquidity: number;
   /** Qualitative liquidity band: "Thin" | "Moderate" | "Deep". */
   liquidityTier: string;
-  /** Total shares held across all users (the float) — drives the per-trader buy cap. */
+  /** Total shares held across all users (the float); drives the per-trader buy cap. */
   totalShares: number;
   /** Single-trader ownership cap, as a percentage (e.g. 25). */
   maxOwnershipPercentage: number;

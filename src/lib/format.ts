@@ -1,5 +1,5 @@
 // Pure formatting helpers. No runtime dependencies.
-// Note: amounts are unitless strings here — the osu! coin glyph is rendered by
+// Note: amounts are unitless strings here. The osu! coin glyph is rendered by
 // the <Money> / <PriceChange> components, not baked into these values.
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -26,7 +26,7 @@ const sharesFormatter = new Intl.NumberFormat("en-US", {
 
 /**
  * Share quantities, which can be fractional (the API allows 2-dp shares).
- * Shows up to 2 dp with trailing zeros trimmed — 1 → "1", 1.5 → "1.5",
+ * Shows up to 2 dp with trailing zeros trimmed, so 1 → "1", 1.5 → "1.5",
  * 1.25 → "1.25". Use this for any `quantity`, never `formatNumber` (which
  * rounds to whole shares and misrepresents fractional holdings).
  */
@@ -63,7 +63,7 @@ export function formatCompact(n: number): string {
   return compactFormatter.format(n);
 }
 
-/** A 0–1 fraction as a percent, e.g. 0.124 → "12.4%". `signed` prepends +/−. */
+/** A 0 to 1 fraction as a percent, e.g. 0.124 → "12.4%". `signed` prepends +/-. */
 export function formatPercent(fraction: number, signed = false): string {
   const pct = fraction * 100;
   const sign = signed ? (pct >= 0 ? "+" : "-") : "";

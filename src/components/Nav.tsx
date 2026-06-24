@@ -73,14 +73,14 @@ export function Nav() {
   const { unreadCount } = useNotifications();
   const [open, setOpen] = useState(false);
 
-  // The hamburger that opened the drawer — focus returns here on close so
+  // The hamburger that opened the drawer. Focus returns here on close so
   // keyboard users aren't dumped at the top of the document.
   const triggerRef = useRef<HTMLButtonElement>(null);
-  // The drawer panel — its focusable children define the Tab trap boundary.
+  // The drawer panel, whose focusable children define the Tab trap boundary.
   const panelRef = useRef<HTMLDivElement>(null);
 
-  // Close the drawer on navigation — intentional sync to the route, the
-  // documented exception to react-hooks/set-state-in-effect.
+  // Close the drawer on navigation. This is an intentional sync to the route,
+  // the documented exception to react-hooks/set-state-in-effect.
   useEffect(() => {
     /* eslint-disable-next-line react-hooks/set-state-in-effect */
     setOpen(false);
@@ -162,7 +162,7 @@ export function Nav() {
             </span>
           </Link>
 
-          {/* Authenticated nav links — hidden for guests so they aren't sent into
+          {/* Authenticated nav links, hidden for guests so they aren't sent into
               login-walled pages; logged-out visitors only see the landing page. */}
           {user && (
           <ul className="ml-2 hidden items-center gap-1 text-sm lg:flex">
@@ -195,7 +195,7 @@ export function Nav() {
           </ul>
           )}
 
-          {/* Desktop auth cluster (lg+) — sponsor credit lives sitewide in the
+          {/* Desktop auth cluster (lg+). Sponsor credit lives sitewide in the
               ticker + footer (and prominently on the landing/About pages), so the
               nav stays uncluttered. */}
           <div className="ml-auto hidden items-center gap-2 text-sm sm:gap-3 lg:flex">

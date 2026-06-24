@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "OsuStocks — the osu! stock market",
+    name: "OsuStocks: the osu! stock market",
     short_name: "OsuStocks",
     description:
       "Trade osu! players like stocks. Browse the market, track your portfolio, and buy and sell shares tied to osu! player performance.",

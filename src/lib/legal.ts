@@ -2,7 +2,7 @@
 // environment so the deploying operator can fill them in without code changes;
 // the legal pages render the related bits only when a value is present.
 //
-// NOTE: these support — but do not substitute for — a real legal review.
+// NOTE: these support a real legal review, but do not substitute for one.
 export const CONTACT_EMAIL =
   process.env.NEXT_PUBLIC_CONTACT_EMAIL?.trim() || null;
 

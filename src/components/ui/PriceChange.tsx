@@ -7,7 +7,7 @@ import { Coin } from "./Coin";
 // Signed, colored, mono change with a trend glyph. Emerald up / rose down.
 // `format="currency"` (default) prepends the osu! coin and shows a 2-dp amount;
 // `format="percent"` shows a signed percentage with no coin (for percent-valued
-// fields like a top play's price impact — never feed those a currency render).
+// fields like a top play's price impact). Never feed those a currency render.
 export function PriceChange({
   value,
   className,
@@ -19,7 +19,7 @@ export function PriceChange({
   showIcon?: boolean;
   format?: "currency" | "percent";
 }) {
-  // Non-finite guard: render a neutral em-dash with no misleading sign/direction.
+  // Non-finite guard: render a neutral placeholder with no misleading sign/direction.
   if (!Number.isFinite(value)) {
     return (
       <span
@@ -30,7 +30,7 @@ export function PriceChange({
         aria-label="unavailable"
       >
         {format === "currency" && <Coin />}
-        <span aria-hidden="true">—</span>
+        <span aria-hidden="true">-</span>
       </span>
     );
   }

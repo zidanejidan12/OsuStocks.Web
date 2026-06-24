@@ -5,7 +5,7 @@ import { LegalSection } from "@/components/legal/LegalSection";
 export const metadata: Metadata = {
   title: "Patch Notes",
   description:
-    "What's new in OsuStocks — market updates, trading changes, and new features.",
+    "What's new in OsuStocks: market updates, trading changes, and new features.",
 };
 
 // Same typography as LegalSection, but the leading emoji in the heading is
@@ -61,13 +61,13 @@ export default function PatchNotesPage() {
             <p>
               OsuStocks now tracks the <strong>top 5,000 osu! players</strong>{" "}
               by performance. That&rsquo;s thousands of new stocks to discover and
-              trade &mdash; from the very top of the ladder down to rising names.
+              trade, from the very top of the ladder down to rising names.
               New players opening for the first time are priced by their global
               rank, so stronger players list higher.
             </p>
           </PatchSection>
 
-          <PatchSection emoji="⚖️" title="Fairer trading — your orders now move the price">
+          <PatchSection emoji="⚖️" title="Fairer trading: your orders now move the price">
             <p>
               We&rsquo;ve changed how buying and selling affects a stock&rsquo;s
               price, to keep the market fair and stop price manipulation:
@@ -75,7 +75,7 @@ export default function PatchNotesPage() {
             <ul>
               <li>
                 <strong>Your trade moves the price as it fills.</strong> Big buys
-                nudge a price up; big sells nudge it down &mdash; and you trade at
+                nudge a price up; big sells nudge it down, and you trade at
                 the <strong>average price across that move</strong> (a little
                 &ldquo;slippage&rdquo;), not the old price. So a large order costs a
                 bit more to buy, and returns a bit less to sell.
@@ -88,7 +88,7 @@ export default function PatchNotesPage() {
               <li>
                 <strong>No more pump-and-dump.</strong> You can no longer buy a
                 stock to pump its price and instantly sell into your own pump for
-                free profit &mdash; a quick round trip now nets a small loss, just
+                free profit. A quick round trip now nets a small loss, just
                 like a real market spread. Prices reflect genuine demand and player
                 performance.
               </li>
@@ -102,13 +102,13 @@ export default function PatchNotesPage() {
 
           <PatchSection emoji="🌊" title="Liquidity matters now">
             <p>
-              Stocks now have <strong>liquidity</strong> — a measure of how heavily
+              Stocks now have <strong>liquidity</strong>, a measure of how heavily
               a player is held and traded. It changes how trades behave:
             </p>
             <ul>
               <li>
                 <strong>Deep, popular stocks barely move</strong> when you trade
-                them and have tighter spreads — they can absorb big orders.
+                them and have tighter spreads, so they can absorb big orders.
               </li>
               <li>
                 <strong>Thin, obscure stocks swing hard</strong> and cost more to
@@ -132,8 +132,8 @@ export default function PatchNotesPage() {
               <li>Charged on both buys and sells, shown before you confirm.</li>
               <li>
                 Tiered so casual trading stays cheap while whales contribute more
-                &mdash; the fee is removed from circulation to fight inflation, not
-                paid to anyone.
+                (the fee is removed from circulation to fight inflation, not
+                paid to anyone).
               </li>
             </ul>
           </PatchSection>
@@ -141,15 +141,15 @@ export default function PatchNotesPage() {
           <PatchSection emoji="✨" title="Also live">
             <ul>
               <li>
-                <strong>Sign in with osu!</strong> &mdash; log in with your osu!
-                account to start trading.
+                <strong>Sign in with osu!</strong>, so you can log in with your
+                osu! account to start trading.
               </li>
               <li>
-                <strong>Investor Levels</strong> &mdash; earn XP as you trade and
+                <strong>Investor Levels</strong>, so you earn XP as you trade and
                 climb an osu!-style level curve.
               </li>
               <li>
-                <strong>Achievements &amp; Missions</strong> &mdash; one-time
+                <strong>Achievements &amp; Missions</strong>, with one-time
                 milestones and daily/weekly goals that reward you with credits.
               </li>
             </ul>
@@ -157,7 +157,7 @@ export default function PatchNotesPage() {
 
           <LegalSection title="A reminder">
             <p>
-              OsuStocks is a game &mdash; all coins, prices, and holdings are
+              OsuStocks is a game. All coins, prices, and holdings are
               virtual and have no real-world value. Prices, balances, and rules can
               change as we keep tuning the market. Have fun, and trade smart.
             </p>

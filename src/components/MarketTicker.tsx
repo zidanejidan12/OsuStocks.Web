@@ -62,7 +62,7 @@ function Item({ m, linked }: { m: LiveMover; linked: boolean }) {
  * Global "news-TV"-style live market ticker fixed to the bottom of every page.
  *
  * Accessibility (audit-aligned):
- * - For guests it is fully decorative (aria-hidden, non-interactive) — the same
+ * - For guests it is fully decorative (aria-hidden, non-interactive); the same
  *   data lives on /market & /trending.
  * - For signed-in users the visible copy holds REAL, focusable stock links and the
  *   region is labelled; the loop-duplicate copy is aria-hidden + non-interactive, so
@@ -70,7 +70,7 @@ function Item({ m, linked }: { m: LiveMover; linked: boolean }) {
  *   hidden subtree.
  * - Respects prefers-reduced-motion (static, scrollable strip), pauses on hover AND
  *   keyboard focus (so a focused link doesn't scroll away) and via an explicit
- *   button, and is dismissible (remembered in localStorage). Polls the public
+ *   button, and is dismissible (remembered in localStorage). It polls the public
  *   /movers endpoint, so it works for guests too.
  */
 export function MarketTicker() {
@@ -141,7 +141,7 @@ export function MarketTicker() {
           </span>
         </div>
 
-        {/* Pinned sponsor slug — doesn't scroll with the marquee; hidden on the
+        {/* Pinned sponsor slug that doesn't scroll with the marquee; hidden on the
             narrowest screens so the moving strip keeps room. */}
         <div className="hidden h-full shrink-0 items-center border-r border-white/10 px-3 sm:flex">
           <SponsorCredit className="text-[11px] text-zinc-500" />
@@ -171,7 +171,7 @@ export function MarketTicker() {
               {movers.map((m, i) => (
                 <Item key={`a${i}`} m={m} linked={clickable} />
               ))}
-              {/* Loop duplicate — always hidden + non-interactive. */}
+              {/* Loop duplicate, always hidden + non-interactive. */}
               <span aria-hidden="true" className="inline-flex items-center">
                 {movers.map((m, i) => (
                   <Item key={`b${i}`} m={m} linked={false} />

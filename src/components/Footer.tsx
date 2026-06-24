@@ -12,7 +12,7 @@ export function Footer() {
             <span className="text-pink-400">Osu</span>Stocks
           </div>
           <p className="mt-2 text-sm leading-relaxed text-zinc-500">
-            A fan-made game. All coins, prices, and holdings are virtual — they
+            A fan-made game. All coins, prices, and holdings are virtual. They
             have no real-world value and can never be exchanged for money. Not
             affiliated with osu! or ppy Pty Ltd.
           </p>
@@ -66,7 +66,7 @@ export function Footer() {
       <div className="border-t border-white/5">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 text-xs text-zinc-600 sm:flex-row sm:items-center sm:justify-between">
           <p>
-            OsuStocks &middot; virtual entertainment only &mdash; no real money,
+            OsuStocks &middot; virtual entertainment only. No real money,
             no payouts, not gambling.
           </p>
           <SponsorCredit className="text-xs text-zinc-600" />

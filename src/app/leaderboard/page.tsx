@@ -202,7 +202,7 @@ export default function LeaderboardPage() {
             Leaderboard
           </h1>
           <p className="mt-2 text-sm text-zinc-400">
-            Traders ranked by portfolio value &mdash; {PERIOD_NOTE[period]}.
+            Traders ranked by portfolio value, {PERIOD_NOTE[period]}.
           </p>
         </header>
       </Reveal>

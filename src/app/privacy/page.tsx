@@ -33,7 +33,7 @@ export default function PrivacyPage() {
         <LegalSection title="1. Information we handle">
           <p>
             <strong>osu! account info (via OAuth).</strong> When you sign in, osu!
-            shares a limited set of details so we can identify your account &mdash;
+            shares a limited set of details so we can identify your account:
             your osu! user ID and username (and your role within the game). We do
             not receive your osu! password.
           </p>
@@ -54,8 +54,8 @@ export default function PrivacyPage() {
           <ul>
             <li>to sign you in and keep your session active;</li>
             <li>
-              to run the game &mdash; show the market, your portfolio and wallet,
-              and process virtual trades;
+              to run the game, which means showing the market, your portfolio and
+              wallet, and processing virtual trades;
             </li>
             <li>
               to operate and protect the Service, such as rate limiting and
@@ -67,8 +67,8 @@ export default function PrivacyPage() {
         <LegalSection title="3. What we do not do">
           <ul>
             <li>
-              We do not collect or process real payment or financial information
-              &mdash; there are none.
+              We do not collect or process real payment or financial information.
+              There is none.
             </li>
             <li>We do not sell or rent your information.</li>
             <li>
@@ -83,7 +83,7 @@ export default function PrivacyPage() {
           <p>
             The deploying operator may enable <strong>PostHog</strong>, a
             product-analytics provider, to collect privacy-respecting usage events
-            &mdash; such as page views and which features are used &mdash; to
+            (such as page views and which features are used) to
             understand and improve the game. Analytics is{" "}
             <strong>off unless the operator configures it</strong>, is never used
             for advertising, and when enabled, PostHog processes this data on the

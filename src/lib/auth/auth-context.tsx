@@ -8,9 +8,17 @@ import {
   useState,
 } from "react";
 import type { Me } from "@/lib/api/types";
-import { API_BASE_URL, getMe } from "@/lib/api/client";
-import { clearAuth, getAccessToken } from "@/lib/auth/token";
+import { API_BASE_URL, getMe, refreshSession } from "@/lib/api/client";
+import {
+  clearAuth,
+  getAccessToken,
+  getRefreshToken,
+  getStoredAuth,
+} from "@/lib/auth/token";
 import * as analytics from "@/lib/analytics";
+
+// Renew this far ahead of the access token's expiry so an in-flight request never races it.
+const REFRESH_LEAD_MS = 2 * 60 * 1000;
 
 interface AuthContextValue {
   user: Me | null;
@@ -31,11 +39,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     async function load() {
       if (getAccessToken() === null) {
-        if (!cancelled) {
-          setUser(null);
-          setLoading(false);
+        // The access token is missing or expired. If a refresh token survives, restore the session
+        // silently rather than forcing a fresh osu! login.
+        const restored = getRefreshToken() !== null && (await refreshSession());
+        if (!restored) {
+          if (!cancelled) {
+            setUser(null);
+            setLoading(false);
+          }
+          return;
         }
-        return;
       }
       try {
         const me = await getMe();
@@ -58,6 +71,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       cancelled = true;
     };
   }, []);
+
+  // Proactively refresh the access token shortly before it expires while a session is active, so the
+  // user keeps a valid token without waiting for a request to 401. Reschedules itself after each
+  // success; on failure it stops and lets the next request's 401 handler clear the session.
+  useEffect(() => {
+    if (user === null) return;
+
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    function schedule() {
+      if (timer) clearTimeout(timer);
+      const auth = getStoredAuth();
+      if (!auth?.refreshToken) return;
+      const expiresAt = new Date(auth.expiresAt).getTime();
+      if (Number.isNaN(expiresAt)) return;
+      const delay = Math.max(0, expiresAt - Date.now() - REFRESH_LEAD_MS);
+
+      timer = setTimeout(async () => {
+        if (cancelled) return;
+        const ok = await refreshSession();
+        if (!cancelled && ok) schedule();
+      }, delay);
+    }
+
+    schedule();
+
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [user]);
 
   const login = useCallback((returnTo?: string) => {
     analytics.track("login_started", { returnTo: returnTo ?? "/" });

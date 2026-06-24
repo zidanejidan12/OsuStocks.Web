@@ -66,7 +66,7 @@ export function StockList({
   onPageChange,
 }: Props) {
   const reduceMotion = useReducedMotion();
-  // Only run the per-row entrance stagger on the very first mount — not on every
+  // Only run the per-row entrance stagger on the very first mount, not on every
   // refetch/sort/search (which would re-animate the whole table on each keystroke).
   const hasAnimatedRef = useRef(false);
   const animateRows = !reduceMotion && !hasAnimatedRef.current;
@@ -134,7 +134,7 @@ export function StockList({
               <option value={ALL_COUNTRIES}>All countries</option>
               {countries.map((c) => (
                 <option key={c.countryCode} value={c.countryCode}>
-                  {countryName(c.countryCode)} — {formatNumber(c.count)}
+                  {countryName(c.countryCode)} ({formatNumber(c.count)})
                 </option>
               ))}
             </select>

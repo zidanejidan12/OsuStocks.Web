@@ -35,8 +35,8 @@ export default function AuthCallbackPage() {
     let cancelled = false;
 
     async function handle() {
-      // Any failure here — a missing token, a rejected refresh(), or a network
-      // error — must surface the error UI rather than spin forever.
+      // Any failure here (a missing token, a rejected refresh(), or a network
+      // error) must surface the error UI rather than spin forever.
       try {
         const search = new URLSearchParams(window.location.search);
         const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
@@ -44,6 +44,10 @@ export default function AuthCallbackPage() {
         const accessToken =
           search.get("accessToken") ?? hash.get("accessToken");
         const expiresAt = search.get("expiresAt") ?? hash.get("expiresAt");
+        const refreshToken =
+          search.get("refreshToken") ?? hash.get("refreshToken");
+        const refreshExpiresAt =
+          search.get("refreshExpiresAt") ?? hash.get("refreshExpiresAt");
         const returnTo = safeReturnTo(
           search.get("returnTo") ?? hash.get("returnTo"),
         );
@@ -53,7 +57,12 @@ export default function AuthCallbackPage() {
           return;
         }
 
-        setAuth({ accessToken, expiresAt: expiresAt ?? twoHoursFromNow() });
+        setAuth({
+          accessToken,
+          expiresAt: expiresAt ?? twoHoursFromNow(),
+          refreshToken: refreshToken ?? undefined,
+          refreshExpiresAt: refreshExpiresAt ?? undefined,
+        });
         analytics.track("login_completed");
         await refresh();
         if (!cancelled) router.replace(returnTo);

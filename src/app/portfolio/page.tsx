@@ -113,7 +113,7 @@ function ProfileBanner({
             className="absolute inset-0 h-full w-full object-cover"
           />
           {/* Strong bottom scrim so the avatar + username (which overlap the banner) stay
-              legible over any cover — osu! covers can be light. */}
+              legible over any cover, since osu! covers can be light. */}
           <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/70 to-zinc-950/20" />
           <div className="absolute inset-0 bg-gradient-to-br from-pink-600/20 to-transparent" />
         </>
@@ -201,7 +201,7 @@ function ProfileHeader({
                 Current Value
               </div>
               <div className="mt-1 font-mono text-2xl font-semibold tabular-nums text-zinc-50">
-                {portfolio ? <Money value={portfolio.currentValue} /> : "—"}
+                {portfolio ? <Money value={portfolio.currentValue} /> : "-"}
               </div>
             </div>
             <div className="rounded-xl border border-zinc-800/70 bg-zinc-900/50 px-4 py-3">
@@ -209,7 +209,7 @@ function ProfileHeader({
                 Cost Basis
               </div>
               <div className="mt-1 font-mono text-2xl font-semibold tabular-nums text-zinc-50">
-                {portfolio ? <Money value={portfolio.costBasis} /> : "—"}
+                {portfolio ? <Money value={portfolio.costBasis} /> : "-"}
               </div>
             </div>
             <div className="rounded-xl border border-zinc-800/70 bg-zinc-900/50 px-4 py-3">
@@ -223,7 +223,7 @@ function ProfileHeader({
                     className="text-lg"
                   />
                 ) : (
-                  <span className="font-mono text-2xl font-semibold text-zinc-50">—</span>
+                  <span className="font-mono text-2xl font-semibold text-zinc-50">-</span>
                 )}
               </div>
             </div>
@@ -232,7 +232,7 @@ function ProfileHeader({
                 Holdings
               </div>
               <div className="mt-1 font-mono text-2xl font-semibold tabular-nums text-zinc-50">
-                {portfolio ? formatNumber(portfolio.holdings.length) : "—"}
+                {portfolio ? formatNumber(portfolio.holdings.length) : "-"}
               </div>
             </div>
           </div>
@@ -338,7 +338,7 @@ function ShowcaseCard({ user }: { user: Me }) {
           <>
             {unlocked.length === 0 ? (
               <p className="text-sm text-zinc-400">
-                Unlock achievements by trading — then pin your favourites here.{" "}
+                Unlock achievements by trading, then pin your favourites here.{" "}
                 <Link href="/achievements" className="text-pink-300 hover:text-pink-200">
                   Browse achievements
                 </Link>
@@ -503,7 +503,7 @@ function MissionsSummary() {
 }
 
 // If the signed-in user is themselves a tracked player, surface their own stock
-// as a profile-detail card (price, rank, pp, 24h). Matches the user's osu!
+// as a profile-detail card (price, rank, pp, 24h). This matches the user's osu!
 // username to a market stock; renders nothing when they aren't tracked.
 function YourStockCard({ user }: { user: Me }) {
   const [stock, setStock] = useState<StockSummary | null>(null);
@@ -540,7 +540,7 @@ function YourStockCard({ user }: { user: Me }) {
           <ChartPieSlice size={18} weight="bold" className="text-pink-400" />
           <h2 className="text-sm font-semibold text-zinc-100">Your Stock</h2>
           <span className="text-xs text-zinc-400">
-            You&apos;re a tracked player — this is your market stock.
+            You&apos;re a tracked player, so this is your market stock.
           </span>
         </div>
 
@@ -843,7 +843,7 @@ export default function PortfolioPage() {
 
     let cancelled = false;
     // Resetting fetch state synchronously is intentional: it shows the loading
-    // skeleton while we (re)fetch — the documented exception to
+    // skeleton while we (re)fetch. This is the documented exception to
     // react-hooks/set-state-in-effect (this is not the derive-state anti-pattern).
     /* eslint-disable react-hooks/set-state-in-effect */
     setLoading(true);

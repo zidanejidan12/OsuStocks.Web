@@ -79,7 +79,7 @@ function chartBounds(min: number, max: number) {
   return { yFor };
 }
 
-/** Candlestick chart over OHLC data — emerald up / rose down. */
+/** Candlestick chart over OHLC data: emerald up / rose down. */
 function CandleChart({ candles }: { candles: Candle[] }) {
   const reduceMotion = useReducedMotion();
   const min = Math.min(...candles.map((c) => c.low));
@@ -230,7 +230,7 @@ function PriceChartCard({
     };
   }, [stockId, range]);
 
-  // Silent refetch after a trade moves the price — no skeleton flash.
+  // Silent refetch after a trade moves the price, with no skeleton flash.
   useEffect(() => {
     if (refreshKey === 0) return;
     let cancelled = false;
@@ -409,7 +409,7 @@ function AnalyticsPanel({
     };
   }, [stockId]);
 
-  // Silent refetch after a trade — keep the panel mounted, no skeleton flash.
+  // Silent refetch after a trade: keep the panel mounted, no skeleton flash.
   useEffect(() => {
     if (refreshKey === 0) return;
     let cancelled = false;
@@ -490,7 +490,7 @@ function TradePanel({
   onTraded,
 }: {
   stockId: string;
-  /** Latest unit price — drives the live cost preview and the "max you can buy". */
+  /** Latest unit price; drives the live cost preview and the "max you can buy". */
   currentPrice: number;
   /** Fired after a successful trade so the parent can refresh price/chart/analytics. */
   onTraded?: () => void;
@@ -504,7 +504,7 @@ function TradePanel({
   const [pending, setPending] = useState<"buy" | "sell" | null>(null);
   const [result, setResult] = useState<TradeResult | null>(null);
   // The quantity actually traded, snapshotted at execution time so the receipt is
-  // frozen (the API's TradeResult doesn't echo quantity — flagged as a BE gap).
+  // frozen (the API's TradeResult doesn't echo quantity, flagged as a BE gap).
   const [resultQty, setResultQty] = useState<number | null>(null);
   // Shares the user holds of this stock (null = unknown/not yet loaded).
   const [owned, setOwned] = useState<number | null>(null);
@@ -584,7 +584,7 @@ function TradePanel({
     };
   }, [stockId]);
 
-  // Per-trader ownership cap as a fraction — the BE value, falling back to the
+  // Per-trader ownership cap as a fraction: the BE value, falling back to the
   // documented default until analytics loads.
   const capFraction =
     ownershipCapPct != null && ownershipCapPct > 0 && ownershipCapPct < 100
@@ -647,7 +647,7 @@ function TradePanel({
   // Tick once a cooldown is armed; clear it (and the timer) when it elapses.
   useEffect(() => {
     if (cooldownUntil === 0) return;
-    // Prime the tick so the countdown reads correctly on first paint — the
+    // Prime the tick so the countdown reads correctly on first paint. This is the
     // documented exception to react-hooks/set-state-in-effect.
     /* eslint-disable-next-line react-hooks/set-state-in-effect */
     setNow(Date.now());
@@ -784,7 +784,7 @@ function TradePanel({
           )}
         </div>
 
-        {/* −/+ stepper around the input — replaces the native number spinners. */}
+        {/* −/+ stepper around the input, replacing the native number spinners. */}
         <div className="flex items-stretch gap-2">
           <button
             type="button"
@@ -815,7 +815,7 @@ function TradePanel({
           </button>
         </div>
 
-        {/* Quick-size presets — fractions of the most you're allowed to buy. */}
+        {/* Quick-size presets: fractions of the most you're allowed to buy. */}
         {maxBuy != null && maxBuy > 0 && (
           <div className="flex items-center gap-2">
             {[
@@ -858,7 +858,7 @@ function TradePanel({
               </>
             ) : (
               <>
-                A progressive service fee is added on top of a buy — keep a little
+                A progressive service fee is added on top of a buy, so keep a little
                 balance spare beyond the estimate.
               </>
             )}
@@ -876,7 +876,7 @@ function TradePanel({
             >
               {formatShares(maxBuy)}
             </button>{" "}
-            share{maxBuy === 1 ? "" : "s"} — capped by your balance (fee included)
+            share{maxBuy === 1 ? "" : "s"}, capped by your balance (fee included)
             and the {capPctLabel}% per-trader limit.
           </p>
         ) : (
@@ -896,7 +896,7 @@ function TradePanel({
             <span className="font-mono tabular-nums text-zinc-200">
               {formatShares(owned)}
             </span>{" "}
-            — sell max
+            (sell max)
           </button>
         )}
       </div>
@@ -1124,7 +1124,7 @@ function RecentTopPlays({ stockId }: { stockId: string }) {
 /**
  * osu!-userpage-style cover. Renders the player's real osu! profile banner when
  * the API supplies one (`cover.url`), and falls back to osu!'s pink-gradient
- * default otherwise — so it degrades cleanly until the backend syncs covers, and
+ * default otherwise, so it degrades cleanly until the backend syncs covers, and
  * recovers gracefully if a banner URL 404s.
  */
 function ProfileCover({ bannerUrl }: { bannerUrl?: string | null }) {
@@ -1176,7 +1176,7 @@ export function StockDetail({ stockId }: { stockId: string }) {
 
   const handleTraded = useCallback(() => {
     // Silently refresh the header price/volume so it isn't stale after the
-    // trade the user just made (no skeleton — keep the page in place).
+    // trade the user just made (no skeleton, keep the page in place).
     getStock(stockId)
       .then((data) => setStock(data))
       .catch(() => {});
@@ -1323,11 +1323,11 @@ export function StockDetail({ stockId }: { stockId: string }) {
       <Reveal className="mt-8">
         {/* osu!-userpage-style profile header: cover banner, overlapping avatar, stat tiles. */}
         <header className="overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900/40">
-          {/* Cover banner — real osu! profile cover when available, else gradient. */}
+          {/* Cover banner: real osu! profile cover when available, else gradient. */}
           <ProfileCover bannerUrl={stock.bannerUrl} />
 
           <div className="px-5 pb-6 sm:px-7">
-            {/* Identity row — avatar overlaps the banner */}
+            {/* Identity row, with the avatar overlapping the banner */}
             <div className="-mt-12 flex flex-col gap-4 sm:-mt-14 sm:flex-row sm:items-end sm:justify-between">
               <div className="flex items-end gap-4">
                 <div className="shrink-0 rounded-full ring-4 ring-zinc-900 shadow-xl shadow-black/40">
@@ -1387,13 +1387,13 @@ export function StockDetail({ stockId }: { stockId: string }) {
               <div className="rounded-xl border border-zinc-800/70 bg-zinc-900/50 px-4 py-3">
                 <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">Global Rank</div>
                 <div className="mt-1 font-mono text-2xl font-semibold tabular-nums text-zinc-50">
-                  {stock.globalRank != null ? `#${formatNumber(stock.globalRank)}` : "—"}
+                  {stock.globalRank != null ? `#${formatNumber(stock.globalRank)}` : "-"}
                 </div>
               </div>
               <div className="rounded-xl border border-zinc-800/70 bg-zinc-900/50 px-4 py-3">
                 <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">PP</div>
                 <div className="mt-1 font-mono text-2xl font-semibold tabular-nums text-zinc-50">
-                  {stock.currentPp != null ? formatNumber(Math.round(stock.currentPp)) : "—"}
+                  {stock.currentPp != null ? formatNumber(Math.round(stock.currentPp)) : "-"}
                 </div>
               </div>
               <div className="col-span-2 rounded-xl border border-zinc-800/70 bg-zinc-900/50 px-4 py-3 sm:col-span-1">

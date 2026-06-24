@@ -56,7 +56,7 @@ function LiveMarketPanelBase() {
 
   return (
     <motion.div
-      // Gentle perpetual float — isolated to this subtree, off when reduced.
+      // Gentle perpetual float, isolated to this subtree, off when reduced.
       animate={reduceMotion ? undefined : { y: [0, -8, 0] }}
       transition={
         reduceMotion ? undefined : { duration: 6, repeat: Infinity, ease: "easeInOut" }
@@ -96,7 +96,7 @@ function LiveMarketPanelBase() {
             <div className="grid h-full place-items-center px-6">
               <EmptyState
                 title="Markets are warming up"
-                message="Top movers will appear here soon — check back in a moment."
+                message="Top movers will appear here soon. Check back in a moment."
                 icon={<TrendUp size={20} weight="bold" />}
                 className="border-0 bg-transparent px-0 py-0"
               />
@@ -110,7 +110,7 @@ function LiveMarketPanelBase() {
             </div>
           ) : (
             <motion.div
-              // Decorative scrolling marquee — hidden from assistive tech.
+              // Decorative scrolling marquee, hidden from assistive tech.
               aria-hidden="true"
               animate={{ y: ["0%", "-50%"] }}
               transition={{ duration: 14, repeat: Infinity, ease: "linear" }}

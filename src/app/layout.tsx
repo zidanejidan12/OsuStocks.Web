@@ -25,11 +25,11 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://app.osustocks.com"
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "OsuStocks — the osu! stock market",
+    default: "OsuStocks: the osu! stock market",
     template: "%s · OsuStocks",
   },
   description:
-    "OsuStocks is the osu! stock market — trade osu! players like stocks. Browse the market, track your portfolio, and buy and sell shares tied to osu! player performance.",
+    "OsuStocks is the osu! stock market where you trade osu! players like stocks. Browse the market, track your portfolio, and buy and sell shares tied to osu! player performance.",
   applicationName: "OsuStocks",
   keywords: [
     "osu stocks",
@@ -48,14 +48,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "OsuStocks",
-    title: "OsuStocks — the osu! stock market",
-    description: "Trade osu! players like stocks — browse the market and build a portfolio.",
+    title: "OsuStocks: the osu! stock market",
+    description: "Trade osu! players like stocks. Browse the market and build a portfolio.",
     url: "/",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "OsuStocks — the osu! stock market",
+    title: "OsuStocks: the osu! stock market",
     description: "Trade osu! players like stocks.",
   },
   robots: {
@@ -86,7 +86,7 @@ const jsonLd = {
       "@id": `${SITE_URL}/#website`,
       url: SITE_URL,
       name: "OsuStocks",
-      description: "The osu! stock market — trade osu! players like stocks.",
+      description: "The osu! stock market. Trade osu! players like stocks.",
     },
     {
       "@type": "Organization",

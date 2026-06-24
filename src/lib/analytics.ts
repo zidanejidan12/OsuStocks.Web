@@ -56,7 +56,7 @@ export function init(): void {
   if (config === null) {
     disabled = true;
     queue.length = 0;
-    debug("disabled — set NEXT_PUBLIC_POSTHOG_KEY to enable");
+    debug("disabled. Set NEXT_PUBLIC_POSTHOG_KEY to enable");
     return;
   }
 

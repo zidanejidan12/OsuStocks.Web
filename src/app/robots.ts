@@ -8,7 +8,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        // Personal / auth-only areas — no SEO value and shouldn't be crawled.
+        // Personal / auth-only areas with no SEO value that shouldn't be crawled.
         disallow: ["/admin", "/portfolio", "/wallet", "/trades", "/notifications", "/auth/"],
       },
     ],

@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 
 // Generated OpenGraph image for the whole site. Next.js serves this at
 // /opengraph-image and wires up the <meta property="og:image"> tags automatically.
-export const alt = "OsuStocks — trade osu! players like stocks";
+export const alt = "OsuStocks: trade osu! players like stocks";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 

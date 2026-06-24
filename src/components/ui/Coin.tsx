@@ -1,4 +1,4 @@
-// The osu! coin currency glyph. Placeholder for now — swap public/osu-coin.svg
+// The osu! coin currency glyph. Placeholder for now. Swap public/osu-coin.svg
 // (or this component's src) for the real coin art later. Sizes to 1em by default
 // so it scales with the surrounding text.
 export function Coin({

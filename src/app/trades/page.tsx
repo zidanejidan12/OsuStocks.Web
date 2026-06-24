@@ -131,7 +131,7 @@ export default function TradesPage() {
     setLoadingMore(true);
     loadPage(page + 1)
       .catch((err) => {
-        // Keep what we have — a transient failure shouldn't wipe the list —
+        // Keep what we have, since a transient failure shouldn't wipe the list,
         // but surface it so the user knows the action didn't take.
         notify({
           tone: "danger",

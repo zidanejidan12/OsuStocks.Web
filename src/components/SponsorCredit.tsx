@@ -10,7 +10,7 @@ type Props = {
   className?: string;
   /**
    * Controls the visible "Sponsored by" prefix. Pass "hidden" on tight surfaces
-   * to render just the chip — the link keeps the full phrase via aria-label.
+   * to render just the chip; the link keeps the full phrase via aria-label.
    */
   labelClassName?: string;
   avatarSize?: "xs" | "sm";
@@ -30,7 +30,7 @@ export function SponsorCredit({
         target="_blank"
         rel="noopener noreferrer"
         title={label}
-        aria-label={`${label} — osu! profile (opens in a new tab)`}
+        aria-label={`${label}. osu! profile (opens in a new tab)`}
         className="group inline-flex items-center gap-1.5 font-medium text-zinc-400 transition-colors hover:text-pink-300"
       >
         <Avatar
@@ -51,7 +51,7 @@ export function SponsorCredit({
 }
 
 /**
- * Prominent boxed sponsor credit — used on the landing hero (above the live-movers
+ * Prominent boxed sponsor credit, used on the landing hero (above the live-movers
  * panel) and the About page. Shares the {@link SPONSOR} source of truth with the
  * inline {@link SponsorCredit} used in the footer/ticker. Server-compatible (no
  * hooks; the unicode arrow keeps it out of the client bundle), so it renders inside
@@ -64,7 +64,7 @@ export function SponsorCard({ className = "" }: { className?: string }) {
       href={`https://osu.ppy.sh/users/${SPONSOR.id}`}
       target="_blank"
       rel="noopener noreferrer"
-      aria-label={`${label} — osu! profile (opens in a new tab)`}
+      aria-label={`${label}. osu! profile (opens in a new tab)`}
       className={`group block rounded-2xl border border-zinc-800/80 bg-zinc-900/50 p-4 shadow-[0_24px_50px_-30px_rgba(0,0,0,0.8)] transition-colors hover:border-pink-500/40 hover:bg-zinc-900/70 ${className}`}
     >
       <div className="flex items-center justify-between">

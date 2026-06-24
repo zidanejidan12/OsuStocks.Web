@@ -1,4 +1,4 @@
-// Shared Framer Motion variants and transitions. Plain data — safe to import
+// Shared Framer Motion variants and transitions. Plain data, safe to import
 // into any Client Component. Keeps motion language consistent across the app.
 import type { Variants, Transition } from "framer-motion";
 

@@ -3,9 +3,9 @@ import { Avatar } from "@/components/ui/Avatar";
 import { SponsorCard } from "@/components/SponsorCredit";
 
 export const metadata: Metadata = {
-  title: "About — the osu! stock market game",
+  title: "About the osu! stock market game",
   description:
-    "What is OsuStocks? A fan-made osu! stock market where you trade osu! players like stocks — prices move with pp, rank, and trading. Learn how it works.",
+    "What is OsuStocks? A fan-made osu! stock market where you trade osu! players like stocks. Prices move with pp, rank, and trading. Learn how it works.",
   keywords: [
     "osu stocks",
     "osu stock market",
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/about" },
 };
 
-// Development-team credit — links to each member's osu! profile; avatars come
+// Development-team credit, linking to each member's osu! profile; avatars come
 // from osu!'s CDN. Moved here off the sitewide footer to keep that uncluttered.
 const TEAM = [
   { id: 3484548, name: "Almond Eye" },
@@ -34,7 +34,7 @@ export default function AboutPage() {
         About
       </h1>
       <p className="mt-2 text-sm text-zinc-500">
-        A fan-made osu! stock-market game &mdash; and the people building it.
+        A fan-made osu! stock-market game, and the people building it.
       </p>
 
       <section className="mt-10">
@@ -45,7 +45,7 @@ export default function AboutPage() {
           <p>
             OsuStocks turns the osu! leaderboard into a stock market. Every
             tracked player has a &ldquo;stock&rdquo; whose price rises and falls
-            with their performance &mdash; as they set new top plays and climb
+            with their performance. As they set new top plays and climb
             the rankings, their price moves. Browse the market, buy shares in the
             players you believe in, and grow a portfolio.
           </p>
@@ -56,12 +56,12 @@ export default function AboutPage() {
             </strong>{" "}
             (pp and rank changes synced from the osu! API) and{" "}
             <strong className="font-medium text-zinc-100">trading</strong>{" "}
-            &mdash; your own buys and sells nudge a price along a bonding curve,
-            with a per-trade cap to keep the market fair.
+            (your own buys and sells nudge a price along a bonding curve,
+            with a per-trade cap to keep the market fair).
           </p>
           <p className="text-zinc-500">
-            OsuStocks is a game. All coins, prices, and holdings are virtual
-            &mdash; they have no real-world value and can never be exchanged for
+            OsuStocks is a game. All coins, prices, and holdings are virtual.
+            They have no real-world value and can never be exchanged for
             money. Not affiliated with osu! or ppy Pty Ltd.
           </p>
         </div>
@@ -85,6 +85,11 @@ export default function AboutPage() {
         </h2>
         <p className="mt-2 text-sm text-zinc-500">
           Built by a small team of osu! players.
+        </p>
+        <p className="mt-3 text-sm leading-relaxed text-zinc-500">
+          OsuStocks was conceived, designed, and directed entirely by its
+          developers. AI coding tools only helped speed up routine, repetitive
+          work; the concept, the content, and every creative decision are ours.
         </p>
         <ul className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
           {TEAM.map((member) => (

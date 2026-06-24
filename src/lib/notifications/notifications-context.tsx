@@ -21,7 +21,7 @@ interface NotificationsContextValue {
   notifications: AppNotification[];
   unreadCount: number;
   loading: boolean;
-  /** True once a fetch has failed (e.g. endpoint not live yet) — UI can soften. */
+  /** True once a fetch has failed (e.g. endpoint not live yet) so the UI can soften. */
   unavailable: boolean;
   refresh: () => Promise<void>;
   markRead: (id: string) => Promise<void>;
@@ -46,7 +46,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
       setNotifications(page.items);
       setUnavailable(false);
     } catch {
-      // Frontend-ahead: the endpoint may not exist yet. Stay quiet (no toast
+      // Frontend-ahead. The endpoint may not exist yet. Stay quiet (no toast
       // spam) and let the bell simply show nothing.
       setUnavailable(true);
     } finally {
@@ -56,8 +56,8 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
 
   // Fetch on login, poll while signed in, and refresh when the tab regains focus.
   useEffect(() => {
-    // Intentional synchronous resets/kickoff on auth change — the documented
-    // exception to react-hooks/set-state-in-effect.
+    // Intentional synchronous resets/kickoff on auth change. This is the
+    // documented exception to react-hooks/set-state-in-effect.
     /* eslint-disable react-hooks/set-state-in-effect */
     if (!user) {
       setNotifications([]);
@@ -68,7 +68,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     refresh();
     /* eslint-enable react-hooks/set-state-in-effect */
 
-    // Poll only while the tab is visible — a backgrounded tab stops hammering
+    // Poll only while the tab is visible so a backgrounded tab stops hammering
     // the endpoint. Debounce the focus refetch so rapid alt-tabbing can't fire
     // back-to-back requests.
     const interval = setInterval(() => {
@@ -90,14 +90,14 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
 
   const markRead = useCallback(
     async (id: string) => {
-      // Optimistic — flip locally, then tell the server.
+      // Optimistic update: flip locally, then tell the server.
       setNotifications((prev) =>
         prev.map((n) => (n.notificationId === id ? { ...n, isRead: true } : n)),
       );
       try {
         await markNotificationRead(id);
       } catch {
-        // Roll back on failure and tell the user (don't fail silently).
+        // Roll back on failure and tell the user (we don't fail silently).
         setNotifications((prev) =>
           prev.map((n) => (n.notificationId === id ? { ...n, isRead: false } : n)),
         );

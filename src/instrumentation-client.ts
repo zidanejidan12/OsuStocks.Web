@@ -1,5 +1,5 @@
-// Runs on the client after the document loads but before React hydrates — the
-// right moment to bring analytics up so it captures the initial pageview.
+// Runs on the client after the document loads but before React hydrates. This is
+// the right moment to bring analytics up so it captures the initial pageview.
 //
 // `init` no-ops unless PostHog credentials are configured, so this file is inert
 // (and pulls in no vendor code) when analytics is disabled. SPA pageviews on

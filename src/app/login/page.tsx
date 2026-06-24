@@ -37,7 +37,7 @@ export default function LoginPage() {
   return (
     <main className="bg-zinc-950 text-zinc-100">
       <div className="mx-auto grid min-h-[calc(100dvh-4rem)] w-full max-w-6xl items-center gap-12 px-4 py-12 md:grid-cols-2 md:gap-16 md:px-6">
-        {/* LEFT — brand pitch */}
+        {/* LEFT: brand pitch */}
         <section className="order-1 md:order-none">
           <Reveal>
             <h1 className="text-4xl font-semibold tracking-tighter sm:text-5xl">
@@ -48,7 +48,7 @@ export default function LoginPage() {
               follow the meta, and outsmart the market.
             </p>
             <p className="mt-3 max-w-md text-sm leading-relaxed text-zinc-500">
-              A free fan-made game — credits are virtual, with no real-world value.
+              A free fan-made game. Credits are virtual, with no real-world value.
               Not affiliated with osu! or ppy&nbsp;Pty&nbsp;Ltd.
             </p>
           </Reveal>
@@ -72,7 +72,7 @@ export default function LoginPage() {
           </Stagger>
         </section>
 
-        {/* RIGHT — auth card */}
+        {/* RIGHT: auth card */}
         <section className="order-2 flex justify-center md:order-none md:justify-end">
           <Reveal delay={0.1} className="w-full max-w-md">
             <Card>
@@ -85,7 +85,7 @@ export default function LoginPage() {
                     Continue with your osu! account to start trading.
                   </p>
                   <p className="text-xs leading-relaxed text-zinc-500">
-                    Uses osu!&apos;s official login (OAuth) on osu.ppy.sh — we never
+                    Uses osu!&apos;s official login (OAuth) on osu.ppy.sh, so we never
                     see or store your password.
                   </p>
                 </div>

@@ -4,7 +4,7 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://app.osustocks.com";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   // Public, indexable pages only. Per-player stock pages are intentionally omitted
-  // until the market read API is public (see TASKS / SEO notes) — they'd be thin
+  // until the market read API is public (see TASKS / SEO notes). They'd be thin
   // (auth-gated) content for crawlers today.
   const entries: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [
     { path: "", priority: 1.0, changeFrequency: "hourly" },

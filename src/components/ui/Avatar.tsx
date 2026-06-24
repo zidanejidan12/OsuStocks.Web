@@ -35,7 +35,7 @@ function tintFor(name: string): string {
 type Props = {
   /** osu! profile image URL. Falls back to the player's initial when absent or on load error. */
   src?: string | null;
-  /** Player name — drives the alt text and the initial fallback. */
+  /** Player name, which drives the alt text and the initial fallback. */
   name: string;
   size?: AvatarSize;
   className?: string;

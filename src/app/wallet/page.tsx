@@ -32,7 +32,7 @@ import { useAuth } from "@/lib/auth/auth-context";
 import * as analytics from "@/lib/analytics";
 
 // Credits flow money in; debits flow money out. Used for the Type column's
-// icon + tone. (The Amount column is colored strictly by sign — see below.)
+// icon + tone. (The Amount column is colored strictly by sign; see below.)
 const CREDIT_TYPES: ReadonlySet<WalletTransactionType> = new Set([
   "InitialGrant",
   "SellStock",
@@ -134,7 +134,7 @@ export default function WalletPage() {
 
     let cancelled = false;
     // Resetting fetch state synchronously is intentional: it shows the loading
-    // skeleton while we (re)fetch — the documented exception to
+    // skeleton while we (re)fetch. This is the documented exception to
     // react-hooks/set-state-in-effect (this is not the derive-state anti-pattern).
     /* eslint-disable react-hooks/set-state-in-effect */
     setLoading(true);
@@ -290,7 +290,7 @@ export default function WalletPage() {
                           ? ArrowDownLeft
                           : ArrowUpRight;
                         // Amounts are stored as positive magnitudes; the sign is
-                        // relative to the wallet — debits (Buy, Fee, Deduction)
+                        // relative to the wallet, so debits (Buy, Fee, Deduction)
                         // are money out, so render them negative + red.
                         const signedAmount =
                           (isCredit ? 1 : -1) * Math.abs(tx.amount);

@@ -322,7 +322,7 @@ export default function MissionsPage() {
           <EmptyState
             icon={<Target size={20} weight="bold" />}
             title="No missions right now"
-            message="Check back soon — missions refresh on a daily and weekly cycle."
+            message="Check back soon. Missions refresh on a daily and weekly cycle."
           />
         </Reveal>
       )}

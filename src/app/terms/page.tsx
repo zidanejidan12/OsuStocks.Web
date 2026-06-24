@@ -5,7 +5,7 @@ import { CONTACT_EMAIL, GOVERNING_LAW } from "@/lib/legal";
 export const metadata: Metadata = {
   title: "Terms of Use",
   description:
-    "OsuStocks is a free, fan-made game. All currency and holdings are virtual — no real money, no payouts.",
+    "OsuStocks is a free, fan-made game. All currency and holdings are virtual, with no real money and no payouts.",
 };
 
 const LAST_UPDATED = "June 7, 2026";
@@ -46,7 +46,7 @@ export default function TermsPage() {
             and have <strong className="text-pink-100">no real-world monetary
             value</strong>. You cannot buy, sell, deposit, withdraw, or redeem
             them for money or anything of value. OsuStocks is not investing,
-            trading, financial advice, or gambling &mdash; it is entertainment.
+            trading, financial advice, or gambling. It is entertainment.
           </p>
         </div>
       </div>
@@ -73,8 +73,8 @@ export default function TermsPage() {
 
         <LegalSection title="3. No real money and no financial product">
           <p>
-            Every in-game item &mdash; coins, balances, prices, shares, holdings,
-            and profit or loss &mdash; is virtual and fictional. These items have
+            Every in-game item, including coins, balances, prices, shares,
+            holdings, and profit or loss, is virtual and fictional. These items have
             no monetary or real-world value and cannot be purchased, cashed out,
             transferred, traded for goods or services, or redeemed for anything.
           </p>

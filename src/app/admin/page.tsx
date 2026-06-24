@@ -92,8 +92,8 @@ const inputClass =
   "w-full rounded-xl border border-zinc-800 bg-zinc-900/60 px-3.5 py-2.5 text-sm font-mono tabular-nums text-zinc-100 transition-colors focus:border-pink-500/50 focus:outline-none focus:ring-2 focus:ring-pink-500/20";
 
 // Same look as inputClass but auto-width (for inline filter dropdowns). Defined
-// separately rather than overriding w-full — Tailwind precedence is by stylesheet
-// order, not className order, so "w-full w-auto" wouldn't reliably win.
+// separately rather than overriding w-full, because Tailwind precedence is by
+// stylesheet order, not className order, so "w-full w-auto" wouldn't reliably win.
 const filterSelectClass =
   "rounded-xl border border-zinc-800 bg-zinc-900/60 px-3 py-2 text-sm text-zinc-100 transition-colors focus:border-pink-500/50 focus:outline-none focus:ring-2 focus:ring-pink-500/20";
 
@@ -207,7 +207,7 @@ function MarketSettingsCard() {
     if (!settings) return;
     setSaving(true);
     try {
-      // PUT returns 204 — keep the locally-edited values rather than clearing state.
+      // PUT returns 204, so keep the locally-edited values rather than clearing state.
       await updateMarketSettings(settings);
       setSavedSettings(settings);
       notify({ tone: "success", title: "Market settings saved" });
@@ -678,7 +678,7 @@ function TransactionMonitorCard() {
   const [tab, setTab] = useState<MonitorTab>("trades");
   const [tradeType, setTradeType] = useState<"" | TradeType>("");
   const [walletType, setWalletType] = useState<"" | WalletTransactionType>("");
-  // Filters set by clicking a row — let an admin pivot to "everything by this user/stock".
+  // Filters set by clicking a row, letting an admin pivot to "everything by this user/stock".
   const [userFilter, setUserFilter] = useState<{ id: string; name: string } | null>(null);
   const [stockFilter, setStockFilter] = useState<{ id: string; name: string } | null>(null);
 
@@ -882,7 +882,7 @@ function TransactionMonitorCard() {
                       className="max-w-[9rem] truncate text-left text-zinc-300 hover:text-pink-300"
                       title="Filter by this stock"
                     >
-                      {t.playerName ?? "—"}
+                      {t.playerName ?? "-"}
                     </button>
                   </td>
                   <td className="px-3 py-2.5">

@@ -1,6 +1,11 @@
 // HTTP layer for the OsuStocks API.
 
-import { getAccessToken } from "@/lib/auth/token";
+import {
+  clearAuth,
+  getAccessToken,
+  getRefreshToken,
+  setAuth,
+} from "@/lib/auth/token";
 import type {
   AchievementsResponse,
   AdminTrade,
@@ -60,7 +65,63 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+interface RefreshResponse {
+  accessToken: string;
+  expiresAt: string;
+  refreshToken: string;
+  refreshExpiresAt: string;
+}
+
+// Single-flight guard: many requests can 401 at once, but they should share one refresh, not
+// stampede /auth/refresh and rotate the token out from under each other.
+let refreshInFlight: Promise<boolean> | null = null;
+
+async function performRefresh(): Promise<boolean> {
+  const refreshToken = getRefreshToken();
+  if (refreshToken === null) return false;
+
+  try {
+    const response = await fetch(API_BASE_URL + "/api/v1/auth/refresh", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ refreshToken }),
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      // The refresh token was rejected (expired / already used), so the session is truly over.
+      clearAuth();
+      return false;
+    }
+
+    const data = (await response.json()) as RefreshResponse;
+    setAuth({
+      accessToken: data.accessToken,
+      expiresAt: data.expiresAt,
+      refreshToken: data.refreshToken,
+      refreshExpiresAt: data.refreshExpiresAt,
+    });
+    return true;
+  } catch {
+    // Network blip: keep the stored tokens so a later attempt can still succeed.
+    return false;
+  }
+}
+
+/**
+ * Silently renews the access token using the stored refresh token. Concurrent callers share a
+ * single in-flight refresh. Returns true if a fresh access token is now stored.
+ */
+export function refreshSession(): Promise<boolean> {
+  if (refreshInFlight === null) {
+    refreshInFlight = performRefresh().finally(() => {
+      refreshInFlight = null;
+    });
+  }
+  return refreshInFlight;
+}
+
+async function request<T>(path: string, init?: RequestInit, allowRefresh = true): Promise<T> {
   const headers = new Headers(init?.headers);
   headers.set("Accept", "application/json");
   headers.set("Content-Type", "application/json");
@@ -75,6 +136,17 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     headers,
     cache: "no-store",
   });
+
+  // On a 401, try one silent refresh + replay before surfacing the error, so an expired access
+  // token renews transparently instead of bouncing the user to the osu! login.
+  if (
+    response.status === 401 &&
+    allowRefresh &&
+    getRefreshToken() !== null &&
+    (await refreshSession())
+  ) {
+    return request<T>(path, init, false);
+  }
 
   if (!response.ok) {
     let code = "UNKNOWN";
@@ -158,7 +230,7 @@ export function getStock(stockId: string): Promise<StockSummary> {
   return request<StockSummary>("/market/stocks/" + stockId);
 }
 
-// Public (no auth) — top movers for the landing-page live ticker.
+// Public (no auth): top movers for the landing-page live ticker.
 export function getLiveMovers(limit = 8): Promise<LiveMover[]> {
   return request<{ items: LiveMover[] }>(
     "/market/movers?limit=" + limit,
@@ -252,7 +324,7 @@ export function updateProfileShowcase(body: {
 // These adapt the real API wire shapes to the types the UI consumes (same pattern
 // as getNotifications), so components stay decoupled from the backend field names.
 
-/** BE returns { range, candles: [{ bucketStart, ... }] }; the chart wants Candle[] with `timestamp`. */
+/** BE returns { range, candles: [{ bucketStart, ... }] }; the chart wants Candle[] with a `timestamp`. */
 export function getStockCandles(
   stockId: string,
   range: HistoryRange,
@@ -280,7 +352,7 @@ export function getStockCandles(
 }
 
 /** BE splits volume into shares/value and names the trader count activeTraders24h. */
-// Accurate pre-trade estimate (fill incl. slippage/spread + the progressive fee),
+// Accurate pre-trade estimate (fill incl. slippage/spread plus the progressive fee),
 // computed server-side with the same engine as a real trade.
 export function getTradeQuote(
   stockId: string,
@@ -333,12 +405,12 @@ export function getTrending(): Promise<Trending> {
     volume: 0,
     priceChange24h: 0,
   });
-  // Partial + `?? []` per bucket: a missing/renamed bucket degrades to empty
+  // Partial plus `?? []` per bucket: a missing/renamed bucket degrades to empty
   // instead of throwing and failing the whole Trending page.
   return request<Partial<Record<keyof Trending, RawTrendingStock[]>>>(
     "/market/trending",
   ).then((raw) => ({
-    // most bought / most sold carry a *trade count*, not a price delta — keep it
+    // most bought / most sold carry a *trade count*, not a price delta, so keep it
     // in tradeCount so the UI renders a count, not a misleading coin amount.
     mostBought: (raw.mostBought ?? []).map((r) => ({ ...base(r), tradeCount: r.metricValue })),
     mostSold: (raw.mostSold ?? []).map((r) => ({ ...base(r), tradeCount: r.metricValue })),
@@ -357,7 +429,7 @@ interface RawTrendingStock {
   currentPrice: number;
 }
 
-// BE activity-feed item shape; the feed is price-history only, so everything is a PriceChange.
+// BE activity-feed item shape. The feed is price-history only, so everything is a PriceChange.
 interface RawMarketEvent {
   stockId: string;
   playerName: string;
@@ -464,14 +536,14 @@ export function getNotifications(params?: {
   ).then((page) => ({
     ...page,
     items: (page.items ?? []).map((n) => {
-      // Event notifications carry { stockId } in `data` — deep-link them to the stock page.
+      // Event notifications carry { stockId } in `data`, so deep-link them to the stock page.
       let link: string | null = null;
       if (n.data) {
         try {
           const parsed = JSON.parse(n.data) as { stockId?: string };
           if (parsed?.stockId) link = `/stocks/${parsed.stockId}`;
         } catch {
-          /* malformed data — leave the notification non-clickable */
+          /* malformed data, so leave the notification non-clickable */
         }
       }
       return {
@@ -507,7 +579,7 @@ export function getMarketSettings(): Promise<MarketSettings> {
   return request<MarketSettings>("/admin/market-settings");
 }
 
-// PUT returns 204 No Content — don't expect a body back.
+// PUT returns 204 No Content, so don't expect a body back.
 export function updateMarketSettings(body: MarketSettings): Promise<void> {
   return request<void>("/admin/market-settings", {
     method: "PUT",
@@ -516,7 +588,7 @@ export function updateMarketSettings(body: MarketSettings): Promise<void> {
 }
 
 // BE list item names the tier `trackingTier`; carry avatarUrl/stockId through.
-// Paginated server-side — the tracked-players set can be in the thousands, so always
+// Paginated server-side, because the tracked-players set can be in the thousands, so always
 // pass page/pageSize (and optional search) rather than fetching the whole list.
 export function getTrackedPlayers(params?: {
   page?: number;
@@ -584,7 +656,7 @@ export function addTrackedPlayer(body: {
   }));
 }
 
-// BE exposes separate /enable and /disable routes (PATCH, no body, 204) — no generic update.
+// BE exposes separate /enable and /disable routes (PATCH, no body, 204); there is no generic update.
 export function updateTrackedPlayer(
   trackedPlayerId: string,
   body: { isActive?: boolean },
@@ -605,7 +677,7 @@ export function removeTrackedPlayer(trackedPlayerId: string): Promise<void> {
 
 // --- Admin transaction monitor --------------------------------------------
 // Read-only cross-user feeds. BE serializes items in the AdminTrade /
-// AdminWalletTransaction shape already (camelCase), so no field remapping.
+// AdminWalletTransaction shape already (camelCase), so no field remapping is needed.
 
 export function getAdminTrades(params?: {
   userId?: string;

@@ -33,7 +33,7 @@ interface Bucket {
   metric: (s: TrendingStock) => ReactNode;
 }
 
-// A buy/sell trade count for the most-bought / most-sold buckets — a plain
+// A buy/sell trade count for the most-bought / most-sold buckets. It is a plain
 // count, not a coin amount.
 function TradeCount({ value, label }: { value?: number; label: string }) {
   return (
