@@ -49,39 +49,85 @@ function ErrorNotice({ message }: { message: string }) {
 }
 
 function IceRain() {
-  const [flakes, setFlakes] = useState<{ id: number; left: number; size: number; delay: number; duration: number; blur: number }[]>([]);
+  const [particles, setParticles] = useState<{ id: number; left: number; top: number; size: number; delay: number; duration: number; type: "diamond" | "orb"; color: "pink" | "cyan" | "white" }[]>([]);
 
   useEffect(() => {
-    const newFlakes = Array.from({ length: 30 }).map((_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      size: Math.random() * 5 + 3,
-      delay: Math.random() * 6,
-      duration: Math.random() * 8 + 5,
-      blur: Math.random() > 0.5 ? 1 : 0
-    }));
-    setFlakes(newFlakes);
+    const list = Array.from({ length: 40 }).map((_, i) => {
+      const type = (Math.random() > 0.4 ? "diamond" : "orb") as "diamond" | "orb";
+      const colorRand = Math.random();
+      const color = (colorRand > 0.6 ? "pink" : colorRand > 0.3 ? "cyan" : "white") as "pink" | "cyan" | "white";
+      return {
+        id: i,
+        left: Math.random() * 100,
+        top: Math.random() * 100,
+        size: type === "diamond" ? Math.random() * 4 + 3 : Math.random() * 40 + 20,
+        delay: Math.random() * -10,
+        duration: type === "diamond" ? Math.random() * 8 + 6 : Math.random() * 20 + 15,
+        type,
+        color
+      };
+    });
+    setParticles(list);
   }, []);
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-      {flakes.map((f) => (
-        <span
-          key={f.id}
-          className="absolute rounded-full bg-white/20 border border-white/30 animate-fall"
-          style={{
-            left: `${f.left}%`,
-            width: `${f.size}px`,
-            height: `${f.size}px`,
-            top: `-20px`,
-            filter: f.blur ? "blur(1px)" : "none",
-            animationDelay: `${f.delay}s`,
-            animationDuration: `${f.duration}s`,
-            animationIterationCount: "infinite",
-            animationTimingFunction: "linear"
-          }}
-        />
-      ))}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
+
+      {particles.map((p) => {
+        if (p.type === "diamond") {
+          const bgGradient = p.color === "pink" 
+            ? "from-pink-500/40 to-pink-400/20" 
+            : p.color === "cyan" 
+            ? "from-cyan-500/40 to-cyan-400/20" 
+            : "from-white/40 to-zinc-400/20";
+          const shadowColor = p.color === "pink"
+            ? "rgba(236,72,153,0.3)"
+            : p.color === "cyan"
+            ? "rgba(6,182,212,0.3)"
+            : "rgba(255,255,255,0.2)";
+          
+          return (
+            <span
+              key={p.id}
+              className={`absolute transform rotate-45 bg-gradient-to-tr ${bgGradient} border border-white/10 animate-fall`}
+              style={{
+                left: `${p.left}%`,
+                width: `${p.size}px`,
+                height: `${p.size}px`,
+                top: `-20px`,
+                boxShadow: `0 0 8px ${shadowColor}`,
+                animationDelay: `${p.delay}s`,
+                animationDuration: `${p.duration}s`,
+                animationIterationCount: "infinite",
+                animationTimingFunction: "linear"
+              }}
+            />
+          );
+        } else {
+          const colorClass = p.color === "pink"
+            ? "bg-pink-500/4"
+            : p.color === "cyan"
+            ? "bg-cyan-500/4"
+            : "bg-zinc-400/3";
+          
+          return (
+            <span
+              key={p.id}
+              className={`absolute rounded-full blur-xl animate-float ${colorClass}`}
+              style={{
+                left: `${p.left}%`,
+                top: `${p.top}%`,
+                width: `${p.size}px`,
+                height: `${p.size}px`,
+                animationDelay: `${p.delay}s`,
+                animationDuration: `${p.duration}s`,
+                animationIterationCount: "infinite"
+              }}
+            />
+          );
+        }
+      })}
     </div>
   );
 }
