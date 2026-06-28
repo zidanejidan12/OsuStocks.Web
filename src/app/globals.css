@@ -165,6 +165,24 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
+:root.light footer {
+  background-color: rgba(234, 230, 236, 0.4) !important;
+  border-top-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+:root.light footer a {
+  color: #59505a !important;
+}
+
+:root.light footer a:hover {
+  color: #1E1720 !important;
+}
+
+:root.light footer p,
+:root.light footer span {
+  color: #786f79 !important;
+}
+
 @keyframes fall {
   0% {
     transform: translateY(-20px) rotate(0deg);

@@ -65,35 +65,43 @@ export function SponsorCard({ className = "" }: { className?: string }) {
       target="_blank"
       rel="noopener noreferrer"
       aria-label={`${label} — osu! profile (opens in a new tab)`}
-      className={`group block overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/50 shadow-[0_24px_50px_-30px_rgba(0,0,0,0.8)] transition-all duration-300 hover:border-pink-500/40 hover:bg-zinc-900/70 hover:shadow-[0_0_30px_rgba(236,72,153,0.15)] ${className}`}
+      className={`group block relative overflow-hidden rounded-2xl border border-zinc-800/85 bg-zinc-950/40 p-5 shadow-[0_24px_50px_-30px_rgba(0,0,0,0.8)] transition-all duration-300 hover:border-pink-500/40 hover:bg-zinc-900/40 hover:shadow-[0_0_40px_rgba(236,72,153,0.1)] ${className}`}
     >
-      <div className="flex items-center justify-between border-b border-zinc-800/80 px-5 py-3.5">
-        <div className="flex items-center gap-2">
-          <span className="h-1.5 w-1.5 rounded-full bg-pink-500 animate-pulse" />
-          <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500">
-            Sponsored By
-          </span>
-        </div>
-        <span aria-hidden="true" className="text-xs text-pink-400">
+      <div className="absolute top-0 right-0 w-24 h-24 bg-pink-500/5 rounded-full blur-2xl pointer-events-none group-hover:bg-pink-500/10 transition-colors duration-300" />
+      
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-pink-400/90 drop-shadow-[0_0_10px_rgba(244,63,94,0.2)]">
+          Core Sponsor
+        </span>
+        <span aria-hidden="true" className="text-xs text-pink-500 animate-pulse">
           ❤
         </span>
       </div>
-      
-      <div className="flex items-center justify-between gap-6 px-5 py-4">
-        <span className="flex min-w-0 items-center gap-2.5 text-sm font-medium text-zinc-200">
+
+      <div className="flex items-center gap-4">
+        <div className="relative">
           <Avatar
             src={`https://a.ppy.sh/${SPONSOR.id}`}
             name={SPONSOR.name}
-            size="sm"
+            size="md"
+            className="ring-2 ring-pink-500/30 group-hover:ring-pink-500/60 transition-all duration-300"
           />
-          <span className="truncate font-semibold transition-colors group-hover:text-pink-200">
-            {SPONSOR.name}
+          <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-pink-500 text-[8px] text-white font-bold">
+            ★
           </span>
-        </span>
-        
-        <div className="flex items-center gap-2 text-xs text-zinc-500 transition-colors group-hover:text-pink-300">
-          <span>osu! profile</span>
-          <span aria-hidden="true">&#8599;</span>
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <h3 className="text-lg font-black tracking-tight text-zinc-100 transition-colors group-hover:text-pink-200">
+            {SPONSOR.name}
+          </h3>
+          <p className="text-xs text-zinc-500 mt-0.5">
+            Supporting osu! virtual stock market
+          </p>
+        </div>
+
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-900/50 border border-zinc-800/80 text-zinc-500 transition-all duration-300 group-hover:border-pink-500/30 group-hover:text-pink-300 group-hover:translate-x-0.5">
+          <span aria-hidden="true" className="text-sm font-semibold">&#8599;</span>
         </div>
       </div>
     </a>
