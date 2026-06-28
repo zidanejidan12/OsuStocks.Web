@@ -8,6 +8,7 @@ import { getMarketOverview, getStocks, getWallet, ApiError } from "@/lib/api/cli
 import { useAuth } from "@/lib/auth/auth-context";
 import { Card } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { StatusDot } from "@/components/ui/StatusDot";
 import { buttonClasses } from "@/components/ui/Button";
 import { MagneticButton } from "@/components/ui/MagneticButton";
 import { EmptyState } from "@/components/ui/EmptyState";
