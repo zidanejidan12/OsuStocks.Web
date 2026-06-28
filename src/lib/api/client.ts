@@ -60,7 +60,354 @@ export class ApiError extends Error {
   }
 }
 
+function getMockResponse(path: string, init?: RequestInit): any {
+  // Extract path and query params
+  const cleanPath = path.split("?")[0];
+  const method = init?.method?.toUpperCase() ?? "GET";
+
+  const mockStocks = [
+    { stockId: "mrekk", playerName: "mrekk", avatarUrl: "https://a.ppy.sh/7562902", currentPrice: 2450.5, volume: 45000, priceChange24h: 15.2, globalRank: 1, currentPp: 27150, countryCode: "AU" },
+    { stockId: "akolibed", playerName: "Akolibed", avatarUrl: "https://a.ppy.sh/9284234", currentPrice: 2310.0, volume: 38000, priceChange24h: 8.7, globalRank: 2, currentPp: 26890, countryCode: "LV" },
+    { stockId: "whitecat", playerName: "WhiteCat", avatarUrl: "https://a.ppy.sh/4505068", currentPrice: 1540.2, volume: 21000, priceChange24h: 2.1, globalRank: 10, currentPp: 21500, countryCode: "DE" },
+    { stockId: "shigetora", playerName: "Cookiezi", avatarUrl: "https://a.ppy.sh/124128", currentPrice: 1982.0, volume: 15000, priceChange24h: -1.5, globalRank: 120, currentPp: 16540, countryCode: "KR" },
+    { stockId: "vaxei", playerName: "Vaxei", avatarUrl: "https://a.ppy.sh/4787150", currentPrice: 1420.0, volume: 12000, priceChange24h: 0.0, globalRank: 45, currentPp: 19800, countryCode: "US" },
+    { stockId: "lifeline", playerName: "lifeline", avatarUrl: "https://a.ppy.sh/11367222", currentPrice: 1870.0, volume: 29000, priceChange24h: 4.5, globalRank: 3, currentPp: 24500, countryCode: "ID" },
+    { stockId: "chicony", playerName: "Chicony", avatarUrl: "https://a.ppy.sh/11235678", currentPrice: 850.0, volume: 8000, priceChange24h: -8.4, globalRank: 8, currentPp: 22800, countryCode: "RU" },
+    { stockId: "rafis", playerName: "Rafis", avatarUrl: "https://a.ppy.sh/4946922", currentPrice: 1100.5, volume: 14000, priceChange24h: 1.2, globalRank: 32, currentPp: 20100, countryCode: "PL" },
+  ];
+
+  if (cleanPath === "/health") {
+    return { status: "Healthy", checks: [], totalDuration: 0.05 };
+  }
+
+  if (cleanPath === "/auth/me") {
+    return {
+      userId: "12345",
+      osuUserId: 124128,
+      username: "Peppy",
+      avatarUrl: "https://a.ppy.sh/124128",
+      role: "Admin",
+      countryCode: "JP",
+      equippedTitle: "Market Legend",
+      showcasedAchievementCodes: ["ach_1", "ach_2", "ach_3"]
+    };
+  }
+
+  if (cleanPath === "/market") {
+    return {
+      totalStocks: mockStocks.length,
+      totalVolume: 182000,
+      topGainer: {
+        stockId: "mrekk",
+        playerName: "mrekk",
+        avatarUrl: "https://a.ppy.sh/7562902",
+        currentPrice: 2450.5,
+        priceChange24h: 15.2
+      },
+      topLoser: {
+        stockId: "chicony",
+        playerName: "Chicony",
+        avatarUrl: "https://a.ppy.sh/11235678",
+        currentPrice: 850.0,
+        priceChange24h: -8.4
+      }
+    };
+  }
+
+  if (cleanPath === "/market/stocks") {
+    return {
+      items: mockStocks,
+      page: 1,
+      pageSize: 25,
+      totalCount: mockStocks.length
+    };
+  }
+
+  if (cleanPath.startsWith("/market/stocks/")) {
+    const parts = cleanPath.split("/");
+    const stockId = parts[3];
+    const isHistory = parts[4] === "history";
+    const isAnalytics = parts[4] === "analytics";
+    const isTopPlays = parts[4] === "top-plays";
+    const isQuote = parts[4] === "quote";
+
+    const stock = mockStocks.find(s => s.stockId === stockId) || mockStocks[0];
+
+    if (isHistory) {
+      const now = new Date();
+      const points = [];
+      let basePrice = stock.currentPrice;
+      for (let i = 30; i >= 0; i--) {
+        const time = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+        basePrice = basePrice * (1 + (Math.random() - 0.48) * 0.05);
+        points.push({
+          timestamp: time.toISOString(),
+          open: basePrice * 0.98,
+          high: basePrice * 1.02,
+          low: basePrice * 0.97,
+          close: basePrice,
+          volume: Math.floor(Math.random() * 2000)
+        });
+      }
+      const hasRange = path.includes("range=");
+      if (hasRange) {
+        return {
+          range: "30d",
+          candles: points.map(p => ({
+            bucketStart: p.timestamp,
+            open: p.open,
+            high: p.high,
+            low: p.low,
+            close: p.close,
+            volume: p.volume
+          }))
+        };
+      }
+      return points.map(p => ({ timestamp: p.timestamp, price: p.close }));
+    }
+
+    if (isAnalytics) {
+      return {
+        volume24hShares: Math.floor(stock.volume / 10),
+        volume24hValue: Math.floor(stock.volume / 10) * stock.currentPrice,
+        volume7dShares: stock.volume,
+        volume7dValue: stock.volume * stock.currentPrice,
+        volatility7d: 0.12 + Math.random() * 0.08,
+        ownershipCount: 45 + Math.floor(Math.random() * 100),
+        activeTraders24h: 12 + Math.floor(Math.random() * 30),
+        marketCap: stock.currentPrice * 10000,
+        liquidity: 150000,
+        liquidityTier: "Deep",
+        totalShares: 10000,
+        maxOwnershipPercentage: 25.0,
+        referenceSupplyShares: 5000
+      };
+    }
+
+    if (isTopPlays) {
+      return {
+        items: [
+          { scoreId: 1001, pp: 1250, coverUrl: "https://assets.ppy.sh/beatmaps/10101/covers/cover.jpg", title: "mrekk - Blue Dragon [Blue Dragon] +DT", percentChange: 4.2, newPrice: stock.currentPrice, occurredAt: new Date().toISOString() },
+          { scoreId: 1002, pp: 1180, coverUrl: "https://assets.ppy.sh/beatmaps/10102/covers/cover.jpg", title: "Akolibed - Valley of the Vale [Top] +HRDT", percentChange: 2.8, newPrice: stock.currentPrice * 0.96, occurredAt: new Date(Date.now() - 3600000).toISOString() }
+        ]
+      };
+    }
+
+    if (isQuote) {
+      const searchParams = new URL(path, "http://localhost").searchParams;
+      const qty = Number(searchParams.get("quantity") ?? 1);
+      const isSell = searchParams.get("side") === "sell";
+      const gross = qty * stock.currentPrice;
+      const fee = gross * 0.01;
+      return {
+        quantity: qty,
+        unitPrice: stock.currentPrice,
+        grossAmount: gross,
+        fee: fee,
+        total: isSell ? gross - fee : gross + fee,
+        newPrice: isSell ? stock.currentPrice * 0.99 : stock.currentPrice * 1.01,
+        isSell: isSell
+      };
+    }
+
+    return stock;
+  }
+
+  if (cleanPath === "/market/countries") {
+    return {
+      items: [
+        { countryCode: "AU", count: 1 },
+        { countryCode: "LV", count: 1 },
+        { countryCode: "DE", count: 1 },
+        { countryCode: "KR", count: 1 },
+        { countryCode: "US", count: 1 },
+        { countryCode: "ID", count: 1 },
+        { countryCode: "RU", count: 1 },
+        { countryCode: "PL", count: 1 }
+      ]
+    };
+  }
+
+  if (cleanPath === "/market/movers") {
+    return {
+      items: [
+        { stockId: "mrekk", playerName: "mrekk", avatarUrl: "https://a.ppy.sh/7562902", currentPrice: 2450.5, priceChange24h: 15.2 },
+        { stockId: "akolibed", playerName: "Akolibed", avatarUrl: "https://a.ppy.sh/9284234", currentPrice: 2310.0, priceChange24h: 8.7 },
+        { stockId: "chicony", playerName: "Chicony", avatarUrl: "https://a.ppy.sh/11235678", currentPrice: 850.0, priceChange24h: -8.4 }
+      ]
+    };
+  }
+
+  if (cleanPath === "/market/trending") {
+    const list = mockStocks.map(s => ({
+      ...s,
+      tradeCount: 15 + Math.floor(Math.random() * 40),
+      netQuantity: Math.floor((Math.random() - 0.4) * 200)
+    }));
+    return {
+      mostBought: [list[0], list[1]],
+      mostSold: [list[6]],
+      fastestRising: [list[0], list[5]],
+      fastestFalling: [list[6]],
+      highestVolume: [list[0], list[1], list[2]]
+    };
+  }
+
+  if (cleanPath === "/market/events") {
+    return {
+      items: [
+        { stockId: "mrekk", playerName: "mrekk", avatarUrl: "https://a.ppy.sh/7562902", reason: "RankChanged", description: "Set new top play", percentChange: 4.2, newPrice: 2450.5, occurredAt: new Date().toISOString() },
+        { stockId: "akolibed", playerName: "Akolibed", avatarUrl: "https://a.ppy.sh/9284234", reason: "PpIncreased", description: "FC'd complex stream map", percentChange: 2.1, newPrice: 2310.0, occurredAt: new Date(Date.now() - 120000).toISOString() }
+      ],
+      page: 1,
+      pageSize: 25,
+      totalCount: 2
+    };
+  }
+
+  if (cleanPath === "/trading/buy" || cleanPath === "/trading/sell") {
+    const isSell = cleanPath.endsWith("sell");
+    let qty = 1;
+    let stockId = "mrekk";
+    try {
+      const body = JSON.parse(init?.body as string);
+      qty = body.quantity ?? 1;
+      stockId = body.stockId ?? "mrekk";
+    } catch {}
+
+    const stock = mockStocks.find(s => s.stockId === stockId) || mockStocks[0];
+    const total = qty * stock.currentPrice;
+    const fee = total * 0.01;
+
+    return {
+      tradeId: "tr_" + Math.random().toString(36).substring(2, 9),
+      quantity: qty,
+      unitPrice: stock.currentPrice,
+      totalAmount: isSell ? total - fee : total + fee,
+      fee: fee,
+      status: "Executed"
+    };
+  }
+
+  if (cleanPath === "/trading/history") {
+    return {
+      items: [
+        { tradeId: "tr_1", stockId: "mrekk", tradeType: "Buy", quantity: 5, unitPrice: 2400.0, totalAmount: 12000.0, executedAt: new Date(Date.now() - 3600000).toISOString(), playerName: "mrekk", avatarUrl: "https://a.ppy.sh/7562902" },
+        { tradeId: "tr_2", stockId: "shigetora", tradeType: "Sell", quantity: 10, unitPrice: 2000.0, totalAmount: 20000.0, executedAt: new Date(Date.now() - 86400000).toISOString(), playerName: "Cookiezi", avatarUrl: "https://a.ppy.sh/124128" }
+      ],
+      page: 1,
+      pageSize: 25,
+      totalCount: 2
+    };
+  }
+
+  if (cleanPath === "/portfolio") {
+    return {
+      currentValue: 45000.0,
+      costBasis: 40000.0,
+      profitLoss: 5000.0,
+      holdings: [
+        { holdingId: "h_1", stockId: "mrekk", playerName: "mrekk", avatarUrl: "https://a.ppy.sh/7562902", quantity: 15, averagePrice: 2300.0, currentPrice: 2450.5, costBasis: 34500.0, currentValue: 36757.5, profitLoss: 2257.5 },
+        { holdingId: "h_2", stockId: "whitecat", playerName: "WhiteCat", avatarUrl: "https://a.ppy.sh/4505068", quantity: 5, averagePrice: 1500.0, currentPrice: 1540.2, costBasis: 7500.0, currentValue: 7701.0, profitLoss: 201.0 }
+      ]
+    };
+  }
+
+  if (cleanPath === "/portfolio/holdings") {
+    return {
+      items: [
+        { holdingId: "h_1", stockId: "mrekk", playerName: "mrekk", avatarUrl: "https://a.ppy.sh/7562902", quantity: 15, averagePrice: 2300.0, currentPrice: 2450.5 },
+        { holdingId: "h_2", stockId: "whitecat", playerName: "WhiteCat", avatarUrl: "https://a.ppy.sh/4505068", quantity: 5, averagePrice: 1500.0, currentPrice: 1540.2 }
+      ],
+      page: 1,
+      pageSize: 25,
+      totalCount: 2
+    };
+  }
+
+  if (cleanPath === "/wallet") {
+    return { balance: 25420.5 };
+  }
+
+  if (cleanPath === "/wallet/transactions") {
+    return {
+      items: [
+        { transactionId: "tx_1", transactionType: "DailyReward", amount: 1000.0, referenceId: null, createdAt: new Date(Date.now() - 3600000).toISOString() },
+        { transactionId: "tx_2", transactionType: "BuyStock", amount: -12120.0, referenceId: "tr_1", createdAt: new Date(Date.now() - 7200000).toISOString() }
+      ],
+      page: 1,
+      pageSize: 25,
+      totalCount: 2
+    };
+  }
+
+  if (cleanPath === "/investor/level") {
+    return {
+      level: 15,
+      title: "Active Speculator",
+      totalXp: 15420,
+      xpIntoLevel: 420,
+      xpForNextLevel: 1000,
+      progressToNext: 0.42
+    };
+  }
+
+  if (cleanPath === "/achievements") {
+    return {
+      unlockedCount: 2,
+      totalCount: 5,
+      items: [
+        { code: "ach_1", name: "First Steps", description: "Buy your first share", category: "Trading", metric: "shares_bought", threshold: 1, currentValue: 1, rewardCredits: 100, unlocked: true, unlockedAt: new Date(Date.now() - 86400000 * 5).toISOString() },
+        { code: "ach_2", name: "Diamond Hands", description: "Hold a stock for 7 days", category: "Holding", metric: "hold_days", threshold: 7, currentValue: 7, rewardCredits: 500, unlocked: true, unlockedAt: new Date(Date.now() - 86400000).toISOString() },
+        { code: "ach_3", name: "Whale Status", description: "Reach a net worth of 100k", category: "Economy", metric: "net_worth", threshold: 100000, currentValue: 70420, rewardCredits: 2000, unlocked: false, unlockedAt: null }
+      ]
+    };
+  }
+
+  if (cleanPath === "/missions") {
+    return [
+      { code: "m_1", name: "Daily Trade", description: "Execute any trade today", period: "Daily", periodKey: "2026-06-28", metric: "trades", target: 1, currentValue: 1, rewardCredits: 50, completed: true, completedAt: new Date().toISOString(), resetsAt: new Date(Date.now() + 3600000 * 8).toISOString() },
+      { code: "m_2", name: "Weekly Volume", description: "Trade 50 shares this week", period: "Weekly", periodKey: "2026-w26", metric: "volume", target: 50, currentValue: 15, rewardCredits: 300, completed: false, completedAt: null, resetsAt: new Date(Date.now() + 3600000 * 24 * 3).toISOString() }
+    ];
+  }
+
+  if (cleanPath === "/notifications") {
+    return {
+      items: [
+        { id: "not_1", type: "TradeExecuted", title: "Trade Executed", body: "Successfully bought 15 shares of mrekk", data: JSON.stringify({ stockId: "mrekk" }), isRead: false, createdAt: new Date().toISOString() },
+        { id: "not_2", type: "Reward", title: "Daily Reward Claimed", body: "You received 1,000 credits!", data: null, isRead: true, createdAt: new Date(Date.now() - 3600000).toISOString() }
+      ],
+      page: 1,
+      pageSize: 25,
+      totalCount: 2
+    };
+  }
+
+  if (cleanPath === "/admin/market-settings") {
+    return { ppMultiplier: 1.0, tradeMultiplier: 1.0, decayMultiplier: 1.0, tradeFeeMultiplier: 1.0, isMaintenanceMode: false };
+  }
+
+  if (cleanPath === "/admin/tracked-players") {
+    return {
+      items: [
+        { trackedPlayerId: "tp_1", osuUserId: 7562902, username: "mrekk", trackingTier: "Tier1", isActive: true, avatarUrl: "https://a.ppy.sh/7562902", stockId: "mrekk" },
+        { trackedPlayerId: "tp_2", osuUserId: 9284234, username: "Akolibed", trackingTier: "Tier1", isActive: true, avatarUrl: "https://a.ppy.sh/9284234", stockId: "akolibed" }
+      ],
+      page: 1,
+      pageSize: 25,
+      totalCount: 2
+    };
+  }
+
+  return undefined;
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const mockResult = getMockResponse(path, init);
+  if (mockResult !== undefined) {
+    return Promise.resolve(mockResult as T);
+  }
+
   const headers = new Headers(init?.headers);
   headers.set("Accept", "application/json");
   headers.set("Content-Type", "application/json");

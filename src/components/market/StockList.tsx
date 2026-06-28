@@ -220,18 +220,20 @@ export function StockList({
                       ? { ...spring, delay: Math.min(i, 12) * 0.025 }
                       : undefined
                   }
-                  className="group transition-colors hover:bg-zinc-900/50"
+                  className="group transition-all duration-300 hover:bg-zinc-900/40 hover:translate-x-1"
                 >
                   <td className="px-4 py-3.5">
                     <Link
                       href={`/stocks/${stock.stockId}`}
-                      className="inline-flex items-center gap-2.5 font-medium text-zinc-100 transition-colors group-hover:text-pink-400"
+                      className="inline-flex items-center gap-2.5 font-medium text-zinc-100 transition-colors duration-300 group-hover:text-pink-400"
                     >
-                      <Avatar
-                        src={stock.avatarUrl}
-                        name={stock.playerName}
-                        size="sm"
-                      />
+                      <div className="shrink-0 transition-transform duration-300 group-hover:scale-105">
+                        <Avatar
+                          src={stock.avatarUrl}
+                          name={stock.playerName}
+                          size="sm"
+                        />
+                      </div>
                       <span className="inline-flex items-center gap-1.5">
                         {stock.playerName}
                         {stock.countryCode && (
@@ -243,7 +245,7 @@ export function StockList({
                         <CaretRight
                           size={14}
                           weight="bold"
-                          className="text-pink-400 opacity-0 transition-opacity group-hover:opacity-100"
+                          className="text-pink-400 opacity-0 -translate-x-1 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0"
                         />
                       </span>
                     </Link>

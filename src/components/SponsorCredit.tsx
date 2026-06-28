@@ -65,34 +65,36 @@ export function SponsorCard({ className = "" }: { className?: string }) {
       target="_blank"
       rel="noopener noreferrer"
       aria-label={`${label} — osu! profile (opens in a new tab)`}
-      className={`group block rounded-2xl border border-zinc-800/80 bg-zinc-900/50 p-4 shadow-[0_24px_50px_-30px_rgba(0,0,0,0.8)] transition-colors hover:border-pink-500/40 hover:bg-zinc-900/70 ${className}`}
+      className={`group block overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/50 shadow-[0_24px_50px_-30px_rgba(0,0,0,0.8)] transition-all duration-300 hover:border-pink-500/40 hover:bg-zinc-900/70 hover:shadow-[0_0_30px_rgba(236,72,153,0.15)] ${className}`}
     >
-      <div className="flex items-center justify-between">
-        <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-500">
-          Sponsored by
-        </span>
-        <span aria-hidden="true" className="text-pink-400/60">
-          &#10084;
+      <div className="flex items-center justify-between border-b border-zinc-800/80 px-5 py-3.5">
+        <div className="flex items-center gap-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-pink-500 animate-pulse" />
+          <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500">
+            Sponsored By
+          </span>
+        </div>
+        <span aria-hidden="true" className="text-xs text-pink-400">
+          ❤
         </span>
       </div>
-      <div className="mt-3 flex items-center gap-3">
-        <Avatar
-          src={`https://a.ppy.sh/${SPONSOR.id}`}
-          name={SPONSOR.name}
-          size="md"
-        />
-        <div className="min-w-0">
-          <div className="truncate text-base font-semibold text-zinc-100 transition-colors group-hover:text-pink-200">
+      
+      <div className="flex items-center justify-between gap-6 px-5 py-4">
+        <span className="flex min-w-0 items-center gap-2.5 text-sm font-medium text-zinc-200">
+          <Avatar
+            src={`https://a.ppy.sh/${SPONSOR.id}`}
+            name={SPONSOR.name}
+            size="sm"
+          />
+          <span className="truncate font-semibold transition-colors group-hover:text-pink-200">
             {SPONSOR.name}
-          </div>
-          <div className="text-xs text-zinc-500">osu! profile &#8599;</div>
-        </div>
-        <span
-          aria-hidden="true"
-          className="ml-auto text-zinc-600 transition-colors group-hover:text-pink-300"
-        >
-          &#8599;
+          </span>
         </span>
+        
+        <div className="flex items-center gap-2 text-xs text-zinc-500 transition-colors group-hover:text-pink-300">
+          <span>osu! profile</span>
+          <span aria-hidden="true">&#8599;</span>
+        </div>
       </div>
     </a>
   );

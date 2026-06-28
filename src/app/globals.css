@@ -123,3 +123,91 @@
     scroll-behavior: auto !important;
   }
 }
+
+:root.light {
+  --color-background: #EAE6EC;
+  --color-foreground: #1E1720;
+  --color-zinc-50: #1E1720;
+  --color-zinc-100: #2C242E;
+  --color-zinc-200: #403842;
+  --color-zinc-300: #59505a;
+  --color-zinc-400: #786f79;
+  --color-zinc-500: #9c929d;
+  --color-zinc-600: #bebebe;
+  --color-zinc-700: #d6cbd7;
+  --color-zinc-800: #ede6ee;
+  --color-zinc-900: #f5edf6;
+  --color-zinc-950: #F6F1F8;
+}
+
+:root.light header {
+  background-color: rgba(234, 230, 236, 0.8) !important;
+  border-bottom-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+:root.light header nav a, 
+:root.light header nav span {
+  color: #1E1720 !important;
+}
+
+:root.light header nav button {
+  color: #59505a !important;
+}
+
+:root.light header nav button:hover {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+  color: #1E1720 !important;
+}
+
+:root.light .glass {
+  background: rgba(245, 237, 246, 0.72);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+@keyframes fall {
+  0% {
+    transform: translateY(-20px) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  90% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(105vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.animate-fall {
+  animation-name: fall;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 12s linear infinite;
+}

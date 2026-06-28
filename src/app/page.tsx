@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, WarningCircle, Lock } from "@phosphor-icons/react";
-import type { MarketOverview, Paged, StockSort, StockSummary } from "@/lib/api/types";
-import { getMarketOverview, getStocks, ApiError } from "@/lib/api/client";
+import { ArrowRight, WarningCircle, Lock, Wallet as WalletIcon } from "@phosphor-icons/react";
+import type { MarketOverview, Paged, StockSort, StockSummary, Wallet } from "@/lib/api/types";
+import { getMarketOverview, getStocks, getWallet, ApiError } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/auth-context";
 import { Card } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { StatusDot } from "@/components/ui/StatusDot";
 import { buttonClasses } from "@/components/ui/Button";
 import { MagneticButton } from "@/components/ui/MagneticButton";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -17,6 +16,8 @@ import { SponsorCard } from "@/components/SponsorCredit";
 import { MarketOverviewCards } from "@/components/market/MarketOverviewCards";
 import { StockList } from "@/components/market/StockList";
 import { LiveMarketPanel } from "@/components/market/LiveMarketPanel";
+import { Coin } from "@/components/ui/Coin";
+import { Avatar } from "@/components/ui/Avatar";
 
 const PAGE_SIZE = 25;
 
@@ -46,51 +47,82 @@ function ErrorNotice({ message }: { message: string }) {
   );
 }
 
+function IceRain() {
+  const [flakes, setFlakes] = useState<{ id: number; left: number; size: number; delay: number; duration: number; blur: number }[]>([]);
+
+  useEffect(() => {
+    const newFlakes = Array.from({ length: 30 }).map((_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      size: Math.random() * 5 + 3,
+      delay: Math.random() * 6,
+      duration: Math.random() * 8 + 5,
+      blur: Math.random() > 0.5 ? 1 : 0
+    }));
+    setFlakes(newFlakes);
+  }, []);
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+      {flakes.map((f) => (
+        <span
+          key={f.id}
+          className="absolute rounded-full bg-white/20 border border-white/30 animate-fall"
+          style={{
+            left: `${f.left}%`,
+            width: `${f.size}px`,
+            height: `${f.size}px`,
+            top: `-20px`,
+            filter: f.blur ? "blur(1px)" : "none",
+            animationDelay: `${f.delay}s`,
+            animationDuration: `${f.duration}s`,
+            animationIterationCount: "infinite",
+            animationTimingFunction: "linear"
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 function Hero({ onLogin }: { onLogin: () => void }) {
   return (
-    <section className="mx-auto w-full max-w-6xl px-4 py-16 sm:py-24">
-      <div className="grid items-center gap-12 md:min-h-[60vh] md:grid-cols-2 md:gap-10">
-        {/* LEFT: copy + CTAs */}
+    <section className="relative mx-auto w-full max-w-6xl px-4 pt-12 pb-24 sm:pt-16 sm:pb-32 overflow-hidden">
+      <IceRain />
+      <div className="absolute top-1/4 left-1/4 -z-10 h-72 w-72 rounded-full bg-cyan-500/10 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 -z-10 h-72 w-72 rounded-full bg-pink-500/10 blur-[120px] pointer-events-none" />
+      
+      <div className="relative z-10 grid items-center gap-12 md:grid-cols-2 md:gap-10">
         <Reveal>
-          <div className="flex items-center gap-2.5">
-            <StatusDot tone="pink" />
-            <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-zinc-500">
-              The osu! stock market
-            </span>
-          </div>
+          <div className="flex flex-col items-center md:items-start text-center md:text-left">
+            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.95] text-white">
+              Trade osu!<br className="hidden md:inline" />
+              {" "}players like<br />
+              <span className="text-pink-400 drop-shadow-[0_0_20px_rgba(236,72,153,0.75)] animate-pulse">stocks.</span>
+            </h1>
 
-          <h1 className="mt-6 text-5xl font-semibold leading-[0.95] tracking-tighter text-zinc-50 md:text-7xl">
-            Trade osu! players like{" "}
-            <span className="text-pink-400">stocks</span>.
-          </h1>
+            <p className="mt-6 max-w-[44ch] text-lg sm:text-xl font-normal leading-relaxed text-zinc-400">
+              Buy and sell shares tied to osu! player performance. Track the
+              market, build a portfolio, and ride every rank-up.
+            </p>
 
-          <p className="mt-6 max-w-[48ch] text-lg leading-relaxed text-zinc-400">
-            Buy and sell shares tied to osu! player performance. Track the
-            market, build a portfolio, and ride every rank-up.
-          </p>
+            <p className="mt-4 max-w-[48ch] text-xs sm:text-sm leading-relaxed text-zinc-500 font-normal">
+              A free, fan-made game for fun. All credits, prices, and holdings are <strong className="text-zinc-400 font-semibold">virtual</strong>—they have no real-world value, can&apos;t be bought or cashed out, and this isn&apos;t real investing or gambling. Not affiliated with osu! or ppy Pty Ltd.
+            </p>
 
-          {/* Upfront disclaimer: this is a free fan game with fictional currency, not a real
-              trading/investment service — keeps the "stocks/buy/sell" framing from reading as
-              a deceptive financial platform. */}
-          <p className="mt-5 max-w-[52ch] text-sm leading-relaxed text-zinc-500">
-            A free, fan-made game for fun. All credits, prices, and holdings are
-            <span className="text-zinc-300"> virtual</span> — they have no real-world
-            value, can&apos;t be bought or cashed out, and this isn&apos;t real
-            investing or gambling. Not affiliated with osu! or ppy&nbsp;Pty&nbsp;Ltd.
-          </p>
-
-          <div className="mt-9 flex flex-wrap items-center gap-3">
-            <MagneticButton
-              onClick={onLogin}
-              className={buttonClasses({ size: "lg" })}
-            >
-              Get started
-              <ArrowRight size={18} weight="bold" />
-            </MagneticButton>
+            <div className="mt-8 flex flex-wrap justify-center md:justify-start items-center gap-3">
+              <MagneticButton
+                onClick={onLogin}
+                className="relative group overflow-hidden px-8 py-4 rounded-2xl bg-gradient-to-r from-pink-500 to-cyan-500 text-white font-semibold text-lg shadow-[0_0_30px_rgba(236,72,153,0.25)] hover:shadow-[0_0_40px_rgba(6,182,212,0.35)] transition-all duration-300 flex items-center gap-3"
+              >
+                <span className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                Get Started
+                <ArrowRight size={20} weight="bold" className="group-hover:translate-x-1 transition-transform duration-300" />
+              </MagneticButton>
+            </div>
           </div>
         </Reveal>
 
-        {/* RIGHT: prominent sponsor box above the decorative live-market panel */}
         <Reveal delay={0.1} className="md:pl-4">
           <div className="flex flex-col gap-4">
             <SponsorCard />
@@ -134,6 +166,7 @@ export default function Home() {
   const [stocksLoading, setStocksLoading] = useState(true);
   const [stocksError, setStocksError] = useState<string | null>(null);
   const [unauthorized, setUnauthorized] = useState(false);
+  const [wallet, setWallet] = useState<Wallet | null>(null);
 
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState<StockSort>("change24h_desc");
@@ -173,6 +206,24 @@ export default function Home() {
         const message =
           err instanceof ApiError ? err.message : "Failed to load market overview.";
         setOverviewError(message);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
+  // Fetch the wallet once the user is authenticated.
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+
+    getWallet()
+      .then((data) => {
+        if (!cancelled) setWallet(data);
+      })
+      .catch(() => {
+        // fail silently
       });
 
     return () => {
@@ -234,22 +285,69 @@ export default function Home() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:py-14">
+    <div className="relative mx-auto w-full max-w-6xl px-4 py-10 sm:py-14">
+      {/* Decorative ambient light gradients */}
+      <div className="absolute top-0 right-0 -z-10 h-[300px] w-[300px] rounded-full bg-pink-500/5 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 -z-10 h-[300px] w-[300px] rounded-full bg-purple-500/5 blur-[120px] pointer-events-none" />
+
       <Reveal>
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <h1 className="text-3xl font-semibold tracking-tighter text-zinc-50 sm:text-4xl">
-            Market
-          </h1>
-          <div className="flex items-center gap-2 pb-1">
-            <StatusDot tone="emerald" />
-            <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-500">
-              Live
-            </span>
+        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between border-b border-zinc-900 pb-8 mb-8">
+          {/* Welcome User Section */}
+          <div className="flex items-center gap-4">
+            <Avatar
+              src={user.avatarUrl}
+              name={user.username}
+              size="lg"
+              className="ring-2 ring-pink-500/20"
+            />
+            <div>
+              <div className="flex items-center gap-2.5">
+                <h1 className="text-2xl font-semibold tracking-tighter text-zinc-100 sm:text-3xl">
+                  {user.username}
+                </h1>
+                {user.equippedTitle && (
+                  <span className="rounded-full bg-pink-500/10 px-2.5 py-0.5 text-xs font-medium text-pink-400 border border-pink-500/20">
+                    {user.equippedTitle}
+                  </span>
+                )}
+              </div>
+              <p className="text-sm text-zinc-500 mt-1">
+                Good to see you back on the stock market today.
+              </p>
+            </div>
+          </div>
+
+          {/* Quick Wallet Stats Widget */}
+          <div className="flex items-center gap-3 self-start md:self-auto bg-zinc-900/40 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-4 min-w-[200px]">
+            <div className="grid h-10 w-10 place-items-center rounded-xl bg-pink-500/10 text-pink-400 border border-pink-500/20">
+              <WalletIcon size={20} weight="bold" />
+            </div>
+            <div>
+              <span className="text-xs text-zinc-500 block font-medium">Available Balance</span>
+              <span className="text-lg font-mono font-bold text-zinc-100 tabular-nums flex items-center gap-1.5 mt-0.5">
+                <Coin />
+                {wallet ? wallet.balance.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : "..."}
+              </span>
+            </div>
           </div>
         </div>
-        <p className="mt-1.5 text-sm text-zinc-400">
-          Welcome back, {user.username}.
-        </p>
+      </Reveal>
+
+      {/* Market Title and Status */}
+      <Reveal delay={0.02}>
+        <div className="flex items-end justify-between gap-3 mb-6">
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl font-semibold tracking-tighter text-zinc-100 sm:text-2xl">
+              Market Overview
+            </h2>
+            <div className="flex items-center gap-1.5 rounded-full bg-cyan-500/10 px-2 py-0.5 border border-cyan-500/20">
+              <StatusDot tone="cyan" />
+              <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-cyan-400">
+                Live
+              </span>
+            </div>
+          </div>
+        </div>
       </Reveal>
 
       {unauthorized ? (

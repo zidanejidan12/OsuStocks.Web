@@ -18,6 +18,8 @@ import {
   SignIn,
   List,
   X,
+  Sun,
+  Moon,
 } from "@phosphor-icons/react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { useNotifications } from "@/lib/notifications/notifications-context";
@@ -64,6 +66,36 @@ function NotificationBell() {
         </span>
       )}
     </Link>
+  );
+}
+
+function ThemeToggle() {
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+
+  useEffect(() => {
+    const isLight = document.documentElement.classList.contains("light");
+    setTheme(isLight ? "light" : "dark");
+  }, []);
+
+  const toggleTheme = () => {
+    if (theme === "dark") {
+      document.documentElement.classList.add("light");
+      setTheme("light");
+    } else {
+      document.documentElement.classList.remove("light");
+      setTheme("dark");
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={toggleTheme}
+      aria-label="Toggle theme"
+      className="grid h-9 w-9 place-items-center rounded-lg text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-100 transition-colors"
+    >
+      {theme === "dark" ? <Sun size={18} weight="bold" /> : <Moon size={18} weight="bold" />}
+    </button>
   );
 }
 
@@ -199,6 +231,7 @@ export function Nav() {
               ticker + footer (and prominently on the landing/About pages), so the
               nav stays uncluttered. */}
           <div className="ml-auto hidden items-center gap-2 text-sm sm:gap-3 lg:flex">
+            <ThemeToggle />
             {loading ? (
               <Spinner />
             ) : user ? (
@@ -248,6 +281,7 @@ export function Nav() {
 
           {/* Mobile cluster (below lg): guests get a Login button; signed-in users get bell + menu */}
           <div className="ml-auto flex items-center gap-2 lg:hidden">
+            <ThemeToggle />
             {loading ? (
               <Spinner />
             ) : user ? (
@@ -308,15 +342,18 @@ export function Nav() {
                 <span className="text-[15px] font-semibold tracking-tight">
                   <span className="text-pink-400">Osu</span>Stocks
                 </span>
-                <button
-                  autoFocus
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  aria-label="Close menu"
-                  className="grid h-9 w-9 place-items-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-800/60 hover:text-zinc-100"
-                >
-                  <X size={18} weight="bold" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <ThemeToggle />
+                  <button
+                    autoFocus
+                    type="button"
+                    onClick={() => setOpen(false)}
+                    aria-label="Close menu"
+                    className="grid h-9 w-9 place-items-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-800/60 hover:text-zinc-100"
+                  >
+                    <X size={18} weight="bold" />
+                  </button>
+                </div>
               </div>
 
               <nav className="flex-1 overflow-y-auto p-3">
