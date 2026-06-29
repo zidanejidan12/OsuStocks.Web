@@ -315,7 +315,7 @@ function LiveActivityPopup({ isMuted, setIsMuted }: { isMuted: boolean; setIsMut
             <span className={`rounded-full px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider ${badgeClass}`}>
               {activeEvent.badgeText}
             </span>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <button
                 type="button"
                 onClick={() => {
@@ -323,7 +323,7 @@ function LiveActivityPopup({ isMuted, setIsMuted }: { isMuted: boolean; setIsMut
                   setIsMuted(newMute);
                   localStorage.setItem("muteLiveActivity", newMute ? "true" : "false");
                 }}
-                className="text-zinc-500 hover:text-pink-400 active:scale-95 transition-all p-0.5 rounded cursor-pointer"
+                className="text-zinc-400 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-500/10 active:scale-90 transition-all p-1 rounded-md cursor-pointer"
                 title={isMuted ? "Unmute updates" : "Mute updates"}
               >
                 {isMuted ? <BellSlash size={11} /> : <Bell size={11} />}
@@ -331,7 +331,7 @@ function LiveActivityPopup({ isMuted, setIsMuted }: { isMuted: boolean; setIsMut
               <button
                 type="button"
                 onClick={() => setVisible(false)}
-                className="text-zinc-500 hover:text-rose-400 active:scale-95 transition-all p-0.5 rounded cursor-pointer"
+                className="text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-500/10 active:scale-90 transition-all p-1 rounded-md cursor-pointer"
                 title="Close"
               >
                 <X size={11} weight="bold" />
