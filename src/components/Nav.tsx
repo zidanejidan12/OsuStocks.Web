@@ -20,6 +20,7 @@ import {
   X,
   Sun,
   Moon,
+  Question,
 } from "@phosphor-icons/react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { useNotifications } from "@/lib/notifications/notifications-context";
@@ -36,6 +37,12 @@ const LINKS = [
   { href: "/missions", label: "Missions", Icon: Target },
   { href: "/portfolio", label: "Portfolio", Icon: ChartPieSlice },
   { href: "/wallet", label: "Wallet", Icon: Wallet },
+];
+
+const PUBLIC_LINKS = [
+  { href: "/trending", label: "Trending", Icon: Fire },
+  { href: "/leaderboard", label: "Leaderboard", Icon: Trophy },
+  { href: "/about", label: "About", Icon: Question },
 ];
 
 function isActiveHref(pathname: string, href: string): boolean {
@@ -194,11 +201,9 @@ export function Nav() {
             </span>
           </Link>
 
-          {/* Authenticated nav links — hidden for guests so they aren't sent into
-              login-walled pages; logged-out visitors only see the landing page. */}
-          {user && (
+          {/* Desktop Navigation Links */}
           <ul className="ml-2 hidden items-center gap-1 text-sm lg:flex">
-            {LINKS.map(({ href, label, Icon }) => {
+            {(user ? LINKS : PUBLIC_LINKS).map(({ href, label, Icon }) => {
               const active = isActiveHref(pathname, href);
               return (
                 <li key={href}>
@@ -225,7 +230,6 @@ export function Nav() {
               );
             })}
           </ul>
-          )}
 
           {/* Desktop auth cluster (lg+) — sponsor credit lives sitewide in the
               ticker + footer (and prominently on the landing/About pages), so the
@@ -358,7 +362,7 @@ export function Nav() {
 
               <nav className="flex-1 overflow-y-auto p-3">
                 <ul className="flex flex-col gap-1">
-                  {LINKS.map(({ href, label, Icon }) => {
+                  {(user ? LINKS : PUBLIC_LINKS).map(({ href, label, Icon }) => {
                     const active = isActiveHref(pathname, href);
                     return (
                       <li key={href}>
