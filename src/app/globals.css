@@ -315,31 +315,22 @@
   color: #584b57 !important;
 }
 
-/* Light mode adjustments for OsuAuroraBackground */
-:root.light .aurora-grid {
-  background-image: linear-gradient(to right, rgba(28, 21, 28, 0.02) 1px, transparent 1px),
-                    linear-gradient(to bottom, rgba(28, 21, 28, 0.02) 1px, transparent 1px) !important;
+/* Light mode adjustments for OsuAuroraBackground and Buttons */
+:root.light .btn-secondary {
+  border-color: rgba(28, 21, 28, 0.15) !important;
+  background-color: rgba(28, 21, 28, 0.03) !important;
+  color: #1c151c !important;
 }
 
-:root.light .approach-circle {
-  border-color: rgba(236, 72, 153, 0.15) !important;
-  box-shadow: 0 0 15px rgba(236, 72, 153, 0.04) !important;
+:root.light .btn-secondary:hover {
+  border-color: rgba(28, 21, 28, 0.25) !important;
+  background-color: rgba(28, 21, 28, 0.06) !important;
 }
 
-:root.light .aurora-container {
-  background-color: #faf7fa;
-}
-
-:root.light .aurora-bg-1 {
-  background-color: rgba(236, 72, 153, 0.06) !important;
-}
-
-:root.light .aurora-bg-2 {
-  background-color: rgba(6, 182, 212, 0.06) !important;
-}
-
-:root.light .aurora-bg-3 {
-  background-color: rgba(168, 85, 247, 0.06) !important;
+:root.light .btn-secondary:disabled {
+  opacity: 0.45 !important;
+  border-color: rgba(28, 21, 28, 0.08) !important;
+  color: #766975 !important;
 }
 
 /* --- Premium Background & Particle Animations --- */
