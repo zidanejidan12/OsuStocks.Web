@@ -516,9 +516,9 @@ function Hero({ onLogin }: { onLogin: () => void }) {
       <div className="absolute top-1/4 left-1/4 -z-10 h-72 w-72 rounded-full bg-cyan-500/10 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 -z-10 h-72 w-72 rounded-full bg-pink-500/10 blur-[120px] pointer-events-none" />
       
-      <div className="relative z-10 mx-auto w-full max-w-6xl px-4 grid items-center gap-8 md:grid-cols-2 md:gap-10">
+      <div className="relative z-10 mx-auto w-full max-w-6xl px-4 grid items-start gap-8 md:grid-cols-2 md:gap-10">
         <Reveal>
-          <div className="flex flex-col items-center md:items-start text-center md:text-left md:-mt-12">
+          <div className="flex flex-col items-center md:items-start text-center md:text-left pt-2 md:pt-4">
             <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.95] text-zinc-100">
               Trade osu!<br className="hidden md:inline" />
               {" "}players like<br />
@@ -878,7 +878,6 @@ export default function Home() {
     return (
       <div className="relative w-full overflow-x-hidden pb-16">
         <OsuAuroraBackground />
-        <WelcomeBanner show={showWelcome} onDismiss={handleDismissWelcome} />
         <LiveActivityPopup />
         <Hero onLogin={() => login("/")} />
         <InteractiveChartSection />
