@@ -269,8 +269,8 @@ function LiveActivityPopup() {
 
   return (
     <div
-      className={`fixed top-20 right-6 z-50 max-w-sm w-[calc(100vw-3rem)] rounded-2xl p-4.5 pb-5.5 border bg-zinc-950/90 backdrop-blur-xl ${borderToneClass} transition-all duration-500 ease-out transform ${
-        visible ? "translate-y-0 opacity-100 scale-100" : "-translate-y-4 opacity-0 scale-95 pointer-events-none"
+      className={`fixed bottom-20 right-6 z-50 max-w-sm w-[calc(100vw-3rem)] rounded-2xl p-4.5 pb-5.5 border bg-zinc-950/90 backdrop-blur-xl ${borderToneClass} transition-all duration-500 ease-out transform ${
+        visible ? "translate-y-0 opacity-100 scale-100" : "translate-y-4 opacity-0 scale-95 pointer-events-none"
       }`}
     >
       <div className="flex items-start gap-4">
@@ -457,17 +457,17 @@ const TEAM = [
   { 
     id: 3484548, 
     name: "Almond Eye", 
-    role: "Frontend"
+    role: "Backend"
   },
   { 
     id: 11421465, 
     name: "Verxina", 
-    role: "Backend"
+    role: "Frontend"
   },
   { 
     id: 6560131, 
     name: "Nishino Flower", 
-    role: "DevOps"
+    role: "BUM"
   },
 ];
 

@@ -12,19 +12,19 @@ const TEAM = [
   { 
     id: 3484548, 
     name: "Almond Eye", 
-    role: "Frontend & Game Mechanics",
+    role: "Backend",
     stats: { apm: "350+", polish: "S-Tier", mod: "Hidden" }
   },
   { 
     id: 11421465, 
     name: "Verxina", 
-    role: "Backend Architect & APIs",
+    role: "Frontend",
     stats: { response: "4ms", uptime: "99.9%", mod: "DoubleTime" }
   },
   { 
     id: 6560131, 
     name: "Nishino Flower", 
-    role: "DevOps & Infrastructure",
+    role: "BUM",
     stats: { bandwidth: "10Gbps", safety: "100%", mod: "HardRock" }
   },
 ];
