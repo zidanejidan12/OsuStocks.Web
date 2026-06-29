@@ -388,6 +388,24 @@ function getMockResponse(path: string, init?: RequestInit): any {
     };
   }
 
+  if (cleanPath === "/leaderboards/wealth") {
+    return {
+      items: [
+        { rank: 1, userId: "user_1", username: "mrekk", avatarUrl: "https://a.ppy.sh/7562902", countryCode: "AU", equippedTitle: "10* Passer", value: 1250420, periodChange: 15.2 },
+        { rank: 2, userId: "user_2", username: "Akolibed", avatarUrl: "https://a.ppy.sh/9284234", countryCode: "LV", equippedTitle: "Speed Demon", value: 980310, periodChange: 8.7 },
+        { rank: 3, userId: "user_3", username: "lifeline", avatarUrl: "https://a.ppy.sh/11367222", countryCode: "ID", equippedTitle: "Active Trader", value: 870100, periodChange: 4.5 },
+        { rank: 4, userId: "user_4", username: "Cookiezi", avatarUrl: "https://a.ppy.sh/124128", countryCode: "KR", equippedTitle: "Clicking Circles", value: 654200, periodChange: -1.5 },
+        { rank: 5, userId: "user_5", username: "WhiteCat", avatarUrl: "https://a.ppy.sh/4505068", countryCode: "DE", equippedTitle: "Aim God", value: 540200, periodChange: 2.1 },
+        { rank: 6, userId: "user_6", username: "Vaxei", avatarUrl: "https://a.ppy.sh/4787150", countryCode: "US", equippedTitle: "Tournament Monster", value: 420000, periodChange: 0.0 },
+        { rank: 7, userId: "user_7", username: "Rafis", avatarUrl: "https://a.ppy.sh/4946922", countryCode: "PL", equippedTitle: "Grandpa", value: 310500, periodChange: 1.2 },
+        { rank: 8, userId: "user_8", username: "Chicony", avatarUrl: "https://a.ppy.sh/11235678", countryCode: "RU", equippedTitle: "Top 10", value: 250000, periodChange: -8.4 }
+      ],
+      page: 1,
+      pageSize: 25,
+      totalCount: 8
+    };
+  }
+
   if (cleanPath === "/admin/market-settings") {
     return { ppMultiplier: 1.0, tradeMultiplier: 1.0, decayMultiplier: 1.0, tradeFeeMultiplier: 1.0, isMaintenanceMode: false };
   }
