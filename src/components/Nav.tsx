@@ -107,6 +107,7 @@ function ThemeToggle() {
 
 export function Nav() {
   const pathname = usePathname();
+  if (pathname === "/login") return null;
   const { user, loading, logout } = useAuth();
   const { unreadCount } = useNotifications();
   const [open, setOpen] = useState(false);
@@ -190,7 +191,7 @@ export function Nav() {
         {/* Bottom glowing gradient border */}
         <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-pink-500/30 via-purple-500/20 to-cyan-500/30" />
         
-        <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 relative">
+        <nav className="mx-auto flex h-16 max-w-none w-full items-center justify-between px-6 sm:px-10 xl:px-12 relative">
           
           {/* Left: Mobile hamburger menu (visible below lg) */}
           <div className="flex items-center gap-2 lg:hidden">
@@ -208,7 +209,7 @@ export function Nav() {
           </div>
 
           {/* Logo & Desktop Nav Links */}
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 xl:gap-8 lg:gap-5">
             <Link href="/" className="group flex items-center gap-2.5">
               <span
                 aria-hidden="true"
@@ -223,7 +224,7 @@ export function Nav() {
             </Link>
 
             {/* Desktop Navigation Links */}
-            <ul className="hidden items-center gap-2 text-sm lg:flex">
+            <ul className="hidden items-center gap-1 xl:gap-2 text-sm lg:flex">
               {(user ? LINKS : PUBLIC_LINKS).map(({ href, label, Icon }) => {
                 const active = isActiveHref(pathname, href);
                 return (
@@ -231,7 +232,7 @@ export function Nav() {
                     <Link
                       href={href}
                       aria-current={active ? "page" : undefined}
-                      className={`relative flex items-center gap-2 rounded-lg px-4 py-2 font-display text-xs uppercase tracking-wider font-extrabold transition-all duration-300 border ${
+                      className={`relative flex items-center gap-1.5 rounded-lg lg:px-2.5 lg:py-1.5 xl:px-4 xl:py-2 font-display text-xs uppercase tracking-wider font-extrabold transition-all duration-300 border ${
                         active
                           ? "text-white bg-gradient-to-r from-pink-500/10 to-purple-500/10 border-pink-500/30 shadow-[0_0_15px_rgba(236,72,153,0.15)]"
                           : "text-zinc-400 border-transparent hover:text-pink-300 hover:bg-zinc-900/40 hover:border-zinc-800"
@@ -251,11 +252,11 @@ export function Nav() {
           </div>
 
           {/* Right: Actions / Auth Cluster */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-1.5 xl:gap-2.5">
             <ThemeToggle />
             
             {/* Desktop Auth Links */}
-            <div className="hidden lg:flex items-center gap-2.5">
+            <div className="hidden lg:flex items-center gap-1.5 xl:gap-2.5">
               {loading ? (
                 <Spinner />
               ) : user ? (
@@ -286,7 +287,7 @@ export function Nav() {
                     type="button"
                     onClick={logout}
                     aria-label="Logout"
-                    className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800 hover:border-zinc-700 font-display text-xs font-bold uppercase tracking-wider px-4 py-2 transition-all active:scale-95 text-zinc-300 flex items-center gap-1.5"
+                    className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800 hover:border-zinc-700 font-display text-xs font-bold uppercase tracking-wider lg:px-2.5 lg:py-1.5 xl:px-4 xl:py-2 transition-all active:scale-95 text-zinc-300 flex items-center gap-1.5"
                   >
                     <SignOut size={14} weight="bold" />
                     Logout
@@ -295,7 +296,7 @@ export function Nav() {
               ) : (
                 <Link
                   href="/login"
-                  className="relative inline-flex items-center gap-1.5 px-5 py-2 overflow-hidden rounded-xl bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-500 font-display text-xs font-black uppercase tracking-widest text-white shadow-[0_0_15px_rgba(236,72,153,0.35)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_25px_rgba(6,182,212,0.5)] hover:brightness-110 active:scale-95 group/login"
+                  className="relative inline-flex items-center gap-1.5 lg:px-3 lg:py-1.5 xl:px-5 xl:py-2 overflow-hidden rounded-xl bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-500 font-display text-xs font-black uppercase tracking-widest text-white shadow-[0_0_15px_rgba(236,72,153,0.35)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_25px_rgba(6,182,212,0.5)] hover:brightness-110 active:scale-95 group/login"
                 >
                   <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover/login:animate-[shimmer_1.5s_infinite]" />
                   <SignIn size={14} weight="bold" />

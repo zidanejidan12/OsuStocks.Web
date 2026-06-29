@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import { Pause, Play, CaretLeft, CaretRight } from "@phosphor-icons/react";
 import { getLiveMovers } from "@/lib/api/client";
@@ -74,6 +75,9 @@ function Item({ m, linked }: { m: LiveMover; linked: boolean }) {
  *   /movers endpoint, so it works for guests too.
  */
 export function MarketTicker() {
+  const pathname = usePathname();
+  if (pathname === "/login") return null;
+
   const reduce = useReducedMotion();
   const { user } = useAuth();
   const clickable = !!user;

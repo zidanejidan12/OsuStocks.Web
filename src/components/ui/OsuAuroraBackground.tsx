@@ -31,6 +31,19 @@ const PATH_CONFIGS: Record<string, PathConfig> = {
     },
     gridOpacity: 0.015,
   },
+  "/login": {
+    colors: {
+      bg1: "rgba(236, 72, 153, 0.22)", // Rich vibrant Pink
+      bg2: "rgba(147, 51, 234, 0.18)",  // Deep Purple
+      bg3: "rgba(6, 182, 212, 0.14)",   // Light Cyan
+    },
+    lightColors: {
+      bg1: "rgba(236, 72, 153, 0.08)",
+      bg2: "rgba(147, 51, 234, 0.06)",
+      bg3: "rgba(6, 182, 212, 0.05)",
+    },
+    gridOpacity: 0.02,
+  },
   // Trending page (Fiery, Orange/Rose theme)
   "/trending": {
     colors: {
@@ -163,16 +176,18 @@ export function OsuAuroraBackground() {
     setParticles(list);
   }, [pathname]);
 
+  const isLogin = pathname === "/login";
+
   const gridColor = isLightMode 
     ? `rgba(28, 21, 28, ${config.gridOpacity})` 
     : `rgba(255, 255, 255, ${config.gridOpacity})`;
 
   return (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 animate-hue-shift">
+    <div className={`fixed inset-0 overflow-hidden pointer-events-none z-0 ${isLogin ? "" : "animate-hue-shift"}`}>
       {/* Moving Aurora Mesh Gradients */}
-      <motion.div style={{ y: y1, backgroundColor: activeColors.bg1 }} className="absolute -top-[10%] -right-[10%] w-[60%] h-[60%] rounded-full blur-[120px] animate-aurora-1" />
-      <motion.div style={{ y: y2, backgroundColor: activeColors.bg2 }} className="absolute -bottom-[10%] -left-[10%] w-[60%] h-[60%] rounded-full blur-[120px] animate-aurora-2" />
-      <motion.div style={{ y: y3, backgroundColor: activeColors.bg3 }} className="absolute top-[20%] right-[10%] w-[50%] h-[50%] rounded-full blur-[130px] animate-aurora-3" />
+      <motion.div style={{ y: y1, backgroundColor: activeColors.bg1 }} className={`absolute -top-[10%] -right-[10%] w-[60%] h-[60%] rounded-full blur-[120px] ${isLogin ? "" : "animate-aurora-1"}`} />
+      <motion.div style={{ y: y2, backgroundColor: activeColors.bg2 }} className={`absolute -bottom-[10%] -left-[10%] w-[60%] h-[60%] rounded-full blur-[120px] ${isLogin ? "" : "animate-aurora-2"}`} />
+      <motion.div style={{ y: y3, backgroundColor: activeColors.bg3 }} className={`absolute top-[20%] right-[10%] w-[50%] h-[50%] rounded-full blur-[130px] ${isLogin ? "" : "animate-aurora-3"}`} />
 
       {/* Grid overlay */}
       <motion.div 
@@ -184,14 +199,16 @@ export function OsuAuroraBackground() {
       />
 
       {/* osu! Approach Circles */}
-      <motion.div style={{ y: yApproach }} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] z-0">
-        <div className="absolute top-1/2 left-1/2 w-full h-full rounded-full border border-pink-500/15 shadow-[0_0_15px_rgba(236,72,153,0.08)] animate-approach-1" />
-        <div className="absolute top-1/2 left-1/2 w-full h-full rounded-full border border-cyan-500/10 shadow-[0_0_15px_rgba(6,182,212,0.08)] animate-approach-2" />
-        <div className="absolute top-1/2 left-1/2 w-full h-full rounded-full border border-pink-500/5 shadow-[0_0_15px_rgba(236,72,153,0.04)] animate-approach-3" />
-      </motion.div>
+      {!isLogin && (
+        <motion.div style={{ y: yApproach }} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] z-0">
+          <div className="absolute top-1/2 left-1/2 w-full h-full rounded-full border border-pink-500/15 shadow-[0_0_15px_rgba(236,72,153,0.08)] animate-approach-1" />
+          <div className="absolute top-1/2 left-1/2 w-full h-full rounded-full border border-cyan-500/10 shadow-[0_0_15px_rgba(6,182,212,0.08)] animate-approach-2" />
+          <div className="absolute top-1/2 left-1/2 w-full h-full rounded-full border border-pink-500/5 shadow-[0_0_15px_rgba(236,72,153,0.04)] animate-approach-3" />
+        </motion.div>
+      )}
 
       {/* falling snowflakes (diamonds) & floating blurred orbs */}
-      {particles.map((p) => {
+      {!isLogin && particles.map((p) => {
         if (p.type === "diamond") {
           const bgGradient = isLightMode 
             ? lightGradientMap[p.color] 

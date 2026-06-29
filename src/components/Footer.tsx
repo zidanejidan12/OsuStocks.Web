@@ -1,10 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { SponsorCredit } from "@/components/SponsorCredit";
 import { DiscordLogo, ShieldCheck, GameController, ChatTeardropText, PlugsConnected, ArrowUp } from "@phosphor-icons/react";
 
 export function Footer() {
+  const pathname = usePathname();
+  if (pathname === "/login") return null;
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };

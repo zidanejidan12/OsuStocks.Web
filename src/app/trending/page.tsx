@@ -215,10 +215,7 @@ export default function TrendingPage() {
             <div className="lg:col-span-5 flex flex-col gap-6">
               <Reveal>
                 <header className="mb-2">
-                  <p className="text-[10px] font-mono font-bold uppercase tracking-[0.25em] text-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.35)]">
-                    REAL-TIME TREND ANALYSIS
-                  </p>
-                  <h1 className="mt-2 text-4xl sm:text-5xl font-black tracking-tight text-zinc-50">
+                  <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-zinc-50">
                     Market <span className="text-pink-500 drop-shadow-[0_0_15px_rgba(244,63,94,0.3)]">Trends</span>
                   </h1>
                   <p className="mt-3 text-sm text-zinc-400 max-w-[60ch] leading-relaxed">
@@ -301,19 +298,10 @@ export default function TrendingPage() {
                 
                 <div>
                   {/* Top Dashboard details */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-900/60 pb-5 mb-5">
-                    <div>
-                      <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded border ${activeBucket.tagClass} uppercase tracking-wider`}>
-                        {activeBucket.tagLabel}
-                      </span>
-                      <h2 className="text-xl font-black text-zinc-50 tracking-tight mt-2">
-                        Top 10: {activeBucket.title}
-                      </h2>
-                    </div>
-                    <div className="flex items-center gap-1.5 self-start sm:self-auto">
-                      <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="text-[9px] font-mono font-bold text-zinc-550 uppercase tracking-widest">DIAGNOSTIC ACTIVE</span>
-                    </div>
+                  <div className="border-b border-zinc-900/60 pb-5 mb-5">
+                    <h2 className="text-xl font-black text-zinc-50 tracking-tight">
+                      Top 10: {activeBucket.title}
+                    </h2>
                   </div>
  
                   {activeStocks.length === 0 ? (
