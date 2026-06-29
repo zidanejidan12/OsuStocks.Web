@@ -14,10 +14,10 @@ export function Footer() {
       <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-pink-500/30 to-transparent shadow-[0_-2px_10px_rgba(236,72,153,0.15)]" />
       
       <div className="mx-auto max-w-7xl px-8 py-20 lg:py-24">
-        <div className="grid gap-12 lg:grid-cols-3 sm:grid-cols-2 lg:gap-16">
+        <div className="grid gap-12 lg:grid-cols-4 sm:grid-cols-2 lg:gap-16">
           
-          <div className="flex flex-col gap-6">
-            <div className="text-2xl lg:text-3xl font-black tracking-tight text-white transition-all duration-300 hover:scale-102">
+          <div className="flex flex-col gap-6 sm:col-span-2 lg:col-span-2">
+            <div className="text-2xl lg:text-3xl font-black tracking-tight text-zinc-950 dark:text-white transition-all duration-300 hover:scale-102">
               <span className="text-pink-500 drop-shadow-[0_0_15px_rgba(244,63,94,0.4)]">Osu</span>Stocks
             </div>
             <p className="text-sm lg:text-base leading-relaxed text-zinc-450 font-medium">
@@ -31,7 +31,7 @@ export function Footer() {
             </div>
           </div>
 
-          <nav aria-label="Quick Navigation Links" className="flex flex-col gap-4 text-sm lg:text-base">
+          <nav aria-label="Quick Navigation Links" className="flex flex-col gap-4 text-sm lg:text-base sm:col-span-1 lg:col-span-1">
             <span className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.25em] text-zinc-500 mb-1">
               <GameController size={14} className="text-pink-500" />
               Navigation
@@ -62,7 +62,7 @@ export function Footer() {
             </Link>
           </nav>
 
-          <nav aria-label="Support Resources" className="flex flex-col gap-4 text-sm lg:text-base">
+          <nav aria-label="Support Resources" className="flex flex-col gap-4 text-sm lg:text-base sm:col-span-1 lg:col-span-1">
             <span className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.25em] text-zinc-500 mb-1">
               <ShieldCheck size={14} className="text-cyan-400" />
               Legal & Support

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, WarningCircle, Lock, Wallet as WalletIcon, TrendUp, Users, Trophy, Question, ChartLineUp, Plus, Minus, CaretDown, Coins, TerminalWindow, Shield, Broadcast, Flame, X } from "@phosphor-icons/react";
+import { ArrowRight, WarningCircle, Lock, Wallet as WalletIcon, TrendUp, Users, Trophy, Question, ChartLineUp, Plus, Minus, CaretDown, Coins, TerminalWindow, Shield, Broadcast, Flame, X, GameController } from "@phosphor-icons/react";
 import type { MarketOverview, Paged, StockSort, StockSummary, Wallet } from "@/lib/api/types";
 import { getMarketOverview, getStocks, getWallet, ApiError } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/auth-context";
@@ -453,6 +453,63 @@ function OsuAuroraBackground() {
   );
 }
 
+const TEAM = [
+  { 
+    id: 3484548, 
+    name: "Almond Eye", 
+    role: "Frontend"
+  },
+  { 
+    id: 11421465, 
+    name: "Verxina", 
+    role: "Backend"
+  },
+  { 
+    id: 6560131, 
+    name: "Nishino Flower", 
+    role: "DevOps"
+  },
+];
+
+function DevTeamCard() {
+  return (
+    <div className="rounded-[24px] border border-zinc-800/80 bg-zinc-900/10 p-5 shadow-sm glow-card">
+      <div className="mb-4 flex items-center gap-2">
+        <GameController size={18} className="text-pink-500" />
+        <span className="text-xs font-display font-extrabold uppercase tracking-wider text-zinc-300">
+          Development Team
+        </span>
+      </div>
+      <div className="grid grid-cols-3 gap-3">
+        {TEAM.map((member) => (
+          <a
+            key={member.id}
+            href={`https://osu.ppy.sh/users/${member.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex flex-col items-center text-center p-3 rounded-2xl border border-zinc-900/60 bg-zinc-950/40 hover:border-pink-500/40 hover:bg-zinc-900/10 transition-all duration-300"
+          >
+            <Avatar
+              src={`https://a.ppy.sh/${member.id}`}
+              name={member.name}
+              size="sm"
+              className="ring-2 ring-zinc-800 transition-all duration-300 group-hover:ring-pink-500/50 mb-2 h-10 w-10 sm:h-12 sm:w-12"
+            />
+            <div className="min-w-0 w-full">
+              <div className="truncate text-xs font-display font-black text-zinc-200 group-hover:text-pink-400">
+                {member.name}
+              </div>
+              <div className="text-[8px] text-zinc-500 font-mono uppercase tracking-wider truncate mt-0.5">
+                {member.role}
+              </div>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Hero({ onLogin }: { onLogin: () => void }) {
   return (
     <section className="relative w-full min-h-[75vh] flex items-center pt-12 pb-16 sm:pt-16 sm:pb-20">
@@ -488,6 +545,7 @@ function Hero({ onLogin }: { onLogin: () => void }) {
         <Reveal delay={0.1} className="md:pl-4">
           <div className="flex flex-col gap-4">
             <SponsorCard />
+            <DevTeamCard />
             <LiveMarketPanel />
           </div>
         </Reveal>
@@ -558,7 +616,7 @@ function WelcomeBanner({ show, onDismiss }: { show: boolean; onDismiss: () => vo
                   </span>
                   <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
                 </div>
-                <h3 className="text-3xl font-display font-black tracking-tight text-white uppercase leading-tight">
+                <h3 className="text-3xl font-display font-black tracking-tight text-zinc-950 dark:text-white uppercase leading-tight">
                   Welcome to <span className="text-pink-500">OsuStocks</span>
                 </h3>
                 <p className="mt-3 text-xs sm:text-sm text-zinc-400 leading-relaxed">
@@ -1207,7 +1265,7 @@ function InteractiveChartSection() {
       <Reveal>
         <div className="text-center max-w-2xl mx-auto mb-12">
           <p className="text-[10px] font-bold text-cyan-400 uppercase tracking-[0.25em] mb-2">SANDBOX STAGE</p>
-          <h2 className="text-3xl sm:text-4xl font-display font-black tracking-tight text-white uppercase">
+          <h2 className="text-3xl sm:text-4xl font-display font-black tracking-tight text-zinc-950 dark:text-white uppercase">
             Order Book <span className="text-cyan-400">Simulator</span>
           </h2>
           <p className="mt-3 text-zinc-400 text-sm leading-relaxed">
@@ -1300,11 +1358,11 @@ function InteractiveChartSection() {
               <div>
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className="text-lg font-black text-white leading-none uppercase font-display tracking-tight">{player.name}</h3>
+                    <h3 className="text-lg font-black text-zinc-950 dark:text-white leading-none uppercase font-display tracking-tight">{player.name}</h3>
                     <p className="text-xs text-zinc-500 mt-1">{player.rank} • Live Index</p>
                   </div>
                   <div className="text-right">
-                    <span className="text-xl font-mono font-black text-white">{player.price.toFixed(1)} Cr</span>
+                    <span className="text-xl font-mono font-black text-zinc-950 dark:text-white">{player.price.toFixed(1)} Cr</span>
                     <span className={"text-[11px] font-bold block mt-1 " + (player.change.startsWith("+") ? "text-emerald-400" : "text-rose-400")}>
                       {player.change} (24h)
                     </span>
@@ -1432,7 +1490,7 @@ function FaqSection() {
     },
     {
       q: "Can I list my own name as a stock?",
-      a: "The platform automatically tracks the top 15,000 global osu! players. If you reach the global ranking threshold, you will automatically become a tradable stock for managers to invest in!"
+      a: "The platform automatically tracks the top 5,000 global osu! players. If you reach the global ranking threshold, you will automatically become a tradable stock for managers to invest in!"
     }
   ];
 

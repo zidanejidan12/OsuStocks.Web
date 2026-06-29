@@ -225,7 +225,7 @@
 }
 
 :root.light header nav a, 
-:root.light header nav span {
+:root.light header nav span:not(.text-pink-500):not(.text-pink-400) {
   color: #1c151c !important;
 }
 
@@ -268,7 +268,7 @@
 }
 
 :root.light footer p,
-:root.light footer span {
+:root.light footer span:not(.text-pink-500):not(.text-pink-400) {
   color: #766975 !important;
 }
 
@@ -278,7 +278,7 @@
 }
 
 :root.light .text-pink-500 {
-  color: #c026d3 !important;
+  color: #db2777 !important;
 }
 
 :root.light .text-cyan-400 {
