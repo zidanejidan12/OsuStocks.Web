@@ -461,8 +461,8 @@ function Hero({ onLogin }: { onLogin: () => void }) {
               <span className="text-pink-400 drop-shadow-[0_0_20px_rgba(236,72,153,0.75)] animate-pulse">stocks.</span>
             </h1>
 
-            <p className="mt-6 max-w-[44ch] text-lg sm:text-xl font-normal leading-relaxed text-zinc-400">
-              The ultimate fantasy market for osu! players. Build your portfolio with shares tied directly to live performance, predict the next top plays, and dominate the global leaderboards.
+            <p className="mt-6 max-w-[44ch] text-lg sm:text-xl font-normal leading-relaxed text-zinc-300 drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]">
+              The <span className="text-pink-400 font-semibold drop-shadow-[0_0_12px_rgba(236,72,153,0.5)]">ultimate fantasy market</span> for osu! players. Build your portfolio with shares tied directly to <span className="text-cyan-400 font-semibold drop-shadow-[0_0_12px_rgba(6,182,212,0.5)]">live performance</span>, predict the next top plays, and dominate the global leaderboards.
             </p>
 
             <div className="mt-8 flex flex-wrap justify-center md:justify-start items-center gap-3">
