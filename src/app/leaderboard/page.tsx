@@ -25,7 +25,7 @@ import { Reveal } from "@/components/motion/Reveal";
 import { fadeUp, staggerContainer } from "@/lib/motion";
 import { useAuth } from "@/lib/auth/auth-context";
 
-const PAGE_SIZE = 25;
+const PAGE_SIZE = 10;
 
 type Period = "all" | "monthly" | "weekly" | "daily";
 const PERIODS: { value: Period; label: string }[] = [
@@ -92,14 +92,20 @@ function PodiumCard({
   const isRank3 = entry.rank === 3;
 
   const cardStyle = isRank1
-    ? "border-amber-500/40 bg-gradient-to-b from-amber-500/[0.08] to-zinc-900/40 shadow-[0_0_30px_rgba(245,158,11,0.15)] ring-amber-500/20 sm:-translate-y-2"
+    ? "border-amber-400/80 bg-gradient-to-b from-amber-500/[0.12] via-zinc-950/90 to-zinc-900/50 shadow-[0_0_35px_rgba(245,158,11,0.25)] ring-amber-500/30"
     : isRank2
-    ? "border-zinc-300 bg-gradient-to-b from-zinc-200/[0.1] to-zinc-900/40 shadow-[0_0_30px_rgba(228,228,231,0.15)] ring-zinc-200/30"
-    : "border-orange-600/30 bg-gradient-to-b from-orange-600/[0.06] to-zinc-900/40 shadow-[0_0_20px_rgba(234,88,12,0.08)] ring-orange-600/10";
+    ? "border-zinc-400 bg-gradient-to-b from-zinc-300/[0.08] via-zinc-950/90 to-zinc-900/50 shadow-[0_0_25px_rgba(228,228,231,0.15)] ring-zinc-300/20"
+    : "border-orange-600/50 bg-gradient-to-b from-orange-600/[0.06] via-zinc-950/90 to-zinc-900/50 shadow-[0_0_20px_rgba(234,88,12,0.1)] ring-orange-600/10";
+
+  const paddingStyle = isRank1 
+    ? "pt-8 pb-6 px-5" 
+    : isRank2 
+    ? "pt-6 pb-5 px-5" 
+    : "pt-5 pb-5 px-5";
 
   return (
     <div
-      className={`flex flex-col items-center rounded-2xl border p-5 text-center ring-1 ring-inset transition-all duration-500 ease-out hover:scale-[1.05] hover:-translate-y-3 hover:shadow-[0_22px_45px_rgba(236,72,153,0.22)] hover:border-pink-500/40 relative group ${cardStyle} ${
+      className={`flex flex-col items-center rounded-2xl border ${paddingStyle} text-center ring-1 ring-inset transition-all duration-500 ease-out hover:scale-[1.05] hover:-translate-y-3 hover:shadow-[0_22px_45px_rgba(236,72,153,0.22)] hover:border-pink-500/40 relative group ${cardStyle} ${
         isMe ? "bg-pink-500/[0.08] border-pink-500/40" : ""
       }`}
     >
@@ -176,6 +182,7 @@ export default function LeaderboardPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [totalCount, setTotalCount] = useState<number>(0);
 
   // Versus Compare States
   const [versusA, setVersusA] = useState<LeaderboardEntry | null>(null);
@@ -190,6 +197,7 @@ export default function LeaderboardPage() {
     setEntries(result.items);
     setPage(nextPage);
     setPeriod(nextPeriod);
+    setTotalCount(result.totalCount ?? 0);
     setHasMore(
       typeof result.totalCount === "number"
         ? nextPage * PAGE_SIZE < result.totalCount
@@ -318,27 +326,60 @@ export default function LeaderboardPage() {
           aria-busy={busy}
         >
           {podium.length > 0 && (
-            <ul className="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-3">
-              {podium.map((e) => (
-                <li key={e.userId}>
+            <ul className="mb-12 flex flex-col md:flex-row items-stretch md:items-end justify-center gap-6 max-w-4xl mx-auto pt-6">
+              {/* Rank 2 (Left) */}
+              {podium[1] && (
+                <li key={podium[1].userId} className="w-full md:w-1/3 order-2 md:order-1 self-stretch md:self-auto md:h-[90%]">
                   <PodiumCard 
-                    entry={e} 
-                    isMe={user?.userId === e.userId} 
-                    onCompare={() => handleCompareClick(e)}
-                    compareActive={versusA?.userId === e.userId || versusB?.userId === e.userId}
+                    entry={podium[1]} 
+                    isMe={user?.userId === podium[1].userId} 
+                    onCompare={() => handleCompareClick(podium[1])}
+                    compareActive={versusA?.userId === podium[1].userId || versusB?.userId === podium[1].userId}
                   />
                 </li>
-              ))}
+              )}
+              {/* Rank 1 (Center) */}
+              {podium[0] && (
+                <li key={podium[0].userId} className="w-full md:w-1/3 order-1 md:order-2 md:scale-[1.05] z-10 relative">
+                  <div className="absolute -top-7 left-1/2 -translate-x-1/2 text-3xl animate-bounce pointer-events-none">👑</div>
+                  <PodiumCard 
+                    entry={podium[0]} 
+                    isMe={user?.userId === podium[0].userId} 
+                    onCompare={() => handleCompareClick(podium[0])}
+                    compareActive={versusA?.userId === podium[0].userId || versusB?.userId === podium[0].userId}
+                  />
+                </li>
+              )}
+              {/* Rank 3 (Right) */}
+              {podium[2] && (
+                <li key={podium[2].userId} className="w-full md:w-1/3 order-3 md:order-3 self-stretch md:self-auto md:h-[80%]">
+                  <PodiumCard 
+                    entry={podium[2]} 
+                    isMe={user?.userId === podium[2].userId} 
+                    onCompare={() => handleCompareClick(podium[2])}
+                    compareActive={versusA?.userId === podium[2].userId || versusB?.userId === podium[2].userId}
+                  />
+                </li>
+              )}
             </ul>
           )}
 
-          {listEntries.length > 0 && (
-            <motion.ul
-              className="divide-y divide-zinc-900/60 overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/15 backdrop-blur-md shadow-lg transition-all duration-300 hover:border-pink-500/20"
-              variants={staggerContainer}
-              initial="hidden"
-              animate="show"
-            >
+          <div className="relative overflow-hidden min-h-[400px]">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={page}
+                initial={{ opacity: 0, x: 25 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -25 }}
+                transition={{ duration: 0.25, ease: "easeInOut" }}
+              >
+                {listEntries.length > 0 && (
+                  <motion.ul
+                    className="divide-y divide-zinc-900/40 overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/15 backdrop-blur-md shadow-lg transition-all duration-300 hover:border-pink-500/20"
+                    variants={staggerContainer}
+                    initial="hidden"
+                    animate="show"
+                  >
               {listEntries.map((e) => {
                 const isMe = user?.userId === e.userId;
                 const isSelected = selectedUserId === e.userId;
@@ -421,6 +462,9 @@ export default function LeaderboardPage() {
               })}
             </motion.ul>
           )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
       )}
 
@@ -483,11 +527,22 @@ export default function LeaderboardPage() {
                     <Money value={Math.abs(versusA.portfolioValue - versusB.portfolioValue)} />
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Superior Margin:</span>
-                  <span className="text-pink-400 font-black uppercase tracking-wider">
-                    {versusA.portfolioValue > versusB.portfolioValue ? versusA.username : versusB.username}
-                  </span>
+                {/* Comparative Ratio Bar */}
+                <div className="mt-3.5 pt-2 border-t border-zinc-900/60">
+                  <div className="relative w-full h-2 rounded-full overflow-hidden bg-zinc-900 border border-zinc-850 flex">
+                    <div 
+                      className="h-full bg-gradient-to-r from-pink-500 to-pink-400 transition-all duration-500" 
+                      style={{ width: `${(versusA.portfolioValue / (versusA.portfolioValue + versusB.portfolioValue)) * 100}%` }}
+                    />
+                    <div 
+                      className="h-full bg-gradient-to-r from-cyan-400 to-cyan-550 transition-all duration-500" 
+                      style={{ width: `${(versusB.portfolioValue / (versusA.portfolioValue + versusB.portfolioValue)) * 100}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-[8px] text-zinc-500 mt-1.5 font-mono">
+                    <span>{((versusA.portfolioValue / (versusA.portfolioValue + versusB.portfolioValue)) * 100).toFixed(0)}% ({versusA.username})</span>
+                    <span>{((versusB.portfolioValue / (versusA.portfolioValue + versusB.portfolioValue)) * 100).toFixed(0)}% ({versusB.username})</span>
+                  </div>
                 </div>
               </div>
             )}
@@ -496,9 +551,9 @@ export default function LeaderboardPage() {
       </AnimatePresence>
 
       {/* Pagination */}
-      {!loading && !error && entries.length > 0 && (page > 1 || hasMore) && (
+      {!loading && !error && entries.length > 0 && (
         <nav
-          className="mt-8 flex items-center justify-between gap-3"
+          className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-zinc-900/60 pt-6"
           aria-label="Leaderboard pages"
         >
           <Button
@@ -506,18 +561,69 @@ export default function LeaderboardPage() {
             size="sm"
             onClick={() => navigate(page - 1, period)}
             disabled={busy || page <= 1}
+            className="w-full sm:w-auto"
           >
             <CaretLeft size={16} weight="bold" />
             Previous
           </Button>
-          <span className="text-xs font-mono font-bold tabular-nums text-zinc-500" aria-live="polite">
-            PAGE {page}
-          </span>
+
+          {/* Page Numbers */}
+          {(() => {
+            const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+            if (totalPages <= 1) return null;
+            
+            const pages: number[] = [];
+            const range = 1; // how many pages to show around current page
+            
+            for (let i = 1; i <= totalPages; i++) {
+              if (
+                i === 1 ||
+                i === totalPages ||
+                (i >= page - range && i <= page + range)
+              ) {
+                pages.push(i);
+              } else if (pages[pages.length - 1] !== -1) {
+                pages.push(-1); // represents ellipsis '...'
+              }
+            }
+
+            return (
+              <div className="flex items-center gap-1.5 flex-wrap justify-center">
+                {pages.map((p, idx) => {
+                  if (p === -1) {
+                    return (
+                      <span key={`ell-${idx}`} className="px-1 text-zinc-650 font-bold select-none">
+                        ...
+                      </span>
+                    );
+                  }
+                  const active = p === page;
+                  return (
+                    <button
+                      key={p}
+                      type="button"
+                      disabled={busy}
+                      onClick={() => navigate(p, period)}
+                      className={`relative min-w-8 h-8 px-2.5 rounded-lg text-xs font-bold transition-all duration-300 outline-none select-none ${
+                        active
+                          ? "bg-pink-500 text-white shadow-[0_0_12px_rgba(236,72,153,0.3)]"
+                          : "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900/40"
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })()}
+
           <Button
             variant="secondary"
             size="sm"
             onClick={() => navigate(page + 1, period)}
             disabled={busy || !hasMore}
+            className="w-full sm:w-auto"
           >
             Next
             <CaretRight size={16} weight="bold" />
