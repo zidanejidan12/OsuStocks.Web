@@ -175,7 +175,7 @@
   --color-zinc-400: #766975;
   --color-zinc-500: #988a97;
   --color-zinc-600: #bbadbb;
-  --color-zinc-700: #d6cbd6;
+  --color-zinc-700: #d6cbd7;
   --color-zinc-800: #ebddeb;
   --color-zinc-900: #f6edf5;
   --color-zinc-950: #fdfafc;
@@ -235,25 +235,33 @@
 }
 
 /* --- Premium Background & Particle Animations --- */
-@keyframes fall {
+
+/* Wind-drifting snowflake path */
+@keyframes fall-wobble {
   0% {
-    transform: translateY(-20px) rotate(0deg);
+    transform: translateY(-20px) translateX(0) rotate(0deg);
     opacity: 0;
   }
-  12% {
-    opacity: 0.85;
+  8% {
+    opacity: 0.95;
   }
-  88% {
-    opacity: 0.85;
+  30% {
+    transform: translateY(30vh) translateX(25px) rotate(120deg);
+  }
+  60% {
+    transform: translateY(65vh) translateX(-20px) rotate(240deg);
+  }
+  90% {
+    opacity: 0.95;
   }
   100% {
-    transform: translateY(105vh) rotate(360deg);
+    transform: translateY(105vh) translateX(15px) rotate(360deg);
     opacity: 0;
   }
 }
 
-.animate-fall {
-  animation-name: fall;
+.animate-fall-wobble {
+  animation-name: fall-wobble;
 }
 
 @keyframes float {

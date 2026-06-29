@@ -390,26 +390,26 @@ function OsuAuroraBackground() {
       {particles.map((p) => {
         if (p.type === "diamond") {
           const bgGradient = p.color === "pink" 
-            ? "from-pink-500/30 to-pink-400/10" 
+            ? "from-pink-400 to-pink-300" 
             : p.color === "cyan" 
-            ? "from-cyan-500/30 to-cyan-400/10" 
-            : "from-white/30 to-zinc-400/10";
+            ? "from-cyan-400 to-cyan-300" 
+            : "from-white to-zinc-100";
           const shadowColor = p.color === "pink"
-            ? "rgba(236,72,153,0.2)"
+            ? "rgba(236,72,153,0.7)"
             : p.color === "cyan"
-            ? "rgba(6,182,212,0.2)"
-            : "rgba(255,255,255,0.15)";
+            ? "rgba(6,182,212,0.7)"
+            : "rgba(255,255,255,0.55)";
           
           return (
             <span
               key={p.id}
-              className={`absolute transform rotate-45 bg-gradient-to-tr ${bgGradient} border border-white/5 animate-fall`}
+              className={`absolute transform rotate-45 bg-gradient-to-tr ${bgGradient} border border-white/20 animate-fall-wobble`}
               style={{
                 left: `${p.left}%`,
                 width: `${p.size}px`,
                 height: `${p.size}px`,
                 top: `-20px`,
-                boxShadow: `0 0 8px ${shadowColor}`,
+                boxShadow: `0 0 12px ${shadowColor}, 0 0 24px ${shadowColor}`,
                 animationDelay: `${p.delay}s`,
                 animationDuration: `${p.duration}s`,
                 animationIterationCount: "infinite",
