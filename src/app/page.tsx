@@ -518,7 +518,7 @@ function Hero({ onLogin }: { onLogin: () => void }) {
       
       <div className="relative z-10 mx-auto w-full max-w-6xl px-4 grid items-center gap-8 md:grid-cols-2 md:gap-10">
         <Reveal>
-          <div className="flex flex-col items-center md:items-start text-center md:text-left">
+          <div className="flex flex-col items-center md:items-start text-center md:text-left md:-mt-12">
             <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.95] text-zinc-100">
               Trade osu!<br className="hidden md:inline" />
               {" "}players like<br />
