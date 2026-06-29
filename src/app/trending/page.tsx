@@ -174,30 +174,22 @@ export default function TrendingPage() {
       
       
       <div className="relative z-10 mx-auto max-w-7xl px-6 py-12 sm:py-16">
-        {/* Header */}
-        <Reveal>
-          <header className="mb-12">
-            <p className="text-[10px] font-mono font-bold uppercase tracking-[0.25em] text-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.35)]">
-              REAL-TIME TREND ANALYSIS
-            </p>
-            <h1 className="mt-2 text-4xl sm:text-5xl font-black tracking-tight text-zinc-50">
-              Market <span className="text-pink-500 drop-shadow-[0_0_15px_rgba(244,63,94,0.3)]">Trends</span>
-            </h1>
-            <p className="mt-3 text-sm text-zinc-400 max-w-[60ch]">
-              Track hyper-active stocks, rising candidates, and volume surges directly synced with player leaderboard dynamics.
-            </p>
-          </header>
-        </Reveal>
-
         {loading && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-5 space-y-3">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-16 rounded-2xl" />
-              ))}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <div className="lg:col-span-5 space-y-6">
+              <header className="mb-2">
+                <div className="h-3 w-32 bg-zinc-800/50 rounded animate-pulse" />
+                <div className="h-10 w-48 bg-zinc-800/50 rounded mt-3 animate-pulse" />
+                <div className="h-12 w-full bg-zinc-800/50 rounded mt-3 animate-pulse" />
+              </header>
+              <div className="space-y-3">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton key={i} className="h-16 rounded-2xl" />
+                ))}
+              </div>
             </div>
             <div className="lg:col-span-7">
-              <Skeleton className="h-[450px] rounded-3xl" />
+              <Skeleton className="h-[550px] rounded-[28px]" />
             </div>
           </div>
         )}
@@ -218,12 +210,27 @@ export default function TrendingPage() {
         )}
 
         {!loading && !error && data && !isEmpty && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-            {/* LEFT COLUMN: Rhythm Game Slanted Song Select List */}
-            <div className="lg:col-span-5 flex flex-col gap-3">
-              <span className="text-[10px] font-mono font-bold text-zinc-550 uppercase tracking-widest block mb-2 px-1">
-                Select Trend Category
-              </span>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* LEFT COLUMN: Page Title & Rhythm Game Slanted Song Select List */}
+            <div className="lg:col-span-5 flex flex-col gap-6">
+              <Reveal>
+                <header className="mb-2">
+                  <p className="text-[10px] font-mono font-bold uppercase tracking-[0.25em] text-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.35)]">
+                    REAL-TIME TREND ANALYSIS
+                  </p>
+                  <h1 className="mt-2 text-4xl sm:text-5xl font-black tracking-tight text-zinc-50">
+                    Market <span className="text-pink-500 drop-shadow-[0_0_15px_rgba(244,63,94,0.3)]">Trends</span>
+                  </h1>
+                  <p className="mt-3 text-sm text-zinc-400 max-w-[60ch] leading-relaxed">
+                    Track hyper-active stocks, rising candidates, and volume surges directly synced with player leaderboard dynamics.
+                  </p>
+                </header>
+              </Reveal>
+
+              <div className="flex flex-col gap-3">
+                <span className="text-[10px] font-mono font-bold text-zinc-550 uppercase tracking-widest block mb-2 px-1">
+                  Select Trend Category
+                </span>
               <div className="flex flex-col gap-2.5">
                 {BUCKETS.map((b, idx) => {
                   const isSelected = selectedBucketIndex === idx;
@@ -273,6 +280,7 @@ export default function TrendingPage() {
                     </button>
                   );
                 })}
+              </div>
               </div>
             </div>
 
