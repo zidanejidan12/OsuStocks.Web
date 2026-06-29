@@ -51,14 +51,8 @@ function ErrorNotice({ message }: { message: string }) {
 }
 
 // Live Trading Activity Popup Component
-function LiveActivityPopup() {
+function LiveActivityPopup({ isMuted, setIsMuted }: { isMuted: boolean; setIsMuted: (val: boolean) => void }) {
   const [stocks, setStocks] = useState<StockSummary[]>([]);
-  const [isMuted, setIsMuted] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("muteLiveActivity") === "true";
-    }
-    return false;
-  });
   const [activeEvent, setActiveEvent] = useState<{
     id: number;
     type: "trade" | "alert" | "reward";
@@ -500,14 +494,33 @@ const TEAM = [
   },
 ];
 
-function DevTeamCard() {
+function DevTeamCard({ isMuted, setIsMuted }: { isMuted: boolean; setIsMuted: (val: boolean) => void }) {
   return (
     <div className="rounded-[24px] border border-zinc-800/80 bg-zinc-900/10 p-5 shadow-sm glow-card">
-      <div className="mb-4 flex items-center gap-2">
-        <GameController size={18} className="text-pink-500" />
-        <span className="text-xs font-display font-extrabold uppercase tracking-wider text-zinc-300">
-          Development Team
-        </span>
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <GameController size={18} className="text-pink-500" />
+          <span className="text-xs font-display font-extrabold uppercase tracking-wider text-zinc-300">
+            Development Team
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            const newMuted = !isMuted;
+            setIsMuted(newMuted);
+            localStorage.setItem("muteLiveActivity", newMuted ? "true" : "false");
+          }}
+          className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[10px] font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
+            isMuted 
+              ? "bg-zinc-900/50 border-zinc-800/80 text-zinc-500 hover:text-zinc-400"
+              : "bg-pink-500/10 border-pink-500/20 text-pink-400 hover:bg-pink-500/20"
+          }`}
+          title={isMuted ? "Turn On Live Popups" : "Turn Off Live Popups"}
+        >
+          {isMuted ? <BellSlash size={12} /> : <Bell size={12} />}
+          <span className="hidden sm:inline">{isMuted ? "Muted" : "Live Feed"}</span>
+        </button>
       </div>
       <div className="grid grid-cols-3 gap-3">
         {TEAM.map((member) => (
@@ -539,7 +552,7 @@ function DevTeamCard() {
   );
 }
 
-function Hero({ onLogin }: { onLogin: () => void }) {
+function Hero({ onLogin, isMuted, setIsMuted }: { onLogin: () => void; isMuted: boolean; setIsMuted: (val: boolean) => void }) {
   return (
     <section className="relative w-full min-h-[75vh] flex items-center pt-12 pb-16 sm:pt-16 sm:pb-20">
       <div className="absolute top-1/4 left-1/4 -z-10 h-72 w-72 rounded-full bg-cyan-500/10 blur-[120px] pointer-events-none" />
@@ -574,7 +587,7 @@ function Hero({ onLogin }: { onLogin: () => void }) {
         <Reveal delay={0.1} className="md:pl-4">
           <div className="flex flex-col gap-4">
             <SponsorCard />
-            <DevTeamCard />
+            <DevTeamCard isMuted={isMuted} setIsMuted={setIsMuted} />
             <LiveMarketPanel />
           </div>
         </Reveal>
@@ -694,6 +707,13 @@ function WelcomeBanner({ show, onDismiss }: { show: boolean; onDismiss: () => vo
 
 export default function Home() {
   const { user, loading: authLoading, login } = useAuth();
+
+  const [isMuted, setIsMuted] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("muteLiveActivity") === "true";
+    }
+    return false;
+  });
 
   const [showWelcome, setShowWelcome] = useState(false);
 
@@ -907,8 +927,8 @@ export default function Home() {
     return (
       <div className="relative w-full overflow-x-hidden pb-16">
         <OsuAuroraBackground />
-        <LiveActivityPopup />
-        <Hero onLogin={() => login("/")} />
+        <LiveActivityPopup isMuted={isMuted} setIsMuted={setIsMuted} />
+        <Hero onLogin={() => login("/")} isMuted={isMuted} setIsMuted={setIsMuted} />
         <InteractiveChartSection />
         <FaqSection />
       </div>
