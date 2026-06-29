@@ -390,26 +390,26 @@ function OsuAuroraBackground() {
       {particles.map((p) => {
         if (p.type === "diamond") {
           const bgGradient = p.color === "pink" 
-            ? "from-pink-500/15 to-transparent" 
+            ? "from-pink-500/35 to-pink-500/5" 
             : p.color === "cyan" 
-            ? "from-cyan-500/15 to-transparent" 
-            : "from-white/10 to-transparent";
+            ? "from-cyan-500/35 to-cyan-500/5" 
+            : "from-white/25 to-white/5";
           const shadowColor = p.color === "pink"
-            ? "rgba(236,72,153,0.15)"
+            ? "rgba(236,72,153,0.35)"
             : p.color === "cyan"
-            ? "rgba(6,182,212,0.15)"
-            : "rgba(255,255,255,0.1)";
+            ? "rgba(6,182,212,0.35)"
+            : "rgba(255,255,255,0.25)";
           
           return (
             <span
               key={p.id}
-              className={`absolute transform rotate-45 bg-gradient-to-tr ${bgGradient} border border-white/5 animate-fall-wobble`}
+              className={`absolute transform rotate-45 bg-gradient-to-tr ${bgGradient} border border-white/15 animate-fall-wobble`}
               style={{
                 left: `${p.left}%`,
                 width: `${p.size}px`,
                 height: `${p.size}px`,
                 top: `-20px`,
-                boxShadow: `0 0 6px ${shadowColor}`,
+                boxShadow: `0 0 10px ${shadowColor}`,
                 animationDelay: `${p.delay}s`,
                 animationDuration: `${p.duration}s`,
                 animationIterationCount: "infinite",
@@ -865,6 +865,8 @@ function StatsSection() {
 }
 
 function HowItWorksSection() {
+  const [clickedCard, setClickedCard] = useState<number | null>(null);
+
   const steps = [
     {
       title: "1. Buy & Sell Shares",
@@ -900,17 +902,39 @@ function HowItWorksSection() {
       </Reveal>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        {steps.map((step, idx) => (
-          <Reveal key={idx} delay={idx * 0.05}>
-            <div className="glass relative group h-full overflow-hidden rounded-3xl p-8 transition-all duration-300">
-              {/* Soft corner color glow */}
-              <div className={"absolute top-0 right-0 w-24 h-24 bg-gradient-to-br " + step.color + " rounded-bl-full opacity-30 pointer-events-none group-hover:opacity-50 transition-opacity duration-300"} />
-              
-              <h3 className={"text-xl font-bold tracking-tight " + step.accent}>{step.title}</h3>
-              <p className="mt-4 text-sm leading-relaxed text-zinc-400">{step.desc}</p>
-            </div>
-          </Reveal>
-        ))}
+        {steps.map((step, idx) => {
+          const isClicked = clickedCard === idx;
+          const isPink = idx === 0;
+          const isCyan = idx === 1;
+          const isAmber = idx === 2;
+
+          const glowStyles = isClicked
+            ? isPink
+              ? "border-pink-500/60 shadow-[0_0_35px_rgba(236,72,153,0.25)] bg-pink-500/[0.04]"
+              : isCyan
+              ? "border-cyan-500/60 shadow-[0_0_35px_rgba(6,182,212,0.25)] bg-cyan-500/[0.04]"
+              : "border-amber-500/60 shadow-[0_0_35px_rgba(245,158,11,0.25)] bg-amber-500/[0.04]"
+            : isPink
+            ? "hover:border-pink-500/35 hover:shadow-[0_0_25px_rgba(236,72,153,0.12)] hover:bg-pink-500/[0.02]"
+            : isCyan
+            ? "hover:border-cyan-500/35 hover:shadow-[0_0_25px_rgba(6,182,212,0.12)] hover:bg-cyan-500/[0.02]"
+            : "hover:border-amber-500/35 hover:shadow-[0_0_25px_rgba(245,158,11,0.12)] hover:bg-amber-500/[0.02]";
+
+          return (
+            <Reveal key={idx} delay={idx * 0.05}>
+              <div 
+                onClick={() => setClickedCard(isClicked ? null : idx)}
+                className={`glass relative group h-full overflow-hidden rounded-3xl p-8 transition-all duration-500 cursor-pointer border ${glowStyles}`}
+              >
+                {/* Soft corner color glow */}
+                <div className={"absolute top-0 right-0 w-24 h-24 bg-gradient-to-br " + step.color + " rounded-bl-full opacity-30 pointer-events-none group-hover:opacity-60 transition-opacity duration-300"} />
+                
+                <h3 className={"text-xl font-bold tracking-tight " + step.accent}>{step.title}</h3>
+                <p className="mt-4 text-sm leading-relaxed text-zinc-400">{step.desc}</p>
+              </div>
+            </Reveal>
+          );
+        })}
       </div>
     </section>
   );
