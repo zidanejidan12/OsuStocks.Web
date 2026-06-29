@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, WarningCircle, Lock, Wallet as WalletIcon, TrendUp, Users, Trophy, Question, ChartLineUp, Plus, Minus, CaretDown, Coins, TerminalWindow, Shield, Broadcast, Flame, X, GameController } from "@phosphor-icons/react";
+import { ArrowRight, WarningCircle, Lock, Wallet as WalletIcon, TrendUp, Users, Trophy, Question, ChartLineUp, Plus, Minus, CaretDown, Coins, TerminalWindow, Shield, Broadcast, Flame, X, GameController, Bell, BellSlash } from "@phosphor-icons/react";
 import type { MarketOverview, Paged, StockSort, StockSummary, Wallet } from "@/lib/api/types";
 import { getMarketOverview, getStocks, getWallet, ApiError } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/auth-context";
@@ -53,6 +53,12 @@ function ErrorNotice({ message }: { message: string }) {
 // Live Trading Activity Popup Component
 function LiveActivityPopup() {
   const [stocks, setStocks] = useState<StockSummary[]>([]);
+  const [isMuted, setIsMuted] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("muteLiveActivity") === "true";
+    }
+    return false;
+  });
   const [activeEvent, setActiveEvent] = useState<{
     id: number;
     type: "trade" | "alert" | "reward";
@@ -80,6 +86,10 @@ function LiveActivityPopup() {
   }, []);
 
   useEffect(() => {
+    if (isMuted) {
+      setVisible(false);
+      return;
+    }
     const fallbackPlayers = ["mrekk", "Akolibed", "Lifeline", "Gasha", "Chicony", "Kalanluu", "WhiteCat", "Ryuk", "Intersect"];
     const randomUsernames = [
       "Cookiezi", "peppy", "shigetora", "zidan", "jason", "toy", "HappyStick", 
@@ -251,7 +261,7 @@ function LiveActivityPopup() {
       clearTimeout(fadeOutTimer);
       clearInterval(interval);
     };
-  }, [stocks]);
+  }, [stocks, isMuted]);
 
   if (!activeEvent) return null;
 
@@ -311,9 +321,28 @@ function LiveActivityPopup() {
             <span className={`rounded-full px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider ${badgeClass}`}>
               {activeEvent.badgeText}
             </span>
-            <span className="text-[9px] text-zinc-500 font-mono">
-              Just now
-            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const newMute = !isMuted;
+                  setIsMuted(newMute);
+                  localStorage.setItem("muteLiveActivity", newMute ? "true" : "false");
+                }}
+                className="text-zinc-500 hover:text-pink-400 active:scale-95 transition-all p-0.5 rounded cursor-pointer"
+                title={isMuted ? "Unmute updates" : "Mute updates"}
+              >
+                {isMuted ? <BellSlash size={11} /> : <Bell size={11} />}
+              </button>
+              <button
+                type="button"
+                onClick={() => setVisible(false)}
+                className="text-zinc-500 hover:text-rose-400 active:scale-95 transition-all p-0.5 rounded cursor-pointer"
+                title="Close"
+              >
+                <X size={11} weight="bold" />
+              </button>
+            </div>
           </div>
           
           <div className="mt-1.5 text-xs leading-snug font-sans">
