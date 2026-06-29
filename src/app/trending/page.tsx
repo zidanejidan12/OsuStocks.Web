@@ -221,7 +221,7 @@ export default function TrendingPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
             {/* LEFT COLUMN: Rhythm Game Slanted Song Select List */}
             <div className="lg:col-span-5 flex flex-col gap-3">
-              <span className="text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest block mb-2 px-1">
+              <span className="text-[10px] font-mono font-bold text-zinc-550 uppercase tracking-widest block mb-2 px-1">
                 Select Trend Category
               </span>
               <div className="flex flex-col gap-2.5">
@@ -235,7 +235,7 @@ export default function TrendingPage() {
                       className={`relative flex items-center justify-between p-4 rounded-xl border transition-all duration-300 text-left cursor-pointer select-none group outline-none overflow-hidden ${
                         isSelected
                           ? "border-pink-500 shadow-[0_0_25px_rgba(236,72,153,0.2)] translate-x-2 skew-x-[-4deg]"
-                          : "border-zinc-900 bg-zinc-950/20 backdrop-blur-md hover:bg-zinc-900/30 hover:border-zinc-800 hover:translate-x-1 skew-x-[-4deg]"
+                          : "border-zinc-200 dark:border-zinc-900 bg-zinc-100/50 dark:bg-zinc-950/20 backdrop-blur-md hover:bg-zinc-200/50 dark:hover:bg-zinc-900/30 hover:border-zinc-300 dark:hover:border-zinc-800 hover:translate-x-1 skew-x-[-4deg]"
                       }`}
                     >
                       {isSelected && (
@@ -278,8 +278,18 @@ export default function TrendingPage() {
 
             {/* RIGHT COLUMN: Interactive Terminal Board */}
             <div className="lg:col-span-7">
-              <Card className="h-full border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-xl p-6 sm:p-8 rounded-[28px] relative overflow-hidden flex flex-col justify-between">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-pink-500/5 rounded-full blur-3xl pointer-events-none" />
+              <Card className={`h-full border bg-zinc-950/20 backdrop-blur-xl p-6 sm:p-8 rounded-[28px] relative overflow-hidden flex flex-col justify-between transition-all duration-500 ${
+                selectedBucketIndex === 0 || selectedBucketIndex === 2 
+                  ? "border-emerald-500/35 shadow-[0_0_35px_rgba(16,185,129,0.06)]" 
+                  : selectedBucketIndex === 1 || selectedBucketIndex === 3 
+                  ? "border-rose-500/35 shadow-[0_0_35px_rgba(244,63,94,0.06)]" 
+                  : "border-pink-500/35 shadow-[0_0_35px_rgba(236,72,153,0.06)]"
+              }`}>
+                <div className={`absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl pointer-events-none transition-colors duration-500 ${
+                  selectedBucketIndex === 0 || selectedBucketIndex === 2 ? "bg-emerald-500/5" :
+                  selectedBucketIndex === 1 || selectedBucketIndex === 3 ? "bg-rose-500/5" :
+                  "bg-pink-500/5"
+                }`} />
                 
                 <div>
                   {/* Top Dashboard details */}
@@ -303,68 +313,88 @@ export default function TrendingPage() {
                       No active players found in this category right now.
                     </div>
                   ) : (
-                    <motion.ul
-                      className="divide-y divide-zinc-900/40"
-                      variants={staggerContainer}
-                      initial="hidden"
-                      animate="show"
-                    >
-                      {activeStocks.slice(0, 10).map((s, i) => (
-                        <motion.li 
-                          key={s.stockId} 
-                          variants={fadeUp}
-                          className="py-1 transition-all duration-200"
+                    <div className="relative overflow-hidden min-h-[350px]">
+                      <AnimatePresence mode="wait" initial={false}>
+                        <motion.div
+                          key={selectedBucketIndex}
+                          initial={{ opacity: 0, x: 15 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -15 }}
+                          transition={{ duration: 0.25, ease: "easeInOut" }}
                         >
-                          <Link
-                            href={`/stocks/${s.stockId}`}
-                            className="flex items-center gap-3.5 p-2 -mx-2 rounded-xl transition-all duration-300 hover:bg-zinc-900/10 group/item"
+                          <motion.ul
+                            className="divide-y divide-zinc-900/40"
+                            variants={staggerContainer}
+                            initial="hidden"
+                            animate="show"
                           >
-                            {/* Rank circle */}
-                            <span className="w-5 shrink-0 text-center font-mono text-xs font-bold text-zinc-500 group-hover/item:text-pink-400 transition-colors">
-                              #{i + 1}
-                            </span>
-                            <Avatar src={s.avatarUrl} name={s.playerName} size="sm" className="ring-1 ring-zinc-800" />
-                            
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-1.5">
-                                <span className="truncate text-sm font-bold text-zinc-200 group-hover/item:text-zinc-50 transition-colors">
-                                  {s.playerName}
-                                </span>
-                                {s.countryCode && (
-                                  <Flag countryCode={s.countryCode} className="h-2.5 shrink-0" />
-                                )}
-                              </div>
-                              <div className="font-mono text-xs text-zinc-400 mt-0.5">
-                                <Money value={s.currentPrice} />
-                              </div>
-                            </div>
+                            {activeStocks.slice(0, 10).map((s, i) => (
+                              <motion.li 
+                                key={s.stockId} 
+                                variants={fadeUp}
+                                className="py-1 transition-all duration-200"
+                              >
+                                <Link
+                                  href={`/stocks/${s.stockId}`}
+                                  className={`flex items-center gap-3.5 p-2 -mx-2 rounded-xl transition-all duration-300 hover:bg-zinc-900/20 dark:hover:bg-zinc-900/40 hover:translate-x-1 group/item border-l-2 border-l-transparent ${
+                                    selectedBucketIndex === 0 || selectedBucketIndex === 2 ? "hover:border-l-emerald-500" :
+                                    selectedBucketIndex === 1 || selectedBucketIndex === 3 ? "hover:border-l-rose-500" :
+                                    "hover:border-l-pink-500"
+                                  }`}
+                                >
+                                  {/* Rank circle */}
+                                  <span className={`w-5 shrink-0 text-center font-mono text-xs font-bold text-zinc-500 transition-colors ${
+                                    selectedBucketIndex === 0 || selectedBucketIndex === 2 ? "group-hover/item:text-emerald-400" :
+                                    selectedBucketIndex === 1 || selectedBucketIndex === 3 ? "group-hover/item:text-rose-400" :
+                                    "group-hover/item:text-pink-400"
+                                  }`}>
+                                    #{i + 1}
+                                  </span>
+                                  <Avatar src={s.avatarUrl} name={s.playerName} size="sm" className="ring-1 ring-zinc-800" />
+                                  
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="truncate text-sm font-bold text-zinc-200 group-hover/item:text-zinc-50 transition-colors">
+                                        {s.playerName}
+                                      </span>
+                                      {s.countryCode && (
+                                        <Flag countryCode={s.countryCode} className="h-2.5 shrink-0" />
+                                      )}
+                                    </div>
+                                    <div className="font-mono text-xs text-zinc-400 mt-0.5">
+                                      <Money value={s.currentPrice} />
+                                    </div>
+                                  </div>
  
-                            {/* Simulated Volatility Soundwave bar visualizer */}
-                            <div className="hidden sm:flex items-end gap-0.5 px-6 h-5">
-                              {Array.from({ length: 5 }).map((_, waveIdx) => {
-                                const isPositive = s.priceChange24h >= 0;
-                                return (
-                                  <span 
-                                    key={waveIdx} 
-                                    className="w-0.5 h-full rounded-full animate-soundwave origin-bottom"
-                                    style={{ 
-                                      backgroundColor: isPositive ? "rgba(16, 185, 129, 0.6)" : "rgba(244, 63, 94, 0.6)",
-                                      boxShadow: isPositive ? "0 0 6px rgba(16, 185, 129, 0.3)" : "0 0 6px rgba(244, 63, 94, 0.3)",
-                                      animationDelay: `${waveIdx * 0.15}s`,
-                                      animationDuration: `${0.5 + Math.random() * 0.4}s`
-                                    }}
-                                  />
-                                );
-                              })}
-                            </div>
+                                  {/* Simulated Volatility Soundwave bar visualizer */}
+                                  <div className="hidden sm:flex items-end gap-0.5 px-6 h-5">
+                                    {Array.from({ length: 5 }).map((_, waveIdx) => {
+                                      const isPositive = s.priceChange24h >= 0;
+                                      return (
+                                        <span 
+                                          key={waveIdx} 
+                                          className="w-0.5 h-full rounded-full animate-soundwave origin-bottom"
+                                          style={{ 
+                                            backgroundColor: isPositive ? "rgba(16, 185, 129, 0.6)" : "rgba(244, 63, 94, 0.6)",
+                                            boxShadow: isPositive ? "0 0 6px rgba(16, 185, 129, 0.3)" : "0 0 6px rgba(244, 63, 94, 0.3)",
+                                            animationDelay: `${waveIdx * 0.15}s`,
+                                            animationDuration: `${0.5 + Math.random() * 0.4}s`
+                                          }}
+                                        />
+                                      );
+                                    })}
+                                  </div>
 
-                            <div className="shrink-0 text-right">
-                              {activeBucket.metric(s)}
-                            </div>
-                          </Link>
-                        </motion.li>
-                      ))}
-                    </motion.ul>
+                                  <div className="shrink-0 text-right">
+                                    {activeBucket.metric(s)}
+                                  </div>
+                                </Link>
+                              </motion.li>
+                            ))}
+                          </motion.ul>
+                        </motion.div>
+                      </AnimatePresence>
+                    </div>
                   )}
                 </div>
 
