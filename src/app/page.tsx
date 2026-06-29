@@ -20,7 +20,6 @@ import { LiveMarketPanel } from "@/components/market/LiveMarketPanel";
 import { Coin } from "@/components/ui/Coin";
 import { Avatar } from "@/components/ui/Avatar";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
-import { OsuAuroraBackground } from "@/components/ui/OsuAuroraBackground";
 
 const PAGE_SIZE = 25;
 
@@ -837,7 +836,6 @@ export default function Home() {
   if (!user) {
     return (
       <div className="relative w-full overflow-x-hidden pb-16">
-        <OsuAuroraBackground />
         <LiveActivityPopup isMuted={isMuted} setIsMuted={setIsMuted} />
         <Hero onLogin={() => login("/")} isMuted={isMuted} setIsMuted={setIsMuted} />
         <InteractiveChartSection />

@@ -24,7 +24,6 @@ import { Button } from "@/components/ui/Button";
 import { Reveal } from "@/components/motion/Reveal";
 import { fadeUp, staggerContainer } from "@/lib/motion";
 import { useAuth } from "@/lib/auth/auth-context";
-import { AmbientCyberBg } from "@/components/ui/AmbientCyberBg";
 
 const PAGE_SIZE = 25;
 
@@ -53,7 +52,6 @@ function rankChip(rank: number): string {
 function PageShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative w-full overflow-hidden min-h-screen">
-      <AmbientCyberBg />
       <div className="relative z-10 mx-auto max-w-5xl px-4 py-10 sm:py-14">
         {children}
       </div>

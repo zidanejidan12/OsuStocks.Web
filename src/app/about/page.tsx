@@ -1,7 +1,6 @@
 "use client";
 
 import { Avatar } from "@/components/ui/Avatar";
-import { AmbientCyberBg } from "@/components/ui/AmbientCyberBg";
 import { ArrowRight, Sparkle, GameController } from "@phosphor-icons/react";
 import { useAuth } from "@/lib/auth/auth-context";
 import Link from "next/link";
@@ -34,7 +33,6 @@ export default function AboutPage() {
 
   return (
     <div className="relative w-full overflow-hidden min-h-screen pb-20">
-      <AmbientCyberBg />
       
       <div className="relative z-10 mx-auto max-w-5xl px-6 py-12 sm:py-16">
         

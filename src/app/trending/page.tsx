@@ -26,7 +26,6 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PriceChange } from "@/components/ui/PriceChange";
 import { Reveal } from "@/components/motion/Reveal";
 import { fadeUp, staggerContainer } from "@/lib/motion";
-import { OsuAuroraBackground } from "@/components/ui/OsuAuroraBackground";
 
 interface Bucket {
   key: keyof Trending;
@@ -172,7 +171,7 @@ export default function TrendingPage() {
           transform-origin: bottom;
         }
       `}</style>
-      <OsuAuroraBackground />
+      
       
       <div className="relative z-10 mx-auto max-w-7xl px-6 py-12 sm:py-16">
         {/* Header */}
