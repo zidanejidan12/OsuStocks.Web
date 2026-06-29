@@ -26,7 +26,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PriceChange } from "@/components/ui/PriceChange";
 import { Reveal } from "@/components/motion/Reveal";
 import { fadeUp, staggerContainer } from "@/lib/motion";
-import { AmbientCyberBg } from "@/components/ui/AmbientCyberBg";
+import { OsuAuroraBackground } from "@/components/ui/OsuAuroraBackground";
 
 interface Bucket {
   key: keyof Trending;
@@ -161,7 +161,18 @@ export default function TrendingPage() {
 
   return (
     <div className="relative w-full overflow-hidden min-h-screen pb-20">
-      <AmbientCyberBg />
+      {/* Visualizer CSS style override */}
+      <style>{`
+        @keyframes soundwave-bounce {
+          0%, 100% { transform: scaleY(0.2); }
+          50% { transform: scaleY(1); }
+        }
+        .animate-soundwave {
+          animation: soundwave-bounce 0.8s ease-in-out infinite;
+          transform-origin: bottom;
+        }
+      `}</style>
+      <OsuAuroraBackground />
       
       <div className="relative z-10 mx-auto max-w-7xl px-6 py-12 sm:py-16">
         {/* Header */}
@@ -170,7 +181,7 @@ export default function TrendingPage() {
             <p className="text-[10px] font-mono font-bold uppercase tracking-[0.25em] text-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.35)]">
               REAL-TIME TREND ANALYSIS
             </p>
-            <h1 className="mt-2 text-4xl sm:text-5xl font-black tracking-tight text-white">
+            <h1 className="mt-2 text-4xl sm:text-5xl font-black tracking-tight text-zinc-50">
               Market <span className="text-pink-500 drop-shadow-[0_0_15px_rgba(244,63,94,0.3)]">Trends</span>
             </h1>
             <p className="mt-3 text-sm text-zinc-400 max-w-[60ch]">
@@ -222,12 +233,19 @@ export default function TrendingPage() {
                     <button
                       key={b.key}
                       onClick={() => setSelectedBucketIndex(idx)}
-                      className={`relative flex items-center justify-between p-4 rounded-xl border transition-all duration-300 text-left cursor-pointer select-none group outline-none ${
+                      className={`relative flex items-center justify-between p-4 rounded-xl border transition-all duration-300 text-left cursor-pointer select-none group outline-none overflow-hidden ${
                         isSelected
-                          ? "bg-zinc-900 border-pink-500 shadow-[0_0_20px_rgba(236,72,153,0.15)] translate-x-2 skew-x-[-4deg]"
-                          : "bg-zinc-950/40 border-zinc-900 hover:bg-zinc-900/30 hover:border-zinc-800 hover:translate-x-1 skew-x-[-4deg]"
+                          ? "border-pink-500 shadow-[0_0_25px_rgba(236,72,153,0.2)] translate-x-2 skew-x-[-4deg]"
+                          : "border-zinc-900 bg-zinc-950/20 backdrop-blur-md hover:bg-zinc-900/30 hover:border-zinc-800 hover:translate-x-1 skew-x-[-4deg]"
                       }`}
                     >
+                      {isSelected && (
+                        <motion.div
+                          layoutId="activeCategoryBg"
+                          className="absolute inset-0 bg-gradient-to-r from-pink-500/15 via-pink-500/[0.02] to-transparent rounded-xl -z-10"
+                          transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                        />
+                      )}
                       {/* Return text to straight alignment inside skewed container */}
                       <div className="flex items-center gap-3.5 skew-x-[4deg]">
                         <span className={`p-2 rounded-xl bg-zinc-950/60 border border-zinc-900 ${
@@ -237,7 +255,7 @@ export default function TrendingPage() {
                         </span>
                         <div>
                           <span className={`text-sm font-black tracking-tight block ${
-                            isSelected ? "text-white" : "text-zinc-400 group-hover:text-zinc-200"
+                            isSelected ? "text-zinc-50" : "text-zinc-400 group-hover:text-zinc-200"
                           }`}>{b.title}</span>
                           <span className="text-[9px] font-mono font-bold text-zinc-550 block mt-0.5 tracking-wider">
                             {b.subtitle}
@@ -261,33 +279,33 @@ export default function TrendingPage() {
 
             {/* RIGHT COLUMN: Interactive Terminal Board */}
             <div className="lg:col-span-7">
-              <Card className="h-full border border-zinc-800/80 bg-zinc-950/40 backdrop-blur-xl p-6 sm:p-8 rounded-[28px] relative overflow-hidden flex flex-col justify-between">
+              <Card className="h-full border border-zinc-800/80 bg-zinc-950/20 backdrop-blur-xl p-6 sm:p-8 rounded-[28px] relative overflow-hidden flex flex-col justify-between">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-pink-500/5 rounded-full blur-3xl pointer-events-none" />
                 
                 <div>
                   {/* Top Dashboard details */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-900 pb-5 mb-5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-900/60 pb-5 mb-5">
                     <div>
                       <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded border ${activeBucket.tagClass} uppercase tracking-wider`}>
                         {activeBucket.tagLabel}
                       </span>
-                      <h2 className="text-xl font-black text-zinc-100 tracking-tight mt-2">
+                      <h2 className="text-xl font-black text-zinc-50 tracking-tight mt-2">
                         Top 10: {activeBucket.title}
                       </h2>
                     </div>
                     <div className="flex items-center gap-1.5 self-start sm:self-auto">
                       <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="text-[9px] font-mono font-bold text-zinc-500 uppercase tracking-widest">DIAGNOSTIC ACTIVE</span>
+                      <span className="text-[9px] font-mono font-bold text-zinc-550 uppercase tracking-widest">DIAGNOSTIC ACTIVE</span>
                     </div>
                   </div>
-
+ 
                   {activeStocks.length === 0 ? (
-                    <div className="py-20 text-center text-zinc-500 font-medium">
+                    <div className="py-20 text-center text-zinc-550 font-medium">
                       No active players found in this category right now.
                     </div>
                   ) : (
                     <motion.ul
-                      className="divide-y divide-zinc-900/60"
+                      className="divide-y divide-zinc-900/40"
                       variants={staggerContainer}
                       initial="hidden"
                       animate="show"
@@ -296,21 +314,21 @@ export default function TrendingPage() {
                         <motion.li 
                           key={s.stockId} 
                           variants={fadeUp}
-                          className="py-2.5 transition-all duration-200"
+                          className="py-1 transition-all duration-200"
                         >
                           <Link
                             href={`/stocks/${s.stockId}`}
-                            className="flex items-center gap-3.5 hover:translate-x-1.5 transition-transform duration-300"
+                            className="flex items-center gap-3.5 p-2 -mx-2 rounded-xl transition-all duration-300 hover:bg-zinc-900/10 group/item"
                           >
                             {/* Rank circle */}
-                            <span className="w-5 shrink-0 text-center font-mono text-xs font-bold text-zinc-550">
+                            <span className="w-5 shrink-0 text-center font-mono text-xs font-bold text-zinc-500 group-hover/item:text-pink-400 transition-colors">
                               #{i + 1}
                             </span>
                             <Avatar src={s.avatarUrl} name={s.playerName} size="sm" className="ring-1 ring-zinc-800" />
                             
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-1.5">
-                                <span className="truncate text-sm font-bold text-zinc-200">
+                                <span className="truncate text-sm font-bold text-zinc-200 group-hover/item:text-zinc-50 transition-colors">
                                   {s.playerName}
                                 </span>
                                 {s.countryCode && (
@@ -321,19 +339,21 @@ export default function TrendingPage() {
                                 <Money value={s.currentPrice} />
                               </div>
                             </div>
-
+ 
                             {/* Simulated Volatility Soundwave bar visualizer */}
-                            <div className="hidden sm:flex items-center gap-0.5 px-6">
+                            <div className="hidden sm:flex items-end gap-0.5 px-6 h-5">
                               {Array.from({ length: 5 }).map((_, waveIdx) => {
                                 const isPositive = s.priceChange24h >= 0;
-                                const randomHeight = Math.floor(Math.random() * 12) + 4;
                                 return (
                                   <span 
                                     key={waveIdx} 
-                                    className={`w-0.5 rounded-full transition-all duration-300 ${
-                                      isPositive ? "bg-emerald-500/50" : "bg-rose-500/50"
-                                    }`}
-                                    style={{ height: `${randomHeight}px` }}
+                                    className="w-0.5 h-full rounded-full animate-soundwave origin-bottom"
+                                    style={{ 
+                                      backgroundColor: isPositive ? "rgba(16, 185, 129, 0.6)" : "rgba(244, 63, 94, 0.6)",
+                                      boxShadow: isPositive ? "0 0 6px rgba(16, 185, 129, 0.3)" : "0 0 6px rgba(244, 63, 94, 0.3)",
+                                      animationDelay: `${waveIdx * 0.15}s`,
+                                      animationDuration: `${0.5 + Math.random() * 0.4}s`
+                                    }}
                                   />
                                 );
                               })}
