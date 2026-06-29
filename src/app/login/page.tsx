@@ -97,7 +97,7 @@ export default function LoginPage() {
   const { login } = useAuth();
 
   return (
-    <main className="relative bg-zinc-950 text-zinc-100 overflow-hidden">
+    <main className="relative text-zinc-100 overflow-hidden">
       <PinkRain />
       <div className="relative z-10 mx-auto grid min-h-[calc(100dvh-4rem)] w-full max-w-6xl items-center gap-12 px-4 py-12 md:grid-cols-2 md:gap-16 md:px-6">
         <section className="order-1 md:order-none">

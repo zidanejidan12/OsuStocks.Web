@@ -228,6 +228,9 @@ export default function LeaderboardPage() {
     setBusy(true);
     setError(null);
     load(nextPage, nextPeriod)
+      .then(() => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      })
       .catch((err) =>
         setError(
           err instanceof ApiError ? err.message : "Failed to load leaderboard.",
