@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useReducedMotion } from "framer-motion";
-import { Pause, Play, X } from "@phosphor-icons/react";
+import { Pause, Play, CaretLeft, CaretRight } from "@phosphor-icons/react";
 import { getLiveMovers } from "@/lib/api/client";
 import type { LiveMover } from "@/lib/api/types";
 import { Avatar } from "@/components/ui/Avatar";
@@ -79,13 +79,12 @@ export function MarketTicker() {
   const clickable = !!user;
 
   const [movers, setMovers] = useState<LiveMover[] | null>(null);
-  const [hidden, setHidden] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const [userPaused, setUserPaused] = useState(false);
 
   useEffect(() => {
-    if (hidden) return;
     let cancelled = false;
     const fetchMovers = () =>
       getLiveMovers(LIMIT)
@@ -99,28 +98,9 @@ export function MarketTicker() {
       cancelled = true;
       clearInterval(id);
     };
-  }, [hidden]);
-
-  if (hidden) {
-    return (
-      <button
-        type="button"
-        onClick={() => setHidden(false)}
-        className="fixed bottom-4 right-4 z-40 flex items-center gap-2 px-3.5 py-2 rounded-full border border-zinc-800 bg-zinc-950/90 backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.4)] hover:border-pink-500/40 hover:bg-zinc-900/30 transition-all duration-300 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/50"
-      >
-        <span className="h-1.5 w-1.5 rounded-full bg-pink-500 animate-pulse" />
-        <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-400 group-hover:text-zinc-200">
-          Show Ticker
-        </span>
-      </button>
-    );
-  }
+  }, []);
 
   if (!movers || movers.length === 0) return null;
-
-  const dismiss = () => {
-    setHidden(true);
-  };
 
   const paused = hovered || focused || userPaused;
   const durationSec = Math.max(10, movers.length * 1.5);
@@ -131,81 +111,97 @@ export function MarketTicker() {
       <div aria-hidden="true" className="h-9" />
       <aside
         aria-label="Live market movers"
-        className="fixed inset-x-0 bottom-0 z-40 flex h-9 items-center border-t border-zinc-900/50 bg-zinc-950/50 backdrop-blur-xl shadow-[0_-10px_30px_rgba(0,0,0,0.5)]"
+        className="fixed bottom-0 z-40 flex h-9 items-center border-t border-zinc-900/50 bg-zinc-950/50 backdrop-blur-xl shadow-[0_-10px_30px_rgba(0,0,0,0.5)] transition-transform duration-500 ease-out"
+        style={{
+          width: "100%",
+          left: 0,
+          transform: collapsed ? "translateX(calc(-100% + 42px))" : "translateX(0)",
+        }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
       >
-        <div className="flex h-full shrink-0 items-center gap-1.5 border-r border-zinc-800/40 px-3">
-          <StatusDot tone="pink" />
-          <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500">
-            Live
-          </span>
-        </div>
+        {/* Ticker Content wrapper - fades out when collapsed */}
+        <div className={`flex flex-1 items-center min-w-0 transition-all duration-500 h-full ${collapsed ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
+          <div className="flex h-full shrink-0 items-center gap-1.5 border-r border-zinc-800/40 px-3">
+            <StatusDot tone="pink" />
+            <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500">
+              Live
+            </span>
+          </div>
 
-        {/* Pinned sponsor slug — doesn't scroll with the marquee; hidden on the
-            narrowest screens so the moving strip keeps room. */}
-        <div className="hidden h-full shrink-0 items-center border-r border-zinc-800/40 px-3 sm:flex">
-          <SponsorCredit className="text-[11px] text-zinc-500" />
-        </div>
+          {/* Pinned sponsor slug — doesn't scroll with the marquee; hidden on the
+              narrowest screens so the moving strip keeps room. */}
+          <div className="hidden h-full shrink-0 items-center border-r border-zinc-800/40 px-3 sm:flex">
+            <SponsorCredit className="text-[11px] text-zinc-500" />
+          </div>
 
-        <div className="relative flex-1 overflow-hidden">
-          {reduce ? (
-            // Reduced motion: static, manually-scrollable strip (no animation).
-            <div
-              className="flex items-center overflow-x-auto px-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-              aria-hidden={clickable ? undefined : true}
-            >
-              {movers.map((m, i) => (
-                <Item key={i} m={m} linked={clickable} />
-              ))}
-            </div>
-          ) : (
-            <div
-              className="flex w-max items-center will-change-transform"
-              aria-hidden={clickable ? undefined : true}
-              style={{
-                animation: `ticker-marquee ${durationSec}s linear infinite`,
-                animationPlayState: paused ? "paused" : "running",
-              }}
-            >
-              {/* Accessible copy (real links when signed in). */}
-              {movers.map((m, i) => (
-                <Item key={`a${i}`} m={m} linked={clickable} />
-              ))}
-              {/* Loop duplicate — always hidden + non-interactive. */}
-              <span aria-hidden="true" className="inline-flex items-center">
+          <div className="relative flex-1 overflow-hidden">
+            {reduce ? (
+              // Reduced motion: static, manually-scrollable strip (no animation).
+              <div
+                className="flex items-center overflow-x-auto px-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                aria-hidden={clickable ? undefined : true}
+              >
                 {movers.map((m, i) => (
-                  <Item key={`b${i}`} m={m} linked={false} />
+                  <Item key={i} m={m} linked={clickable} />
                 ))}
-              </span>
+              </div>
+            ) : (
+              <div
+                className="flex w-max items-center will-change-transform"
+                aria-hidden={clickable ? undefined : true}
+                style={{
+                  animation: `ticker-marquee ${durationSec}s linear infinite`,
+                  animationPlayState: paused ? "paused" : "running",
+                }}
+              >
+                {/* Accessible copy (real links when signed in). */}
+                {movers.map((m, i) => (
+                  <Item key={`a${i}`} m={m} linked={clickable} />
+                ))}
+                {/* Loop duplicate — always hidden + non-interactive. */}
+                <span aria-hidden="true" className="inline-flex items-center">
+                  {movers.map((m, i) => (
+                    <Item key={`b${i}`} m={m} linked={false} />
+                  ))}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {!reduce && (
+            <div className="flex h-full shrink-0 items-center border-l border-zinc-800/40 px-2">
+              <button
+                type="button"
+                onClick={() => setUserPaused((p) => !p)}
+                aria-label={userPaused ? "Resume ticker" : "Pause ticker"}
+                className="grid h-7 w-7 place-items-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-800/60 hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/50"
+              >
+                {userPaused ? (
+                  <Play size={14} weight="bold" />
+                ) : (
+                  <Pause size={14} weight="bold" />
+                )}
+              </button>
             </div>
           )}
         </div>
 
-        <div className="flex h-full shrink-0 items-center gap-1 border-l border-zinc-800/40 px-2">
-          {!reduce && (
-            <button
-              type="button"
-              onClick={() => setUserPaused((p) => !p)}
-              aria-label={userPaused ? "Resume ticker" : "Pause ticker"}
-              className="grid h-7 w-7 place-items-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-800/60 hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/50"
-            >
-              {userPaused ? (
-                <Play size={14} weight="bold" />
-              ) : (
-                <Pause size={14} weight="bold" />
-              )}
-            </button>
-          )}
+        {/* Slide Toggle Button Area */}
+        <div className="flex h-full shrink-0 items-center border-l border-zinc-800/40 px-2 bg-zinc-950/80 backdrop-blur-md z-50">
           <button
             type="button"
-            onClick={dismiss}
-            aria-label="Hide live ticker"
-            className="grid h-7 w-7 place-items-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-800/60 hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/50"
+            onClick={() => setCollapsed(!collapsed)}
+            aria-label={collapsed ? "Expand live ticker" : "Collapse live ticker"}
+            className="grid h-7 w-7 place-items-center rounded-md text-zinc-400 transition-all duration-300 hover:bg-pink-500/10 hover:text-pink-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/50"
           >
-            <X size={14} weight="bold" />
+            {collapsed ? (
+              <CaretRight size={16} weight="bold" className="animate-pulse" />
+            ) : (
+              <CaretLeft size={16} weight="bold" />
+            )}
           </button>
         </div>
       </aside>

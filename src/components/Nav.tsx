@@ -187,132 +187,143 @@ export function Nav() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-white/5 bg-zinc-950/70 backdrop-blur-xl">
-        <nav className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4">
-          <Link href="/" className="group flex items-center gap-2.5">
-            <span
-              aria-hidden="true"
-              className="grid h-8 w-8 place-items-center rounded-lg bg-pink-500/15 text-pink-400 ring-1 ring-inset ring-pink-500/25 transition-transform group-hover:scale-105"
+      <header className="sticky top-0 z-50 bg-zinc-950/75 backdrop-blur-xl">
+        {/* Bottom glowing gradient border */}
+        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-pink-500/30 via-purple-500/20 to-cyan-500/30" />
+        
+        <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 relative">
+          
+          {/* Left: Mobile hamburger menu (visible below lg) */}
+          <div className="flex items-center gap-2 lg:hidden">
+            <button
+              ref={triggerRef}
+              type="button"
+              onClick={() => setOpen(true)}
+              aria-label="Open menu"
+              aria-expanded={open}
+              aria-controls="mobile-nav"
+              className="grid h-10 w-10 place-items-center rounded-xl text-zinc-400 bg-zinc-900/30 border border-zinc-800/60 transition-all hover:bg-zinc-800/60 hover:text-pink-400 hover:border-pink-500/30 active:scale-95"
             >
-              <ChartLineUp size={18} weight="bold" />
-            </span>
-            <span className="text-[15px] font-semibold tracking-tight">
-              <span className="text-pink-400">Osu</span>Stocks
-            </span>
-          </Link>
+              <List size={22} weight="bold" />
+            </button>
+          </div>
 
-          {/* Desktop Navigation Links */}
-          <ul className="ml-2 hidden items-center gap-1 text-sm lg:flex">
-            {(user ? LINKS : PUBLIC_LINKS).map(({ href, label, Icon }) => {
-              const active = isActiveHref(pathname, href);
-              return (
-                <li key={href}>
-                  <Link
-                    href={href}
-                    aria-current={active ? "page" : undefined}
-                    className={`relative flex items-center gap-2 rounded-lg px-3 py-1.5 transition-colors ${
-                      active
-                        ? "text-zinc-100"
-                        : "text-zinc-400 hover:text-zinc-100"
-                    }`}
-                  >
-                    {active && (
-                      <motion.span
-                        layoutId="nav-active"
-                        transition={spring}
-                        className="absolute inset-0 -z-10 rounded-lg bg-zinc-800/80 ring-1 ring-inset ring-white/5"
+          {/* Logo & Desktop Nav Links */}
+          <div className="flex items-center gap-6">
+            <Link href="/" className="group flex items-center gap-2.5">
+              <span
+                aria-hidden="true"
+                className="grid h-8 w-8 place-items-center rounded-lg bg-pink-500/15 text-pink-400 ring-1 ring-inset ring-pink-500/25 transition-all duration-300 group-hover:scale-105 group-hover:bg-pink-500/25 group-hover:shadow-[0_0_12px_rgba(236,72,153,0.4)]"
+              >
+                <ChartLineUp size={18} weight="bold" />
+              </span>
+              <span className="text-[15px] font-semibold tracking-tight transition-transform group-hover:translate-x-0.5">
+                <span className="text-pink-400 font-extrabold drop-shadow-[0_0_8px_rgba(236,72,153,0.5)] font-display">Osu</span>
+                <span className="text-zinc-150 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] font-display">Stocks</span>
+              </span>
+            </Link>
+
+            {/* Desktop Navigation Links */}
+            <ul className="hidden items-center gap-2 text-sm lg:flex">
+              {(user ? LINKS : PUBLIC_LINKS).map(({ href, label, Icon }) => {
+                const active = isActiveHref(pathname, href);
+                return (
+                  <li key={href}>
+                    <Link
+                      href={href}
+                      aria-current={active ? "page" : undefined}
+                      className={`relative flex items-center gap-2 rounded-lg px-4 py-2 font-display text-xs uppercase tracking-wider font-extrabold transition-all duration-300 border ${
+                        active
+                          ? "text-white bg-gradient-to-r from-pink-500/10 to-purple-500/10 border-pink-500/30 shadow-[0_0_15px_rgba(236,72,153,0.15)]"
+                          : "text-zinc-400 border-transparent hover:text-pink-300 hover:bg-zinc-900/40 hover:border-zinc-800"
+                      }`}
+                    >
+                      <Icon 
+                        size={15} 
+                        weight={active ? "fill" : "regular"} 
+                        className={active ? "text-pink-400" : "transition-colors"}
                       />
-                    )}
-                    <Icon size={16} weight={active ? "fill" : "regular"} />
-                    {label}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+                      {label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
 
-          {/* Desktop auth cluster (lg+) — sponsor credit lives sitewide in the
-              ticker + footer (and prominently on the landing/About pages), so the
-              nav stays uncluttered. */}
-          <div className="ml-auto hidden items-center gap-2 text-sm sm:gap-3 lg:flex">
+          {/* Right: Actions / Auth Cluster */}
+          <div className="flex items-center gap-2.5">
             <ThemeToggle />
-            {loading ? (
-              <Spinner />
-            ) : user ? (
-              <>
-                <NotificationBell />
-                {user.role === "Admin" && (
+            
+            {/* Desktop Auth Links */}
+            <div className="hidden lg:flex items-center gap-2.5">
+              {loading ? (
+                <Spinner />
+              ) : user ? (
+                <>
+                  <NotificationBell />
+                  {user.role === "Admin" && (
+                    <Link
+                      href="/admin"
+                      aria-label="Admin"
+                      className={`grid h-9 w-9 place-items-center rounded-lg transition-colors ${
+                        pathname.startsWith("/admin")
+                          ? "bg-zinc-800/80 text-pink-300 ring-1 ring-inset ring-pink-500/30"
+                          : "text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-100"
+                      }`}
+                    >
+                      <GearSix size={18} weight="bold" />
+                    </Link>
+                  )}
                   <Link
-                    href="/admin"
-                    aria-label="Admin"
-                    className={`grid h-9 w-9 place-items-center rounded-lg transition-colors ${
-                      pathname.startsWith("/admin")
-                        ? "bg-zinc-800/80 text-pink-300 ring-1 ring-inset ring-pink-500/30"
-                        : "text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-100"
-                    }`}
+                    href="/portfolio"
+                    aria-label={user.username}
+                    title={user.username}
+                    className="shrink-0 rounded-full ring-2 ring-transparent transition-colors hover:ring-pink-500/40"
                   >
-                    <GearSix size={18} weight="bold" />
+                    <Avatar src={user.avatarUrl} name={user.username} size="sm" />
                   </Link>
-                )}
+                  <button
+                    type="button"
+                    onClick={logout}
+                    aria-label="Logout"
+                    className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800 hover:border-zinc-700 font-display text-xs font-bold uppercase tracking-wider px-4 py-2 transition-all active:scale-95 text-zinc-300 flex items-center gap-1.5"
+                  >
+                    <SignOut size={14} weight="bold" />
+                    Logout
+                  </button>
+                </>
+              ) : (
                 <Link
-                  href="/portfolio"
-                  aria-label={user.username}
-                  title={user.username}
-                  className="shrink-0 rounded-full ring-2 ring-transparent transition-colors hover:ring-pink-500/40"
+                  href="/login"
+                  className="relative inline-flex items-center gap-1.5 px-5 py-2 overflow-hidden rounded-xl bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-500 font-display text-xs font-black uppercase tracking-widest text-white shadow-[0_0_15px_rgba(236,72,153,0.35)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_25px_rgba(6,182,212,0.5)] hover:brightness-110 active:scale-95 group/login"
                 >
-                  <Avatar src={user.avatarUrl} name={user.username} size="sm" />
+                  <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover/login:animate-[shimmer_1.5s_infinite]" />
+                  <SignIn size={14} weight="bold" />
+                  Login
                 </Link>
-                <button
-                  type="button"
-                  onClick={logout}
-                  aria-label="Logout"
-                  className={buttonClasses({ variant: "secondary", size: "sm" })}
+              )}
+            </div>
+
+            {/* Mobile Auth/Toggle (visible below lg) */}
+            <div className="flex lg:hidden items-center gap-2">
+              {loading ? (
+                <Spinner />
+              ) : user ? (
+                <NotificationBell />
+              ) : (
+                <Link
+                  href="/login"
+                  className="relative inline-flex items-center gap-1.5 px-4 py-1.5 overflow-hidden rounded-xl bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-500 font-display text-xs font-black uppercase tracking-widest text-white shadow-[0_0_12px_rgba(236,72,153,0.3)] transition-all duration-300 hover:scale-105 active:scale-95 group/login"
                 >
-                  <SignOut size={16} weight="bold" />
-                  Logout
-                </button>
-              </>
-            ) : (
-              <Link
-                href="/login"
-                className={buttonClasses({ variant: "primary", size: "sm" })}
-              >
-                <SignIn size={16} weight="bold" />
-                Login
-              </Link>
-            )}
+                  <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover/login:animate-[shimmer_1.5s_infinite]" />
+                  <SignIn size={13} weight="bold" />
+                  Login
+                </Link>
+              )}
+            </div>
           </div>
 
-          {/* Mobile cluster (below lg): guests get a Login button; signed-in users get bell + menu */}
-          <div className="ml-auto flex items-center gap-2 lg:hidden">
-            <ThemeToggle />
-            {loading ? (
-              <Spinner />
-            ) : user ? (
-              <>
-                <NotificationBell />
-                <button
-                  ref={triggerRef}
-                  type="button"
-                  onClick={() => setOpen(true)}
-                  aria-label="Open menu"
-                  aria-expanded={open}
-                  aria-controls="mobile-nav"
-                  className="grid h-9 w-9 place-items-center rounded-lg text-zinc-300 transition-colors hover:bg-zinc-800/60 hover:text-zinc-100"
-                >
-                  <List size={20} weight="bold" />
-                </button>
-              </>
-            ) : (
-              <Link
-                href="/login"
-                className={buttonClasses({ variant: "primary", size: "sm" })}
-              >
-                <SignIn size={16} weight="bold" />
-                Login
-              </Link>
-            )}
-          </div>
         </nav>
       </header>
 
@@ -332,14 +343,14 @@ export function Nav() {
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
               variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }}
             />
-            <motion.div
+             <motion.div
               ref={panelRef}
               id="mobile-nav"
               role="dialog"
               aria-modal="true"
               aria-label="Menu"
-              className="absolute right-0 top-0 flex h-full w-[82%] max-w-xs flex-col border-l border-white/10 bg-zinc-950 shadow-2xl"
-              variants={{ hidden: { x: "100%" }, show: { x: 0 } }}
+              className="absolute left-0 top-0 flex h-full w-[82%] max-w-xs flex-col border-r border-white/10 bg-zinc-950 shadow-2xl"
+              variants={{ hidden: { x: "-100%" }, show: { x: 0 } }}
               transition={spring}
             >
               <div className="flex h-16 shrink-0 items-center justify-between border-b border-white/5 px-4">

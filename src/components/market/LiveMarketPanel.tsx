@@ -107,7 +107,7 @@ function LiveMarketPanelBase({ className = "" }: { className?: string } = {}) {
             // Decorative scrolling marquee — hidden from assistive tech.
             aria-hidden="true"
             animate={{ y: ["0%", "-50%"] }}
-            transition={{ duration: 14, repeat: Infinity, ease: "linear" }}
+            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
           >
             <div className="divide-y divide-zinc-800/60">
               {loop.slice(0, rows.length).map((row, i) => (

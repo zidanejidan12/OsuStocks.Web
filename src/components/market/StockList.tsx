@@ -51,6 +51,101 @@ type Props = {
   onPageChange: (page: number) => void;
 };
 
+function StockRow({
+  stock,
+  animateRows,
+  index,
+}: {
+  stock: StockSummary;
+  animateRows: boolean;
+  index: number;
+}) {
+  const [prevPrice, setPrevPrice] = useState(stock.currentPrice);
+  const [flash, setFlash] = useState<"up" | "down" | null>(null);
+
+  useEffect(() => {
+    if (stock.currentPrice > prevPrice) {
+      setFlash("up");
+      const t = setTimeout(() => setFlash(null), 850);
+      setPrevPrice(stock.currentPrice);
+      return () => clearTimeout(t);
+    } else if (stock.currentPrice < prevPrice) {
+      setFlash("down");
+      const t = setTimeout(() => setFlash(null), 850);
+      setPrevPrice(stock.currentPrice);
+      return () => clearTimeout(t);
+    }
+  }, [stock.currentPrice, prevPrice]);
+
+  const flashClass =
+    flash === "up"
+      ? "bg-emerald-500/10"
+      : flash === "down"
+      ? "bg-rose-500/10"
+      : "hover:bg-zinc-900/40 hover:translate-x-1";
+
+  const priceColor =
+    flash === "up"
+      ? "text-emerald-400 font-bold"
+      : flash === "down"
+      ? "text-rose-400 font-bold"
+      : "text-zinc-100";
+
+  return (
+    <motion.tr
+      initial={animateRows ? { opacity: 0, y: 6 } : false}
+      animate={animateRows ? { opacity: 1, y: 0 } : undefined}
+      transition={
+        animateRows
+          ? { ...spring, delay: Math.min(index, 12) * 0.025 }
+          : undefined
+      }
+      className={`group transition-all duration-300 ${flashClass}`}
+    >
+      <td className="px-4 py-3.5">
+        <Link
+          href={`/stocks/${stock.stockId}`}
+          className="inline-flex items-center gap-2.5 font-medium text-zinc-100 transition-colors duration-300 group-hover:text-pink-400"
+        >
+          <div className="shrink-0 transition-transform duration-300 group-hover:scale-105">
+            <Avatar
+              src={stock.avatarUrl}
+              name={stock.playerName}
+              size="sm"
+            />
+          </div>
+          <span className="inline-flex items-center gap-1.5">
+            {stock.playerName}
+            {stock.countryCode && (
+              <Flag
+                countryCode={stock.countryCode}
+                className="h-3 shrink-0"
+              />
+            )}
+            <CaretRight
+              size={14}
+              weight="bold"
+              className="text-pink-400 opacity-0 -translate-x-1 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0"
+            />
+          </span>
+        </Link>
+      </td>
+      <td className={`px-4 py-3.5 text-right font-mono tabular-nums transition-colors duration-300 ${priceColor}`}>
+        <Money value={stock.currentPrice} />
+      </td>
+      <td className="px-4 py-3.5 text-right">
+        <PriceChange
+          value={stock.priceChange24h}
+          className="justify-end"
+        />
+      </td>
+      <td className="px-4 py-3.5 text-right font-mono tabular-nums text-zinc-400">
+        {formatNumber(stock.volume)}
+      </td>
+    </motion.tr>
+  );
+}
+
 export function StockList({
   stocks,
   loading,
@@ -211,58 +306,12 @@ export function StockList({
             </thead>
             <tbody className="divide-y divide-zinc-800/60">
               {stocks.map((stock, i) => (
-                <motion.tr
+                <StockRow
                   key={stock.stockId}
-                  initial={animateRows ? { opacity: 0, y: 6 } : false}
-                  animate={animateRows ? { opacity: 1, y: 0 } : undefined}
-                  transition={
-                    animateRows
-                      ? { ...spring, delay: Math.min(i, 12) * 0.025 }
-                      : undefined
-                  }
-                  className="group transition-all duration-300 hover:bg-zinc-900/40 hover:translate-x-1"
-                >
-                  <td className="px-4 py-3.5">
-                    <Link
-                      href={`/stocks/${stock.stockId}`}
-                      className="inline-flex items-center gap-2.5 font-medium text-zinc-100 transition-colors duration-300 group-hover:text-pink-400"
-                    >
-                      <div className="shrink-0 transition-transform duration-300 group-hover:scale-105">
-                        <Avatar
-                          src={stock.avatarUrl}
-                          name={stock.playerName}
-                          size="sm"
-                        />
-                      </div>
-                      <span className="inline-flex items-center gap-1.5">
-                        {stock.playerName}
-                        {stock.countryCode && (
-                          <Flag
-                            countryCode={stock.countryCode}
-                            className="h-3 shrink-0"
-                          />
-                        )}
-                        <CaretRight
-                          size={14}
-                          weight="bold"
-                          className="text-pink-400 opacity-0 -translate-x-1 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0"
-                        />
-                      </span>
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3.5 text-right font-mono tabular-nums text-zinc-100">
-                    <Money value={stock.currentPrice} />
-                  </td>
-                  <td className="px-4 py-3.5 text-right">
-                    <PriceChange
-                      value={stock.priceChange24h}
-                      className="justify-end"
-                    />
-                  </td>
-                  <td className="px-4 py-3.5 text-right font-mono tabular-nums text-zinc-400">
-                    {formatNumber(stock.volume)}
-                  </td>
-                </motion.tr>
+                  stock={stock}
+                  animateRows={animateRows}
+                  index={i}
+                />
               ))}
             </tbody>
           </table>

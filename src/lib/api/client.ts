@@ -71,12 +71,16 @@ function getMockResponse(path: string, init?: RequestInit): any {
   const mockStocks = [
     { stockId: "mrekk", playerName: "mrekk", avatarUrl: "https://a.ppy.sh/7562902", currentPrice: 2450.5, volume: 45000, priceChange24h: 15.2, globalRank: 1, currentPp: 27150, countryCode: "AU" },
     { stockId: "akolibed", playerName: "Akolibed", avatarUrl: "https://a.ppy.sh/9284234", currentPrice: 2310.0, volume: 38000, priceChange24h: 8.7, globalRank: 2, currentPp: 26890, countryCode: "LV" },
-    { stockId: "whitecat", playerName: "WhiteCat", avatarUrl: "https://a.ppy.sh/4505068", currentPrice: 1540.2, volume: 21000, priceChange24h: 2.1, globalRank: 10, currentPp: 21500, countryCode: "DE" },
-    { stockId: "shigetora", playerName: "Cookiezi", avatarUrl: "https://a.ppy.sh/124128", currentPrice: 1982.0, volume: 15000, priceChange24h: -1.5, globalRank: 120, currentPp: 16540, countryCode: "KR" },
-    { stockId: "vaxei", playerName: "Vaxei", avatarUrl: "https://a.ppy.sh/4787150", currentPrice: 1420.0, volume: 12000, priceChange24h: 0.0, globalRank: 45, currentPp: 19800, countryCode: "US" },
     { stockId: "lifeline", playerName: "lifeline", avatarUrl: "https://a.ppy.sh/11367222", currentPrice: 1870.0, volume: 29000, priceChange24h: 4.5, globalRank: 3, currentPp: 24500, countryCode: "ID" },
-    { stockId: "chicony", playerName: "Chicony", avatarUrl: "https://a.ppy.sh/11235678", currentPrice: 850.0, volume: 8000, priceChange24h: -8.4, globalRank: 8, currentPp: 22800, countryCode: "RU" },
+    { stockId: "shigetora", playerName: "Cookiezi", avatarUrl: "https://a.ppy.sh/124128", currentPrice: 1982.0, volume: 15000, priceChange24h: -1.5, globalRank: 120, currentPp: 16540, countryCode: "KR" },
+    { stockId: "whitecat", playerName: "WhiteCat", avatarUrl: "https://a.ppy.sh/4505068", currentPrice: 1540.2, volume: 21000, priceChange24h: 2.1, globalRank: 10, currentPp: 21500, countryCode: "DE" },
+    { stockId: "vaxei", playerName: "Vaxei", avatarUrl: "https://a.ppy.sh/4787150", currentPrice: 1420.0, volume: 12000, priceChange24h: 0.0, globalRank: 45, currentPp: 19800, countryCode: "US" },
     { stockId: "rafis", playerName: "Rafis", avatarUrl: "https://a.ppy.sh/4946922", currentPrice: 1100.5, volume: 14000, priceChange24h: 1.2, globalRank: 32, currentPp: 20100, countryCode: "PL" },
+    { stockId: "chicony", playerName: "Chicony", avatarUrl: "https://a.ppy.sh/11235678", currentPrice: 850.0, volume: 8000, priceChange24h: -8.4, globalRank: 8, currentPp: 22800, countryCode: "RU" },
+    { stockId: "gasha", playerName: "Gasha", avatarUrl: "https://a.ppy.sh/9243724", currentPrice: 950.0, volume: 6200, priceChange24h: -5.2, globalRank: 78, currentPp: 18200, countryCode: "RU" },
+    { stockId: "kalanluu", playerName: "Kalanluu", avatarUrl: "https://a.ppy.sh/11421465", currentPrice: 720.0, volume: 5100, priceChange24h: 11.4, globalRank: 95, currentPp: 17400, countryCode: "FI" },
+    { stockId: "ryuk", playerName: "Ryuk", avatarUrl: "https://a.ppy.sh/6560131", currentPrice: 1040.0, volume: 11200, priceChange24h: 3.8, globalRank: 67, currentPp: 18900, countryCode: "CA" },
+    { stockId: "nishinoflower", playerName: "Nishino Flower", avatarUrl: "https://a.ppy.sh/6560131", currentPrice: 620.0, volume: 3400, priceChange24h: -2.3, globalRank: 154, currentPp: 15900, countryCode: "JP" }
   ];
 
   if (cleanPath === "/health") {
@@ -242,17 +246,17 @@ function getMockResponse(path: string, init?: RequestInit): any {
   }
 
   if (cleanPath === "/market/trending") {
-    const list = mockStocks.map(s => ({
+    const list = mockStocks.map((s, idx) => ({
       ...s,
-      tradeCount: 15 + Math.floor(Math.random() * 40),
+      tradeCount: 15 + Math.floor(Math.random() * 40) + (12 - idx) * 3,
       netQuantity: Math.floor((Math.random() - 0.4) * 200)
     }));
     return {
-      mostBought: [list[0], list[1]],
-      mostSold: [list[6]],
-      fastestRising: [list[0], list[5]],
-      fastestFalling: [list[6]],
-      highestVolume: [list[0], list[1], list[2]]
+      mostBought: [...list].sort((a, b) => b.tradeCount - a.tradeCount).slice(0, 10),
+      mostSold: [...list].sort((a, b) => a.tradeCount - b.tradeCount).slice(0, 10),
+      fastestRising: [...list].sort((a, b) => b.priceChange24h - a.priceChange24h).slice(0, 10),
+      fastestFalling: [...list].sort((a, b) => a.priceChange24h - b.priceChange24h).slice(0, 10),
+      highestVolume: [...list].sort((a, b) => b.volume - a.volume).slice(0, 10)
     };
   }
 
@@ -398,11 +402,13 @@ function getMockResponse(path: string, init?: RequestInit): any {
         { rank: 5, userId: "user_5", username: "WhiteCat", avatarUrl: "https://a.ppy.sh/4505068", countryCode: "DE", equippedTitle: "Aim God", value: 540200, periodChange: 2.1 },
         { rank: 6, userId: "user_6", username: "Vaxei", avatarUrl: "https://a.ppy.sh/4787150", countryCode: "US", equippedTitle: "Tournament Monster", value: 420000, periodChange: 0.0 },
         { rank: 7, userId: "user_7", username: "Rafis", avatarUrl: "https://a.ppy.sh/4946922", countryCode: "PL", equippedTitle: "Grandpa", value: 310500, periodChange: 1.2 },
-        { rank: 8, userId: "user_8", username: "Chicony", avatarUrl: "https://a.ppy.sh/11235678", countryCode: "RU", equippedTitle: "Top 10", value: 250000, periodChange: -8.4 }
+        { rank: 8, userId: "user_8", username: "Chicony", avatarUrl: "https://a.ppy.sh/11235678", countryCode: "RU", equippedTitle: "Top 10", value: 250000, periodChange: -8.4 },
+        { rank: 9, userId: "user_9", username: "Ryuk", avatarUrl: "https://a.ppy.sh/6560131", countryCode: "CA", equippedTitle: "Old School Legend", value: 198000, periodChange: 3.8 },
+        { rank: 10, userId: "user_10", username: "Kalanluu", avatarUrl: "https://a.ppy.sh/11421465", countryCode: "FI", equippedTitle: "Double Tap Master", value: 145000, periodChange: 11.4 }
       ],
       page: 1,
       pageSize: 25,
-      totalCount: 8
+      totalCount: 10
     };
   }
 

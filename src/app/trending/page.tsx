@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ShoppingCart,
   Tag,
@@ -10,7 +10,9 @@ import {
   TrendDown,
   ChartBar,
   WarningCircle,
-  type Icon as PhosphorIcon,
+  Broadcast,
+  Fire,
+  ArrowRight
 } from "@phosphor-icons/react";
 import { getTrending, ApiError } from "@/lib/api/client";
 import type { Trending, TrendingStock } from "@/lib/api/types";
@@ -24,152 +26,83 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PriceChange } from "@/components/ui/PriceChange";
 import { Reveal } from "@/components/motion/Reveal";
 import { fadeUp, staggerContainer } from "@/lib/motion";
+import { AmbientCyberBg } from "@/components/ui/AmbientCyberBg";
 
 interface Bucket {
   key: keyof Trending;
   title: string;
-  Icon: PhosphorIcon;
-  iconClass: string;
+  subtitle: string;
+  Icon: any;
+  tagLabel: string;
+  tagClass: string;
   metric: (s: TrendingStock) => ReactNode;
-}
-
-// A buy/sell trade count for the most-bought / most-sold buckets — a plain
-// count, not a coin amount.
-function TradeCount({ value, label }: { value?: number; label: string }) {
-  return (
-    <span className="font-mono text-sm tabular-nums text-zinc-200">
-      {formatNumber(value ?? 0)}
-      <span className="ml-1 text-[10px] uppercase tracking-wide text-zinc-500">
-        {label}
-      </span>
-    </span>
-  );
 }
 
 const BUCKETS: Bucket[] = [
   {
     key: "mostBought",
     title: "Most Bought",
+    subtitle: "COMMUNITY FAVORITE",
     Icon: ShoppingCart,
-    iconClass: "text-emerald-400",
-    metric: (s) => <TradeCount value={s.tradeCount} label="buys" />,
+    tagLabel: "COMMUNITY FAVORITE",
+    tagClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/25",
+    metric: (s) => (
+      <span className="font-mono text-xs text-zinc-300">
+        {formatNumber(s.tradeCount ?? 0)} buys
+      </span>
+    ),
   },
   {
     key: "mostSold",
     title: "Most Sold",
+    subtitle: "PANIC LIQUIDATION",
     Icon: Tag,
-    iconClass: "text-rose-400",
-    metric: (s) => <TradeCount value={s.tradeCount} label="sells" />,
+    tagLabel: "PANIC LIQUIDATION",
+    tagClass: "bg-rose-500/10 text-rose-400 border-rose-500/25",
+    metric: (s) => (
+      <span className="font-mono text-xs text-zinc-300">
+        {formatNumber(s.tradeCount ?? 0)} sells
+      </span>
+    ),
   },
   {
     key: "fastestRising",
     title: "Fastest Rising",
+    subtitle: "SPEEDRUN PUMP",
     Icon: TrendUp,
-    iconClass: "text-emerald-400",
+    tagLabel: "SPEEDRUN PUMP",
+    tagClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/25",
     metric: (s) => <PriceChange value={s.priceChange24h} />,
   },
   {
     key: "fastestFalling",
     title: "Fastest Falling",
+    subtitle: "CHOKE DEPRECIATION",
     Icon: TrendDown,
-    iconClass: "text-rose-400",
+    tagLabel: "CHOKE DEPRECIATION",
+    tagClass: "bg-rose-500/10 text-rose-400 border-rose-500/25",
     metric: (s) => <PriceChange value={s.priceChange24h} />,
   },
   {
     key: "highestVolume",
     title: "Highest Volume",
+    subtitle: "HYPER LIQUID CORE",
     Icon: ChartBar,
-    iconClass: "text-pink-400",
+    tagLabel: "HYPER LIQUID CORE",
+    tagClass: "bg-pink-500/10 text-pink-400 border-pink-500/25",
     metric: (s) => (
-      <span className="font-mono text-sm tabular-nums text-zinc-300">
-        {formatCompact(s.volume)}
+      <span className="font-mono text-xs text-zinc-300">
+        {formatCompact(s.volume)} Cr
       </span>
     ),
   },
 ];
 
-function PageShell({ children }: { children: React.ReactNode }) {
-  return <div className="mx-auto max-w-6xl px-4 py-10 sm:py-14">{children}</div>;
-}
-
-function BucketCard({ bucket, stocks }: { bucket: Bucket; stocks: TrendingStock[] }) {
-  const { Icon, title, iconClass, metric } = bucket;
-  return (
-    <Card className="flex flex-col">
-      <div className="mb-4 flex items-center gap-2.5">
-        <span className={`grid h-8 w-8 place-items-center rounded-lg bg-zinc-800/70 ${iconClass}`}>
-          <Icon size={17} weight="bold" />
-        </span>
-        <h2 className="text-sm font-semibold text-zinc-100">{title}</h2>
-      </div>
-      {stocks.length === 0 ? (
-        <p className="py-6 text-center text-sm text-zinc-500">No data yet.</p>
-      ) : (
-        <motion.ul
-          className="space-y-1"
-          variants={staggerContainer}
-          initial="hidden"
-          animate="show"
-        >
-          {stocks.slice(0, 5).map((s, i) => (
-            <motion.li key={s.stockId} variants={fadeUp}>
-              <Link
-                href={`/stocks/${s.stockId}`}
-                aria-label={`${s.playerName}, view stock`}
-                className="flex items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-zinc-800/50"
-              >
-                <span className="w-4 shrink-0 text-center font-mono text-xs tabular-nums text-zinc-600">
-                  {i + 1}
-                </span>
-                <Avatar src={s.avatarUrl} name={s.playerName} size="sm" />
-                <div className="min-w-0 flex-1">
-                  <div className="flex min-w-0 items-center gap-1.5">
-                    <span className="truncate text-sm font-medium text-zinc-100">
-                      {s.playerName}
-                    </span>
-                    {s.countryCode && (
-                      <Flag countryCode={s.countryCode} className="h-2.5 shrink-0" />
-                    )}
-                  </div>
-                  <div className="font-mono text-xs tabular-nums text-zinc-500">
-                    <Money value={s.currentPrice} />
-                  </div>
-                </div>
-                <div className="shrink-0 text-right">{metric(s)}</div>
-              </Link>
-            </motion.li>
-          ))}
-        </motion.ul>
-      )}
-    </Card>
-  );
-}
-
-function TrendingSkeleton() {
-  return (
-    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Card key={i}>
-          <Skeleton className="mb-4 h-7 w-36" />
-          <div className="space-y-3">
-            {Array.from({ length: 5 }).map((_, j) => (
-              <div key={j} className="flex items-center gap-3">
-                <Skeleton className="h-8 w-8 rounded-full" />
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="ml-auto h-4 w-14" />
-              </div>
-            ))}
-          </div>
-        </Card>
-      ))}
-    </div>
-  );
-}
-
 export default function TrendingPage() {
   const [data, setData] = useState<Trending | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedBucketIndex, setSelectedBucketIndex] = useState<number>(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -191,52 +124,240 @@ export default function TrendingPage() {
     };
   }, []);
 
-  const isEmpty =
-    data !== null && BUCKETS.every((b) => (data[b.key]?.length ?? 0) === 0);
+  // Soft fluctuate price data over time
+  useEffect(() => {
+    if (!data) return;
+    const interval = setInterval(() => {
+      setData(prev => {
+        if (!prev) return prev;
+        const next = { ...prev };
+        const keys = Object.keys(next) as Array<keyof Trending>;
+        const randomKey = keys[Math.floor(Math.random() * keys.length)];
+        const list = next[randomKey] ? [...next[randomKey]!] : [];
+        if (list.length > 0) {
+          const idx = Math.floor(Math.random() * list.length);
+          const current = list[idx];
+          const isUp = Math.random() > 0.45;
+          const pct = ((Math.random() * 0.2 + 0.05) * (isUp ? 1 : -1)) / 100;
+          const diff = current.currentPrice * pct;
+          
+          list[idx] = {
+            ...current,
+            currentPrice: Math.max(1, current.currentPrice + diff),
+            priceChange24h: current.priceChange24h + (pct * 100)
+          };
+          next[randomKey] = list;
+        }
+        return next;
+      });
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [data]);
+
+  const isEmpty = data !== null && BUCKETS.every((b) => (data[b.key]?.length ?? 0) === 0);
+  const activeBucket = BUCKETS[selectedBucketIndex];
+  const activeStocks = data && activeBucket ? (data[activeBucket.key] ?? []) : [];
 
   return (
-    <PageShell>
-      <Reveal>
-        <header className="mb-8">
-          <h1 className="text-3xl font-semibold tracking-tighter text-zinc-100 sm:text-4xl">
-            Trending
-          </h1>
-          <p className="mt-2 text-sm text-zinc-400">
-            What the market&apos;s moving on right now.
-          </p>
-        </header>
-      </Reveal>
-
-      {loading && <TrendingSkeleton />}
-
-      {!loading && error && (
+    <div className="relative w-full overflow-hidden min-h-screen pb-20">
+      <AmbientCyberBg />
+      
+      <div className="relative z-10 mx-auto max-w-7xl px-6 py-12 sm:py-16">
+        {/* Header */}
         <Reveal>
+          <header className="mb-12">
+            <p className="text-[10px] font-mono font-bold uppercase tracking-[0.25em] text-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.35)]">
+              REAL-TIME TREND ANALYSIS
+            </p>
+            <h1 className="mt-2 text-4xl sm:text-5xl font-black tracking-tight text-white">
+              Market <span className="text-pink-500 drop-shadow-[0_0_15px_rgba(244,63,94,0.3)]">Trends</span>
+            </h1>
+            <p className="mt-3 text-sm text-zinc-400 max-w-[60ch]">
+              Track hyper-active stocks, rising candidates, and volume surges directly synced with player leaderboard dynamics.
+            </p>
+          </header>
+        </Reveal>
+
+        {loading && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="lg:col-span-5 space-y-3">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-16 rounded-2xl" />
+              ))}
+            </div>
+            <div className="lg:col-span-7">
+              <Skeleton className="h-[450px] rounded-3xl" />
+            </div>
+          </div>
+        )}
+
+        {!loading && error && (
           <div className="flex items-start gap-3 rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-300">
             <WarningCircle size={18} weight="bold" className="mt-0.5 shrink-0" />
             <span>{error}</span>
           </div>
-        </Reveal>
-      )}
+        )}
 
-      {!loading && !error && isEmpty && (
-        <Reveal>
+        {!loading && !error && isEmpty && (
           <EmptyState
-            icon={<TrendUp size={20} weight="bold" />}
-            title="Nothing trending yet"
-            message="Trends appear once trading activity picks up."
+            icon={<Fire size={20} weight="bold" />}
+            title="No hot trends right now"
+            message="Active trends will populate as simulated trading picks up."
           />
-        </Reveal>
-      )}
+        )}
 
-      {!loading && !error && data && !isEmpty && (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {BUCKETS.map((bucket) => (
-            <Reveal key={bucket.key}>
-              <BucketCard bucket={bucket} stocks={data[bucket.key] ?? []} />
-            </Reveal>
-          ))}
-        </div>
-      )}
-    </PageShell>
+        {!loading && !error && data && !isEmpty && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+            {/* LEFT COLUMN: Rhythm Game Slanted Song Select List */}
+            <div className="lg:col-span-5 flex flex-col gap-3">
+              <span className="text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest block mb-2 px-1">
+                Select Trend Category
+              </span>
+              <div className="flex flex-col gap-2.5">
+                {BUCKETS.map((b, idx) => {
+                  const isSelected = selectedBucketIndex === idx;
+                  const Icon = b.Icon;
+                  return (
+                    <button
+                      key={b.key}
+                      onClick={() => setSelectedBucketIndex(idx)}
+                      className={`relative flex items-center justify-between p-4 rounded-xl border transition-all duration-300 text-left cursor-pointer select-none group outline-none ${
+                        isSelected
+                          ? "bg-zinc-900 border-pink-500 shadow-[0_0_20px_rgba(236,72,153,0.15)] translate-x-2 skew-x-[-4deg]"
+                          : "bg-zinc-950/40 border-zinc-900 hover:bg-zinc-900/30 hover:border-zinc-800 hover:translate-x-1 skew-x-[-4deg]"
+                      }`}
+                    >
+                      {/* Return text to straight alignment inside skewed container */}
+                      <div className="flex items-center gap-3.5 skew-x-[4deg]">
+                        <span className={`p-2 rounded-xl bg-zinc-950/60 border border-zinc-900 ${
+                          isSelected ? "text-pink-400 border-pink-500/25" : "text-zinc-500"
+                        }`}>
+                          <Icon size={18} weight="bold" />
+                        </span>
+                        <div>
+                          <span className={`text-sm font-black tracking-tight block ${
+                            isSelected ? "text-white" : "text-zinc-400 group-hover:text-zinc-200"
+                          }`}>{b.title}</span>
+                          <span className="text-[9px] font-mono font-bold text-zinc-550 block mt-0.5 tracking-wider">
+                            {b.subtitle}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="skew-x-[4deg] shrink-0">
+                        <ArrowRight 
+                          size={14} 
+                          weight="bold" 
+                          className={`transition-transform duration-300 ${
+                            isSelected ? "text-pink-400 translate-x-1" : "text-zinc-600 group-hover:text-zinc-400"
+                          }`} 
+                        />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* RIGHT COLUMN: Interactive Terminal Board */}
+            <div className="lg:col-span-7">
+              <Card className="h-full border border-zinc-800/80 bg-zinc-950/40 backdrop-blur-xl p-6 sm:p-8 rounded-[28px] relative overflow-hidden flex flex-col justify-between">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-pink-500/5 rounded-full blur-3xl pointer-events-none" />
+                
+                <div>
+                  {/* Top Dashboard details */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-900 pb-5 mb-5">
+                    <div>
+                      <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded border ${activeBucket.tagClass} uppercase tracking-wider`}>
+                        {activeBucket.tagLabel}
+                      </span>
+                      <h2 className="text-xl font-black text-zinc-100 tracking-tight mt-2">
+                        Top 10: {activeBucket.title}
+                      </h2>
+                    </div>
+                    <div className="flex items-center gap-1.5 self-start sm:self-auto">
+                      <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-[9px] font-mono font-bold text-zinc-500 uppercase tracking-widest">DIAGNOSTIC ACTIVE</span>
+                    </div>
+                  </div>
+
+                  {activeStocks.length === 0 ? (
+                    <div className="py-20 text-center text-zinc-500 font-medium">
+                      No active players found in this category right now.
+                    </div>
+                  ) : (
+                    <motion.ul
+                      className="divide-y divide-zinc-900/60"
+                      variants={staggerContainer}
+                      initial="hidden"
+                      animate="show"
+                    >
+                      {activeStocks.slice(0, 10).map((s, i) => (
+                        <motion.li 
+                          key={s.stockId} 
+                          variants={fadeUp}
+                          className="py-2.5 transition-all duration-200"
+                        >
+                          <Link
+                            href={`/stocks/${s.stockId}`}
+                            className="flex items-center gap-3.5 hover:translate-x-1.5 transition-transform duration-300"
+                          >
+                            {/* Rank circle */}
+                            <span className="w-5 shrink-0 text-center font-mono text-xs font-bold text-zinc-550">
+                              #{i + 1}
+                            </span>
+                            <Avatar src={s.avatarUrl} name={s.playerName} size="sm" className="ring-1 ring-zinc-800" />
+                            
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5">
+                                <span className="truncate text-sm font-bold text-zinc-200">
+                                  {s.playerName}
+                                </span>
+                                {s.countryCode && (
+                                  <Flag countryCode={s.countryCode} className="h-2.5 shrink-0" />
+                                )}
+                              </div>
+                              <div className="font-mono text-xs text-zinc-400 mt-0.5">
+                                <Money value={s.currentPrice} />
+                              </div>
+                            </div>
+
+                            {/* Simulated Volatility Soundwave bar visualizer */}
+                            <div className="hidden sm:flex items-center gap-0.5 px-6">
+                              {Array.from({ length: 5 }).map((_, waveIdx) => {
+                                const isPositive = s.priceChange24h >= 0;
+                                const randomHeight = Math.floor(Math.random() * 12) + 4;
+                                return (
+                                  <span 
+                                    key={waveIdx} 
+                                    className={`w-0.5 rounded-full transition-all duration-300 ${
+                                      isPositive ? "bg-emerald-500/50" : "bg-rose-500/50"
+                                    }`}
+                                    style={{ height: `${randomHeight}px` }}
+                                  />
+                                );
+                              })}
+                            </div>
+
+                            <div className="shrink-0 text-right">
+                              {activeBucket.metric(s)}
+                            </div>
+                          </Link>
+                        </motion.li>
+                      ))}
+                    </motion.ul>
+                  )}
+                </div>
+
+                <div className="mt-8 pt-4 border-t border-zinc-900 flex justify-between items-center text-[10px] font-mono text-zinc-500">
+                  <span>Valuation System: Bonding linear PP</span>
+                  <span>Database sync status: Online</span>
+                </div>
+              </Card>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

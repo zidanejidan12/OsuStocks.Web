@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, WarningCircle, Lock, Wallet as WalletIcon, TrendUp, Users, Trophy, Question, ChartLineUp, Plus, Minus, CaretDown, Coins } from "@phosphor-icons/react";
+import { ArrowRight, WarningCircle, Lock, Wallet as WalletIcon, TrendUp, Users, Trophy, Question, ChartLineUp, Plus, Minus, CaretDown, Coins, TerminalWindow, Shield, Broadcast, Flame, X } from "@phosphor-icons/react";
 import type { MarketOverview, Paged, StockSort, StockSummary, Wallet } from "@/lib/api/types";
 import { getMarketOverview, getStocks, getWallet, ApiError } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/auth-context";
@@ -19,7 +19,7 @@ import { StockList } from "@/components/market/StockList";
 import { LiveMarketPanel } from "@/components/market/LiveMarketPanel";
 import { Coin } from "@/components/ui/Coin";
 import { Avatar } from "@/components/ui/Avatar";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 
 const PAGE_SIZE = 25;
 
@@ -255,17 +255,11 @@ function LiveActivityPopup() {
 
   if (!activeEvent) return null;
 
-  const glowColorClass = activeEvent.type === "alert"
-    ? "from-pink-500/5 via-transparent to-transparent"
+  const borderToneClass = activeEvent.type === "alert"
+    ? "border-pink-500/30 shadow-[0_15px_40px_rgba(236,72,153,0.18)]"
     : activeEvent.type === "trade"
-    ? "from-cyan-500/5 via-transparent to-transparent"
-    : "from-amber-500/5 via-transparent to-transparent";
-
-  const glowShadow = activeEvent.type === "alert"
-    ? "shadow-[0_8px_30px_rgba(236,72,153,0.06)]"
-    : activeEvent.type === "trade"
-    ? "shadow-[0_8px_30px_rgba(6,182,212,0.06)]"
-    : "shadow-[0_8px_30px_rgba(245,158,11,0.06)]";
+    ? "border-cyan-500/30 shadow-[0_15px_40px_rgba(6,182,212,0.18)]"
+    : "border-amber-500/30 shadow-[0_15px_40px_rgba(245,158,11,0.18)]";
 
   const badgeClass = activeEvent.type === "alert"
     ? "bg-pink-500/10 text-pink-400 border border-pink-500/20"
@@ -275,7 +269,7 @@ function LiveActivityPopup() {
 
   return (
     <div
-      className={`fixed bottom-6 right-6 z-50 max-w-sm w-[calc(100vw-3rem)] rounded-[20px] p-5 pb-6 border border-zinc-800/80 bg-gradient-to-br ${glowColorClass} bg-zinc-950/95 backdrop-blur-2xl ${glowShadow} transition-all duration-500 ease-out transform ${
+      className={`fixed bottom-6 right-6 z-50 max-w-sm w-[calc(100vw-3rem)] rounded-2xl p-4.5 pb-5.5 border bg-zinc-950/90 backdrop-blur-xl ${borderToneClass} transition-all duration-500 ease-out transform ${
         visible ? "translate-y-0 opacity-100 scale-100" : "translate-y-4 opacity-0 scale-95 pointer-events-none"
       }`}
     >
@@ -283,7 +277,13 @@ function LiveActivityPopup() {
         {/* Dynamic Avatar Container */}
         <div className="relative shrink-0 select-none">
           {activeEvent.avatarUrl && imgErrorId !== activeEvent.id ? (
-            <div className="relative h-11 w-11 overflow-hidden rounded-[14px] ring-2 ring-zinc-900/50 bg-zinc-900 border border-zinc-800/50 flex items-center justify-center">
+            <div className={`relative h-11 w-11 overflow-hidden rounded-xl ring-2 ring-zinc-950 bg-zinc-900 border ${
+              activeEvent.type === "alert"
+                ? "border-pink-500/30"
+                : activeEvent.type === "trade"
+                ? "border-cyan-500/30"
+                : "border-amber-500/30"
+            } flex items-center justify-center`}>
               <img 
                 src={activeEvent.avatarUrl} 
                 alt="" 
@@ -294,7 +294,7 @@ function LiveActivityPopup() {
               />
             </div>
           ) : (
-            <div className="grid h-11 w-11 place-items-center rounded-[14px] bg-gradient-to-br from-zinc-800 to-zinc-900 text-xs font-bold border border-zinc-700/30 ring-2 ring-zinc-900/50 text-zinc-300">
+            <div className="grid h-11 w-11 place-items-center rounded-xl bg-zinc-900 text-xs font-bold border border-zinc-800 ring-2 ring-zinc-950 text-zinc-300">
               {activeEvent.playerName ? activeEvent.playerName.substring(0, 2).toUpperCase() : activeEvent.icon}
             </div>
           )}
@@ -316,7 +316,7 @@ function LiveActivityPopup() {
             </span>
           </div>
           
-          <div className="mt-2 text-sm leading-snug">
+          <div className="mt-2 text-sm leading-snug font-sans">
             {activeEvent.title}
           </div>
           
@@ -349,6 +349,14 @@ function LiveActivityPopup() {
 // Premium Background Layer
 function OsuAuroraBackground() {
   const [particles, setParticles] = useState<any[]>([]);
+  const { scrollY } = useScroll();
+
+  // Different translation mappings for layers of backgrounds
+  const y1 = useTransform(scrollY, [0, 1500], [0, -180]);
+  const y2 = useTransform(scrollY, [0, 1500], [0, 100]);
+  const y3 = useTransform(scrollY, [0, 1500], [0, -70]);
+  const yApproach = useTransform(scrollY, [0, 1500], [0, -120]);
+  const opacityGrid = useTransform(scrollY, [0, 800], [1, 0.25]);
 
   useEffect(() => {
     const list = Array.from({ length: 30 }).map((_, i) => {
@@ -370,21 +378,21 @@ function OsuAuroraBackground() {
   }, []);
 
   return (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 animate-hue-shift">
+    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 animate-hue-shift aurora-container">
       {/* Moving Aurora Mesh Gradients */}
-      <div className="absolute -top-[10%] -right-[10%] w-[60%] h-[60%] rounded-full bg-pink-500/10 blur-[120px] animate-aurora-1" />
-      <div className="absolute -bottom-[10%] -left-[10%] w-[60%] h-[60%] rounded-full bg-cyan-500/10 blur-[120px] animate-aurora-2" />
-      <div className="absolute top-[20%] right-[10%] w-[50%] h-[50%] rounded-full bg-purple-600/10 blur-[130px] animate-aurora-3" />
+      <motion.div style={{ y: y1 }} className="absolute -top-[10%] -right-[10%] w-[60%] h-[60%] rounded-full bg-pink-500/10 blur-[120px] animate-aurora-1 aurora-bg-1" />
+      <motion.div style={{ y: y2 }} className="absolute -bottom-[10%] -left-[10%] w-[60%] h-[60%] rounded-full bg-cyan-500/10 blur-[120px] animate-aurora-2 aurora-bg-2" />
+      <motion.div style={{ y: y3 }} className="absolute top-[20%] right-[10%] w-[50%] h-[50%] rounded-full bg-purple-600/10 blur-[130px] animate-aurora-3 aurora-bg-3" />
 
       {/* Grid overlay */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
+      <motion.div style={{ opacity: opacityGrid }} className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] aurora-grid" />
 
       {/* osu! Approach Circles */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] z-0">
-        <div className="absolute top-1/2 left-1/2 w-full h-full rounded-full border border-pink-500/15 shadow-[0_0_15px_rgba(236,72,153,0.08)] animate-approach-1" />
-        <div className="absolute top-1/2 left-1/2 w-full h-full rounded-full border border-cyan-500/10 shadow-[0_0_15px_rgba(6,182,212,0.08)] animate-approach-2" />
-        <div className="absolute top-1/2 left-1/2 w-full h-full rounded-full border border-pink-500/5 shadow-[0_0_15px_rgba(236,72,153,0.04)] animate-approach-3" />
-      </div>
+      <motion.div style={{ y: yApproach }} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] z-0">
+        <div className="absolute top-1/2 left-1/2 w-full h-full rounded-full border border-pink-500/15 shadow-[0_0_15px_rgba(236,72,153,0.08)] animate-approach-1 approach-circle" />
+        <div className="absolute top-1/2 left-1/2 w-full h-full rounded-full border border-cyan-500/10 shadow-[0_0_15px_rgba(6,182,212,0.08)] animate-approach-2 approach-circle" />
+        <div className="absolute top-1/2 left-1/2 w-full h-full rounded-full border border-pink-500/5 shadow-[0_0_15px_rgba(236,72,153,0.04)] animate-approach-3 approach-circle" />
+      </motion.div>
 
       {/* falling snowflakes (diamonds) & floating blurred orbs */}
       {particles.map((p) => {
@@ -445,7 +453,6 @@ function OsuAuroraBackground() {
   );
 }
 
-// Hero Landing Module
 function Hero({ onLogin }: { onLogin: () => void }) {
   return (
     <section className="relative w-full min-h-[75vh] flex items-center pt-12 pb-16 sm:pt-16 sm:pb-20">
@@ -514,33 +521,85 @@ function WelcomeBanner({ show, onDismiss }: { show: boolean; onDismiss: () => vo
   return (
     <AnimatePresence>
       {show && (
-        <motion.div
-          initial={{ y: -100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: -100, opacity: 0 }}
-          transition={{ type: "spring", stiffness: 100, damping: 18 }}
-          className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100vw-2rem)] max-w-xl p-[1.5px] rounded-2xl bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 shadow-[0_20px_50px_rgba(236,72,153,0.2)]"
-        >
-          <div className="bg-zinc-950/95 backdrop-blur-3xl rounded-[15px] p-5 flex items-start gap-4">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-pink-500/10 text-pink-400 border border-pink-500/20">
-              <ChartLineUp size={22} weight="bold" />
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          {/* Overlay backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onDismiss}
+            className="absolute inset-0 bg-black/80 backdrop-blur-md"
+          />
+
+          {/* Modal Container */}
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+            transition={{ type: "spring", duration: 0.5 }}
+            className="relative w-full max-w-3xl overflow-hidden rounded-[28px] border border-white/10 bg-zinc-950/90 shadow-[0_25px_60px_rgba(0,0,0,0.8)] backdrop-blur-3xl flex flex-col md:flex-row min-h-[400px]"
+          >
+            {/* Image panel */}
+            <div className="relative md:w-[42%] w-full h-[180px] md:h-auto overflow-hidden bg-zinc-900 border-b md:border-b-0 md:border-r border-white/5 shrink-0">
+              <img
+                src="/osu_anime_mascot.png"
+                alt="OsuStocks Mascot"
+                className="w-full h-full object-cover object-center scale-105 hover:scale-100 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-transparent to-zinc-950/80 pointer-events-none" />
             </div>
-            <div className="flex-1 min-w-0">
-              <h4 className="text-sm font-black text-zinc-100 flex items-center gap-1.5">
-                Welcome to OsuStocks! 📈
-              </h4>
-              <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
-                You have entered the ultimate virtual fantasy stock exchange. Buy & sell shares of your favorite osu! players, track live rank stats, and build your portfolio!
-              </p>
+
+            {/* Content panel */}
+            <div className="flex-1 p-6 sm:p-8 flex flex-col justify-between relative z-10">
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-pink-500/10 text-pink-400 border border-pink-500/20 uppercase tracking-widest">
+                    VIRTUAL EXCHANGE
+                  </span>
+                  <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                </div>
+                <h3 className="text-3xl font-display font-black tracking-tight text-white uppercase leading-tight">
+                  Welcome to <span className="text-pink-500">OsuStocks</span>
+                </h3>
+                <p className="mt-3 text-xs sm:text-sm text-zinc-400 leading-relaxed">
+                  OsuStocks is a fan-made fantasy trading simulator linking real-world performance points to a virtual stock index. Build your portfolio with shares tied directly to live competitive stats.
+                </p>
+
+                {/* Bullets */}
+                <div className="mt-6 space-y-3.5">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded bg-pink-500/10 text-[10px] font-bold text-pink-400 border border-pink-500/20">
+                      1
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-semibold text-zinc-200">Track Top osu! Players</h4>
+                      <p className="text-[11px] text-zinc-500 mt-0.5">Value updates dynamically based on live PP and performance metrics.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded bg-cyan-500/10 text-[10px] font-bold text-cyan-400 border border-cyan-500/20">
+                      2
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-semibold text-zinc-200">Build Your Portfolio</h4>
+                      <p className="text-[11px] text-zinc-500 mt-0.5">Buy low, sell high, and accumulate simulated coin credits.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-8 flex items-center justify-end">
+                <button
+                  onClick={onDismiss}
+                  className="w-full sm:w-auto relative group overflow-hidden px-6 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-cyan-500 text-white font-display font-black uppercase tracking-wider text-xs shadow-[0_0_20px_rgba(236,72,153,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.4)] transition-all duration-300"
+                >
+                  <span className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  Let's Trade
+                </button>
+              </div>
             </div>
-            <button
-              onClick={onDismiss}
-              className="shrink-0 text-xs font-bold text-zinc-100 hover:text-white bg-pink-500 hover:bg-pink-600 border border-pink-600/50 shadow-md hover:shadow-lg px-3.5 py-2 rounded-xl transition-all duration-200"
-            >
-              Let's Trade
-            </button>
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
       )}
     </AnimatePresence>
   );
@@ -553,18 +612,14 @@ export default function Home() {
 
   useEffect(() => {
     if (!user) {
-      const hasSeen = localStorage.getItem("osustocks_welcome_seen");
-      if (!hasSeen) {
-        const timer = setTimeout(() => {
-          setShowWelcome(true);
-        }, 1500);
-        return () => clearTimeout(timer);
-      }
+      const timer = setTimeout(() => {
+        setShowWelcome(true);
+      }, 1500);
+      return () => clearTimeout(timer);
     }
   }, [user]);
 
   const handleDismissWelcome = () => {
-    localStorage.setItem("osustocks_welcome_seen", "true");
     setShowWelcome(false);
   };
 
@@ -686,6 +741,77 @@ export default function Home() {
     };
   }, [user, page, sort, country, debouncedSearch]);
 
+  // Periodic wiggling for live stocks list on the landing page
+  useEffect(() => {
+    if (stocks.length === 0) return;
+    
+    const interval = setInterval(() => {
+      setStocks(prev => {
+        if (prev.length === 0) return prev;
+        const next = [...prev];
+        // Pick 1-3 random stocks to update
+        const count = Math.min(next.length, Math.floor(Math.random() * 3) + 1);
+        for (let i = 0; i < count; i++) {
+          const idx = Math.floor(Math.random() * next.length);
+          const current = next[idx];
+          if (!current) continue;
+          const isUp = Math.random() > 0.45;
+          const pct = ((Math.random() * 0.25 + 0.05) * (isUp ? 1 : -1)) / 100;
+          const diff = current.currentPrice * pct;
+          
+          next[idx] = {
+            ...current,
+            currentPrice: Math.max(1, current.currentPrice + diff),
+            priceChange24h: current.priceChange24h + (pct * 100)
+          };
+        }
+        return next;
+      });
+    }, 2550);
+
+    return () => clearInterval(interval);
+  }, [stocks]);
+
+  // Periodic wiggling for live market overview on the landing page
+  useEffect(() => {
+    if (!overview) return;
+    
+    const interval = setInterval(() => {
+      setOverview(prev => {
+        if (!prev) return prev;
+        
+        // update volume slightly
+        const volumeDiff = Math.floor(Math.random() * 45) + 5;
+        const next = {
+          ...prev,
+          totalVolume: prev.totalVolume + volumeDiff
+        };
+        
+        // wiggle topGainer and topLoser prices
+        if (next.topGainer) {
+          const changePct = (Math.random() * 0.2 + 0.05) / 100;
+          next.topGainer = {
+            ...next.topGainer,
+            currentPrice: next.topGainer.currentPrice + (next.topGainer.currentPrice * changePct),
+            priceChange24h: next.topGainer.priceChange24h + (changePct * 100)
+          };
+        }
+        if (next.topLoser) {
+          const changePct = -(Math.random() * 0.15 + 0.05) / 100;
+          next.topLoser = {
+            ...next.topLoser,
+            currentPrice: Math.max(1, next.topLoser.currentPrice + (next.topLoser.currentPrice * changePct)),
+            priceChange24h: next.topLoser.priceChange24h + (changePct * 100)
+          };
+        }
+        
+        return next;
+      });
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [overview]);
+
   if (authLoading) {
     return <DashboardSkeleton />;
   }
@@ -697,8 +823,6 @@ export default function Home() {
         <WelcomeBanner show={showWelcome} onDismiss={handleDismissWelcome} />
         <LiveActivityPopup />
         <Hero onLogin={() => login("/")} />
-        <StatsSection />
-        <HowItWorksSection />
         <InteractiveChartSection />
         <FaqSection />
       </div>
@@ -829,27 +953,65 @@ export default function Home() {
 // ==========================================
 
 function StatsSection() {
+  const [volume, setVolume] = useState(15842912);
+  const [traders, setTraders] = useState(2481);
+  const [stocksCount, setStocksCount] = useState(15102);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVolume(prev => prev + Math.floor(Math.random() * 85) + 15);
+      if (Math.random() > 0.85) {
+        setTraders(prev => prev + (Math.random() > 0.45 ? 1 : -1));
+      }
+      if (Math.random() > 0.97) {
+        setStocksCount(prev => prev + 1);
+      }
+    }, 1500);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const stats = [
-    { label: "Total Volume Traded", value: "15.8M+ Cr", icon: <Coins size={22} className="text-pink-400" /> },
-    { label: "Active Managers", value: "2,400+ Traders", icon: <Users size={22} className="text-cyan-400" /> },
-    { label: "Top Players Tracked", value: "15,000+ Stocks", icon: <Trophy size={22} className="text-amber-400" /> },
+    { 
+      label: "TOTAL SIMULATED VOLUME", 
+      value: `${volume.toLocaleString()} Cr`, 
+      icon: <Coins size={24} className="text-pink-400" />,
+      hoverClass: "hover:border-pink-500/40 hover:shadow-[0_0_30px_rgba(236,72,153,0.15)]",
+      iconBg: "bg-pink-500/[0.05] border-pink-500/20"
+    },
+    { 
+      label: "ACTIVE MANAGERS", 
+      value: `${traders.toLocaleString()} Traders`, 
+      icon: <Users size={24} className="text-cyan-400" />,
+      hoverClass: "hover:border-cyan-500/40 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)]",
+      iconBg: "bg-cyan-500/[0.05] border-cyan-500/20"
+    },
+    { 
+      label: "TRACKED PROFILE ASSETS", 
+      value: `${stocksCount.toLocaleString()} Stocks`, 
+      icon: <Trophy size={24} className="text-amber-400" />,
+      hoverClass: "hover:border-amber-500/40 hover:shadow-[0_0_30px_rgba(245,158,11,0.15)]",
+      iconBg: "bg-amber-500/[0.05] border-amber-500/20"
+    },
   ];
 
   return (
-    <section className="relative z-10 mx-auto w-full max-w-6xl px-4 py-8">
+    <section className="relative z-10 mx-auto w-full max-w-6xl px-6 py-10">
       <Reveal>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
           {stats.map((s, idx) => (
             <div 
               key={idx}
-              className="glass relative overflow-hidden rounded-2xl p-5 flex items-center gap-4 transition-all duration-300"
+              className={`glass relative overflow-hidden rounded-2xl p-6 flex items-center gap-5 transition-all duration-300 border border-zinc-800/80 ${s.hoverClass}`}
             >
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/[0.02] border border-white/5">
+              <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border ${s.iconBg}`}>
                 {s.icon}
               </div>
               <div>
-                <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider block">{s.label}</span>
-                <span className="text-lg font-bold text-zinc-100 tracking-tight block mt-0.5">{s.value}</span>
+                <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block">{s.label}</span>
+                <span className="text-xl font-mono font-bold text-zinc-100 tracking-tight block mt-0.5">
+                  {s.value}
+                </span>
               </div>
             </div>
           ))}
@@ -859,81 +1021,75 @@ function StatsSection() {
   );
 }
 
-function HowItWorksSection() {
-  const [clickedCard, setClickedCard] = useState<number | null>(null);
+function LiveTerminalConsole() {
+  const [logs, setLogs] = useState<string[]>([
+    "> [SYSTEM] Initializing virtual stock broker terminal...",
+    "> [SYSTEM] Connected to virtual performance index datastream.",
+    "> [API_SYNC] Loaded 15,102 active player profiles.",
+    "> [MARKET] Simulated liquidity pools online. Ready for orders.",
+  ]);
 
-  const steps = [
-    {
-      title: "1. Buy & Sell Shares",
-      desc: "Buy shares of your favorite osu! players using virtual coins. Monitor the market, hold your position, and sell when the player performs well.",
-      color: "from-pink-500/40 via-pink-500/10 to-transparent",
-      accent: "text-pink-400"
-    },
-    {
-      title: "2. Live PP & Rank Sync",
-      desc: "Player prices are directly linked to their official osu! performance. If they rank up, set a new top play, or gain PP, their share value skyrockets.",
-      color: "from-cyan-500/40 via-cyan-500/10 to-transparent",
-      accent: "text-cyan-400"
-    },
-    {
-      title: "3. Build Your Portfolio",
-      desc: "Diversify your assets. Compete with other managers globally on the leaderboard, climb the broker ladder, and show off your trading instincts.",
-      color: "from-amber-500/40 via-amber-500/10 to-transparent",
-      accent: "text-amber-400"
-    }
-  ];
+  useEffect(() => {
+    const mockActivities = [
+      "Order filled: Bought 45 shares of mrekk at 2,450.5 Cr",
+      "Order filled: Sold 12 shares of Akolibed at 2,310.2 Cr",
+      "mrekk set a new top play! Price index project +4.5%",
+      "System sync completed: 15,102 profiles updated from ranking tables",
+      "Order filled: Bought 150 shares of Lifeline at 1,850.2 Cr",
+      "Akolibed set a new top play! Price index project +8.2%",
+      "Market cap calculated: Total valuation 35.8M credits",
+      "Network status: Synced & Active 24/7. Latency: 4ms",
+    ];
+
+    const interval = setInterval(() => {
+      const randomActivity = mockActivities[Math.floor(Math.random() * mockActivities.length)];
+      const timestamp = new Date().toLocaleTimeString();
+      setLogs(prev => {
+        const next = [...prev, `> [${timestamp}] ${randomActivity}`];
+        if (next.length > 5) {
+          next.shift();
+        }
+        return next;
+      });
+    }, 2800);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <section className="relative z-10 mx-auto w-full max-w-6xl px-4 py-16 sm:py-24">
+    <section className="relative z-10 mx-auto w-full max-w-6xl px-6 py-8">
       <Reveal>
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <h2 className="text-3xl font-black tracking-tight text-zinc-100 sm:text-4xl">
-            How does <span className="text-pink-400">OsuStocks</span> work?
-          </h2>
-          <p className="mt-4 text-zinc-400 text-sm sm:text-base leading-relaxed">
-            A fully simulated, data-driven fantasy stock exchange based entirely on actual osu! community performance.
-          </p>
+        <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/70 p-5 font-mono text-[11px] sm:text-xs text-zinc-400 shadow-inner relative overflow-hidden">
+          <div className="absolute top-2 right-4 flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
+            <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">LIVE DATASTREAM</span>
+          </div>
+          <div className="flex items-center gap-2 mb-3 border-b border-zinc-900 pb-2 text-zinc-500 text-[10px] uppercase font-bold tracking-wider">
+            <TerminalWindow size={14} className="text-pink-500" />
+            <span>Virtual Broker Transaction Console</span>
+          </div>
+          <div className="flex flex-col gap-1.5 min-h-[100px] justify-end">
+            {logs.map((log, idx) => {
+              const isHighlight = log.includes("mrekk") || log.includes("Akolibed") || log.includes("top play");
+              return (
+                <div 
+                  key={idx} 
+                  className={`leading-relaxed transition-all duration-300 ${
+                    isHighlight ? "text-pink-400 font-bold drop-shadow-[0_0_8px_rgba(236,72,153,0.2)]" : "text-zinc-400"
+                  }`}
+                >
+                  {log}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </Reveal>
-
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        {steps.map((step, idx) => {
-          const isClicked = clickedCard === idx;
-          const isPink = idx === 0;
-          const isCyan = idx === 1;
-          const isAmber = idx === 2;
-
-          const glowStyles = isClicked
-            ? isPink
-              ? "border-pink-400 shadow-[0_0_25px_rgba(236,72,153,0.45),0_0_50px_rgba(236,72,153,0.2)] bg-pink-500/[0.06]"
-              : isCyan
-              ? "border-cyan-400 shadow-[0_0_25px_rgba(6,182,212,0.45),0_0_50px_rgba(6,182,212,0.2)] bg-cyan-500/[0.06]"
-              : "border-amber-400 shadow-[0_0_25px_rgba(245,158,11,0.45),0_0_50px_rgba(245,158,11,0.2)] bg-amber-500/[0.06]"
-            : isPink
-            ? "hover:border-pink-500/60 hover:shadow-[0_0_20px_rgba(236,72,153,0.25)] hover:bg-pink-500/[0.03]"
-            : isCyan
-            ? "hover:border-cyan-500/60 hover:shadow-[0_0_20px_rgba(6,182,212,0.25)] hover:bg-cyan-500/[0.03]"
-            : "hover:border-amber-500/60 hover:shadow-[0_0_20px_rgba(245,158,11,0.25)] hover:bg-amber-500/[0.03]";
-
-          return (
-            <Reveal key={idx} delay={idx * 0.05}>
-              <div 
-                onClick={() => setClickedCard(isClicked ? null : idx)}
-                className={`glass relative group h-full overflow-hidden rounded-3xl p-8 transition-all duration-500 cursor-pointer border ${glowStyles}`}
-              >
-                {/* Soft corner color glow */}
-                <div className={"absolute top-0 right-0 w-24 h-24 bg-gradient-to-br " + step.color + " rounded-bl-full opacity-40 pointer-events-none group-hover:opacity-75 transition-all duration-300"} />
-                
-                <h3 className={"text-xl font-bold tracking-tight " + step.accent}>{step.title}</h3>
-                <p className="mt-4 text-sm leading-relaxed text-zinc-400">{step.desc}</p>
-              </div>
-            </Reveal>
-          );
-        })}
-      </div>
     </section>
   );
 }
+
+
 
 const MOCK_PREVIEW_PLAYERS = [
   {
@@ -991,44 +1147,51 @@ function InteractiveChartSection() {
 
   const handleBuy = () => {
     setSharesOwned(prev => prev + 1);
-    triggerAlert("+1 Share of " + player.name + " bought successfully!", "buy");
+    triggerAlert(`Successfully bought 1 share of ${player.name}!`, "buy");
   };
 
   const handleSell = () => {
     if (sharesOwned <= 0) {
-      triggerAlert("You don't own any shares of this player to sell!", "sell");
+      triggerAlert("You don't own any shares to sell!", "sell");
       return;
     }
     setSharesOwned(prev => prev - 1);
-    triggerAlert("-1 Share of " + player.name + " sold successfully!", "sell");
-  };
-
-  const getSvgY = (pct: number, points: { x: number; y: number }[]) => {
-    const targetX = pct * 300;
-    for (let i = 0; i < points.length - 1; i++) {
-      const p1 = points[i];
-      const p2 = points[i + 1];
-      if (targetX >= p1.x && targetX <= p2.x) {
-        const ratio = (targetX - p1.x) / (p2.x - p1.x);
-        return p1.y + ratio * (p2.y - p1.y);
-      }
-    }
-    return points[points.length - 1].y;
+    triggerAlert(`Successfully sold 1 share of ${player.name}!`, "sell");
   };
 
   const handleMouseMove = (e: React.MouseEvent<SVGSVGElement, MouseEvent>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
-    const pct = Math.max(0, Math.min(1, x / rect.width));
-    const priceVal = player.price - (1 - pct) * 200 + Math.sin(pct * 10) * 45;
+    const y = e.clientY - rect.top;
+
+    // Convert mouse x to SVG grid coordinate (width 300)
+    const svgX = (x / rect.width) * 300;
     
-    const svgX = pct * 300;
-    const svgY = getSvgY(pct, player.points);
-    
+    // Find closest data point
+    let closestPoint = player.points[0];
+    let minDiff = Math.abs(player.points[0].x - svgX);
+    for (let i = 1; i < player.points.length; i++) {
+      const diff = Math.abs(player.points[i].x - svgX);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closestPoint = player.points[i];
+      }
+    }
+
+    // Map SVG y back to visual percentage for tooltip positioning
+    const svgY = closestPoint.y;
+    const visualY = (svgY / 150) * rect.height;
+    const visualX = (closestPoint.x / 300) * rect.width;
+
+    // Calculate price based on height
+    const minPrice = player.price * 0.9;
+    const maxPrice = player.price * 1.1;
+    const priceVal = maxPrice - ((svgY - 45) / 100) * (maxPrice - minPrice);
+
     setTooltipPos({
-      x,
-      y: (svgY / 150) * rect.height,
-      svgX,
+      x: visualX,
+      y: visualY,
+      svgX: closestPoint.x,
       svgY,
       visible: true,
       price: priceVal.toFixed(1)
@@ -1040,39 +1203,44 @@ function InteractiveChartSection() {
   };
 
   return (
-    <section className="relative z-10 mx-auto w-full max-w-6xl px-4 py-16">
+    <section className="relative z-10 mx-auto w-full max-w-6xl px-6 py-16">
       <Reveal>
-        <div className="text-center max-w-2xl mx-auto mb-14">
-          <h2 className="text-3xl font-black tracking-tight text-zinc-100 sm:text-4xl">
-            Experience the <span className="text-cyan-400">Trade Simulator</span>
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <p className="text-[10px] font-bold text-cyan-400 uppercase tracking-[0.25em] mb-2">SANDBOX STAGE</p>
+          <h2 className="text-3xl sm:text-4xl font-display font-black tracking-tight text-white uppercase">
+            Order Book <span className="text-cyan-400">Simulator</span>
           </h2>
-          <p className="mt-4 text-zinc-400 text-sm sm:text-base leading-relaxed">
-            Test the interface in real time below. Switch players, view price histories, and simulate buy/sell transactions.
+          <p className="mt-3 text-zinc-400 text-sm leading-relaxed">
+            Interact with the trade console below. Swap active player profiles, view live pricing charts, and simulate transactions.
           </p>
         </div>
       </Reveal>
 
       <Reveal delay={0.05}>
-        <div className="glow-card relative overflow-hidden rounded-[28px] p-6 sm:p-8">
-          <div className="absolute top-0 right-0 w-48 h-48 rounded-full blur-3xl opacity-30 pointer-events-none transition-all duration-500" style={{ backgroundColor: colorHex }} />
+        <div className="relative overflow-hidden rounded-[24px] border border-zinc-800/80 bg-zinc-950/70 p-6 sm:p-8 backdrop-blur-md">
+          {/* Subtle accent corner glow */}
+          <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-[100px] opacity-15 pointer-events-none transition-all duration-700" style={{ backgroundColor: colorHex }} />
           
+          {/* Notification Alert */}
           <div className={"absolute top-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-semibold border backdrop-blur-md shadow-lg transition-all duration-300 " + (
             alertMsg ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4 pointer-events-none"
           ) + " " + (
             alertType === "buy" 
-              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 shadow-emerald-500/5" 
-              : "bg-red-500/10 border-red-500/20 text-red-400 shadow-red-500/5"
+              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" 
+              : "bg-red-500/10 border-red-500/20 text-red-400"
           )}>
+            <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: alertType === "buy" ? "#10b981" : "#ef4444" }} />
             {alertMsg}
           </div>
 
           <div className="relative z-10 flex flex-col lg:flex-row gap-8 items-stretch">
-            <div className="flex flex-col justify-between w-full lg:w-1/3">
+            {/* Left Column: Player Selector & Order Placement */}
+            <div className="flex flex-col justify-between w-full lg:w-1/3 shrink-0">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 block mb-4">
-                  Tradable Players
+                  Active Listings
                 </span>
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2.5">
                   {MOCK_PREVIEW_PLAYERS.map((p, idx) => (
                     <button
                       key={p.id}
@@ -1080,68 +1248,70 @@ function InteractiveChartSection() {
                         setActiveIndex(idx);
                         setSharesOwned(0);
                       }}
-                      className={"flex items-center gap-3.5 px-4 py-3 rounded-2xl border text-left transition-all duration-300 " + (
+                      className={"flex items-center gap-3.5 px-4.5 py-4 rounded-xl border text-left transition-all duration-200 " + (
                         activeIndex === idx
-                          ? "bg-zinc-900/40 border-zinc-800/80 shadow-[0_0_20px_rgba(255,255,255,0.02)]"
-                          : "bg-transparent border-transparent hover:bg-zinc-900/20"
+                          ? "bg-zinc-900/60 border-zinc-800 shadow-md"
+                          : "bg-transparent border-transparent hover:bg-zinc-900/30"
                       )}
                     >
                       <Avatar src={p.avatar} name={p.name} size="sm" />
-                      <div className="flex-1 min-w-0">
-                        <span className="text-sm font-bold text-zinc-200 block">{p.name}</span>
-                        <span className="text-xs text-zinc-500 block">{p.rank}</span>
+                      <div className="flex-1 min-w-0 ml-1">
+                        <span className="text-sm font-bold text-zinc-100 block leading-tight">{p.name}</span>
+                        <span className="text-[11px] text-zinc-500 block mt-0.5">{p.rank}</span>
                       </div>
                       <div className="text-right">
                         <span className="text-sm font-mono font-bold text-zinc-300 block">{p.price.toFixed(1)}</span>
-                        <span className={"text-xs font-semibold block " + (p.change.startsWith("+") ? "text-emerald-400" : "text-rose-400")}>{p.change}</span>
+                        <span className={"text-[11px] font-bold block mt-0.5 " + (p.change.startsWith("+") ? "text-emerald-400" : "text-rose-400")}>{p.change}</span>
                       </div>
                     </button>
                   ))}
                 </div>
               </div>
 
-              <div className="mt-8 pt-6 border-t border-zinc-800/40">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-xs text-zinc-400 font-medium">Your Virtual Holdings</span>
-                  <span className="text-xs font-mono font-bold text-zinc-100 flex items-center gap-1">
+              {/* Order Controls */}
+              <div className="mt-8 pt-6 border-t border-zinc-900">
+                <div className="flex items-center justify-between mb-4.5">
+                  <span className="text-xs text-zinc-400 font-semibold uppercase tracking-wider">Estimated Holdings</span>
+                  <span className="text-xs font-mono font-bold text-zinc-100 bg-zinc-900 px-3 py-1 rounded-lg border border-zinc-800">
                     {sharesOwned} Shares
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={handleBuy}
-                    className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-pink-500 hover:bg-pink-600 text-white font-semibold text-sm border border-pink-600/50 transition-all duration-300 shadow-[0_2px_10px_rgba(236,72,153,0.2)] hover:shadow-[0_4px_16px_rgba(236,72,153,0.3)] active:scale-[0.98]"
+                    className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-display font-black tracking-wider uppercase text-xs transition-all duration-300 shadow-[0_4px_20px_rgba(16,185,129,0.2)] active:scale-[0.98]"
                   >
-                    <Plus size={14} weight="bold" />
+                    <Plus size={13} weight="bold" />
                     Buy Share
                   </button>
                   <button
                     onClick={handleSell}
-                    className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-zinc-900/60 hover:bg-zinc-900 text-zinc-400 hover:text-zinc-200 font-semibold text-sm border border-zinc-800/80 transition-all duration-300 active:scale-[0.98]"
+                    className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-rose-500 hover:bg-rose-600 text-zinc-950 font-display font-black tracking-wider uppercase text-xs transition-all duration-300 shadow-[0_4px_20px_rgba(244,63,94,0.2)] active:scale-[0.98]"
                   >
-                    <Minus size={14} weight="bold" />
+                    <Minus size={13} weight="bold" />
                     Sell Share
                   </button>
                 </div>
               </div>
             </div>
 
-            <div className="flex-1 flex flex-col justify-between rounded-[20px] bg-zinc-950/20 border border-zinc-900/60 p-5 sm:p-6 min-h-[300px]">
+            {/* Right Column: Chart details */}
+            <div className="flex-1 flex flex-col justify-between rounded-2xl bg-zinc-900/30 border border-zinc-900 p-5 sm:p-6 min-h-[350px]">
               <div>
-                <div className="flex justify-between items-start mb-2">
+                <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className="text-xl font-black text-zinc-100 leading-none">{player.name}</h3>
-                    <p className="text-xs text-zinc-500 mt-1">{player.rank}</p>
+                    <h3 className="text-lg font-black text-white leading-none uppercase font-display tracking-tight">{player.name}</h3>
+                    <p className="text-xs text-zinc-500 mt-1">{player.rank} • Live Index</p>
                   </div>
                   <div className="text-right">
-                    <span className="text-2xl font-mono font-black text-zinc-100">{player.price.toFixed(1)} Cr</span>
-                    <span className={"text-xs font-bold block mt-1 " + (player.change.startsWith("+") ? "text-emerald-400" : "text-rose-400")}>
+                    <span className="text-xl font-mono font-black text-white">{player.price.toFixed(1)} Cr</span>
+                    <span className={"text-[11px] font-bold block mt-1 " + (player.change.startsWith("+") ? "text-emerald-400" : "text-rose-400")}>
                       {player.change} (24h)
                     </span>
                   </div>
                 </div>
 
-                <div className="mt-4 grid grid-cols-3 gap-4 border-t border-zinc-900/60 pt-4">
+                <div className="grid grid-cols-3 gap-4 border-t border-zinc-900 pt-4">
                   <div>
                     <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider block">Market Cap</span>
                     <span className="text-sm font-semibold text-zinc-300 block mt-0.5">
@@ -1150,20 +1320,21 @@ function InteractiveChartSection() {
                   </div>
                   <div>
                     <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider block">24h High</span>
-                    <span className="text-sm font-semibold text-emerald-500 block mt-0.5">
+                    <span className="text-sm font-semibold text-emerald-400 block mt-0.5">
                       {(player.price * 1.045).toFixed(1)} Cr
                     </span>
                   </div>
                   <div>
                     <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider block">24h Low</span>
-                    <span className="text-sm font-semibold text-rose-500 block mt-0.5">
+                    <span className="text-sm font-semibold text-rose-400 block mt-0.5">
                       {(player.price * 0.942).toFixed(1)} Cr
                     </span>
                   </div>
                 </div>
               </div>
 
-              <div className="relative flex-1 flex items-end h-[160px] sm:h-[200px] mt-6 select-none">
+              {/* Chart Grid Lines and Path */}
+              <div className="relative flex-1 flex items-end h-[160px] sm:h-[200px] mt-6 select-none border border-zinc-900 bg-zinc-950/20 rounded-xl overflow-hidden p-2">
                 <svg
                   className="w-full h-full cursor-crosshair overflow-visible"
                   viewBox="0 0 300 150"
@@ -1173,10 +1344,16 @@ function InteractiveChartSection() {
                 >
                   <defs>
                     <linearGradient id={"grad-" + player.id} x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={colorHex} stopOpacity="0.18" />
+                      <stop offset="0%" stopColor={colorHex} stopOpacity="0.15" />
                       <stop offset="100%" stopColor={colorHex} stopOpacity="0" />
                     </linearGradient>
                   </defs>
+
+                  {/* Horizontal Trading Grid Lines */}
+                  <line x1="0" y1="30" x2="300" y2="30" stroke="rgba(255,255,255,0.03)" strokeDasharray="3 3" />
+                  <line x1="0" y1="60" x2="300" y2="60" stroke="rgba(255,255,255,0.03)" strokeDasharray="3 3" />
+                  <line x1="0" y1="90" x2="300" y2="90" stroke="rgba(255,255,255,0.03)" strokeDasharray="3 3" />
+                  <line x1="0" y1="120" x2="300" y2="120" stroke="rgba(255,255,255,0.03)" strokeDasharray="3 3" />
 
                   <path
                     d={player.chartPath + " L 300 150 L 0 150 Z"}
@@ -1188,9 +1365,9 @@ function InteractiveChartSection() {
                     d={player.chartPath}
                     fill="none"
                     stroke={colorHex}
-                    strokeWidth="2.5"
+                    strokeWidth="2"
                     className="transition-all duration-500 ease-out"
-                    style={{ filter: "drop-shadow(0 0 6px " + colorHex + "80)" }}
+                    style={{ filter: "drop-shadow(0 0 4px " + colorHex + "60)" }}
                   />
 
                   {tooltipPos.visible && (
@@ -1200,20 +1377,20 @@ function InteractiveChartSection() {
                         y1="0"
                         x2={tooltipPos.svgX}
                         y2="150"
-                        stroke="rgba(255,255,255,0.08)"
-                        strokeDasharray="4 4"
-                        strokeWidth="1.2"
+                        stroke="rgba(255,255,255,0.1)"
+                        strokeDasharray="3 3"
+                        strokeWidth="1"
                         className="pointer-events-none"
                       />
                       <circle
                         cx={tooltipPos.svgX}
                         cy={tooltipPos.svgY}
-                        r="5"
+                        r="4"
                         fill={colorHex}
                         stroke="#fff"
-                        strokeWidth="2"
+                        strokeWidth="1.5"
                         className="pointer-events-none"
-                        style={{ filter: "drop-shadow(0 0 6px " + colorHex + ")" }}
+                        style={{ filter: "drop-shadow(0 0 4px " + colorHex + ")" }}
                       />
                     </>
                   )}
@@ -1221,10 +1398,10 @@ function InteractiveChartSection() {
 
                 {tooltipPos.visible && (
                   <div
-                    className="absolute bg-zinc-950/85 backdrop-blur-md border border-zinc-800/80 text-[11px] font-mono font-bold text-zinc-100 px-3 py-1.5 rounded-xl shadow-lg pointer-events-none transform -translate-x-1/2 -translate-y-full"
+                    className="absolute bg-zinc-950/90 border border-zinc-800 text-[10px] font-mono font-bold text-zinc-100 px-2.5 py-1 rounded shadow-md pointer-events-none transform -translate-x-1/2 -translate-y-full"
                     style={{
                       left: tooltipPos.x + "px",
-                      top: (tooltipPos.y - 12) + "px"
+                      top: (tooltipPos.y - 8) + "px"
                     }}
                   >
                     {tooltipPos.price} Cr
@@ -1243,7 +1420,7 @@ function FaqSection() {
   const faqs = [
     {
       q: "Is this real money or real investing?",
-      a: "No! OsuStocks is 100% virtual and free to play. The coins, shares, and portfolio values are exclusively for fun and virtual competition. You cannot buy or withdraw coins for real-world money, and there is no gambling involved."
+      a: "Absolutely not. OsuStocks is 100% virtual and free to play. The coins, shares, and portfolio values are exclusively for fun and virtual competition. You cannot buy or withdraw coins for real-world money, and there is no gambling involved."
     },
     {
       q: "How are player share prices calculated?",
@@ -1260,11 +1437,12 @@ function FaqSection() {
   ];
 
   return (
-    <section className="relative z-10 mx-auto w-full max-w-3xl px-4 py-16 sm:py-24">
+    <section className="relative z-10 mx-auto w-full max-w-3xl px-6 py-16 sm:py-24">
       <Reveal>
         <div className="text-center mb-14">
-          <h2 className="text-3xl font-black tracking-tight text-zinc-100 sm:text-4xl">
-            Frequently Asked <span className="text-amber-400">Questions</span>
+          <p className="text-[10px] font-bold text-amber-500 uppercase tracking-[0.25em] mb-2">FAQ KNOWLEDGE</p>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-zinc-100">
+            Frequently Asked <span className="text-amber-400 drop-shadow-[0_0_12px_rgba(245,158,11,0.3)]">Questions</span>
           </h2>
         </div>
       </Reveal>
@@ -1284,19 +1462,19 @@ function FaqItem({ q, a }: { q: string; a: string }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className={"glass overflow-hidden rounded-2xl transition-all duration-300 " + (
+    <div className={"glass overflow-hidden rounded-[20px] transition-all duration-350 border border-zinc-800/80 " + (
       isOpen 
-        ? "border-pink-500/20 bg-zinc-950/40 shadow-[0_4px_20px_rgba(236,72,153,0.04)]" 
+        ? "border-pink-500/30 bg-zinc-950/40 shadow-[0_4px_25px_rgba(236,72,153,0.06)]" 
         : "hover:border-zinc-700/50"
     )}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative flex w-full items-center justify-between px-5 py-4 text-left font-semibold text-sm sm:text-base text-zinc-200 transition-colors hover:text-zinc-100"
+        className="relative flex w-full items-center justify-between px-6 py-4.5 text-left font-bold text-sm sm:text-base text-zinc-200 transition-colors hover:text-zinc-100"
       >
         {isOpen && (
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-r bg-pink-500 animate-pulse" />
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 rounded-r bg-pink-500 shadow-[0_0_8px_rgba(236,72,153,0.8)]" />
         )}
-        <span className={isOpen ? "pl-3 transition-all duration-300" : "pl-0 transition-all duration-300"}>{q}</span>
+        <span className={isOpen ? "pl-4 transition-all duration-300" : "pl-0 transition-all duration-300"}>{q}</span>
         <CaretDown 
           size={16} 
           weight="bold" 
@@ -1313,8 +1491,8 @@ function FaqItem({ q, a }: { q: string; a: string }) {
             transition={{ duration: 0.25, ease: "easeInOut" }}
             className="overflow-hidden border-t border-zinc-900/60"
           >
-            <div className="p-5 pt-4 pl-8">
-              <p className="text-xs sm:text-sm leading-relaxed text-zinc-400">{a}</p>
+            <div className="p-6 pt-4 pl-10">
+              <p className="text-xs sm:text-sm leading-relaxed text-zinc-400 font-medium">{a}</p>
             </div>
           </motion.div>
         )}

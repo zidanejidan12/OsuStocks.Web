@@ -1,77 +1,119 @@
+"use client";
+
 import Link from "next/link";
 import { SponsorCredit } from "@/components/SponsorCredit";
-
-const API_REPO = "https://github.com/zidanejidan12/OsuStocks.API";
+import { DiscordLogo, ShieldCheck, GameController, ChatTeardropText, PlugsConnected, ArrowUp } from "@phosphor-icons/react";
 
 export function Footer() {
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
-    <footer className="relative z-10 mt-28 border-t border-zinc-900/60 bg-zinc-950/15 backdrop-blur-xl">
-      {/* Top glowing ambient line */}
-      <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-pink-500/20 to-transparent" />
-      <div className="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-12 sm:flex-row sm:items-start sm:justify-between">
-        <div className="max-w-sm">
-          <div className="text-lg font-black tracking-tight text-white transition-transform duration-300 hover:scale-102">
-            <span className="text-pink-500 drop-shadow-[0_0_10px_rgba(244,63,94,0.3)]">Osu</span>Stocks
+    <footer className="relative z-10 mt-32 border-t border-zinc-900/80 bg-zinc-950/40 backdrop-blur-xl">
+      <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-pink-500/30 to-transparent shadow-[0_-2px_10px_rgba(236,72,153,0.15)]" />
+      
+      <div className="mx-auto max-w-7xl px-8 py-20 lg:py-24">
+        <div className="grid gap-12 lg:grid-cols-3 sm:grid-cols-2 lg:gap-16">
+          
+          <div className="flex flex-col gap-6">
+            <div className="text-2xl lg:text-3xl font-black tracking-tight text-white transition-all duration-300 hover:scale-102">
+              <span className="text-pink-500 drop-shadow-[0_0_15px_rgba(244,63,94,0.4)]">Osu</span>Stocks
+            </div>
+            <p className="text-sm lg:text-base leading-relaxed text-zinc-450 font-medium">
+              The premier fantasy stock market simulation game for the osu! community. Predict performances, manage simulated portfolios, and compete with traders worldwide.
+            </p>
+            <div className="mt-2 flex items-center gap-3">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-400">
+                Server Synced & Live 24/7
+              </span>
+            </div>
           </div>
-          <p className="mt-4 text-sm leading-relaxed text-zinc-500 font-medium">
-            A fan-made virtual simulation game. All coins, prices, and holdings are completely virtual — they
-            have no real-world value and can never be exchanged for money. Not
-            affiliated with osu! or ppy Pty Ltd.
-          </p>
+
+          <nav aria-label="Quick Navigation Links" className="flex flex-col gap-4 text-sm lg:text-base">
+            <span className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.25em] text-zinc-500 mb-1">
+              <GameController size={14} className="text-pink-500" />
+              Navigation
+            </span>
+            <Link
+              href="/"
+              className="text-zinc-400 transition-all duration-200 hover:text-pink-400 hover:translate-x-1.5 font-medium"
+            >
+              Market Center
+            </Link>
+            <Link
+              href="/trending"
+              className="text-zinc-400 transition-all duration-200 hover:text-pink-400 hover:translate-x-1.5 font-medium"
+            >
+              Trending Players
+            </Link>
+            <Link
+              href="/leaderboard"
+              className="text-zinc-400 transition-all duration-200 hover:text-pink-400 hover:translate-x-1.5 font-medium"
+            >
+              Trader Rankings
+            </Link>
+            <Link
+              href="/about"
+              className="text-zinc-400 transition-all duration-200 hover:text-pink-400 hover:translate-x-1.5 font-medium"
+            >
+              About Platform
+            </Link>
+          </nav>
+
+          <nav aria-label="Support Resources" className="flex flex-col gap-4 text-sm lg:text-base">
+            <span className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.25em] text-zinc-500 mb-1">
+              <ShieldCheck size={14} className="text-cyan-400" />
+              Legal & Support
+            </span>
+            <Link
+              href="/terms"
+              className="text-zinc-400 transition-all duration-200 hover:text-pink-400 hover:translate-x-1.5 font-medium"
+            >
+              Terms of Service
+            </Link>
+            <Link
+              href="/privacy"
+              className="text-zinc-400 transition-all duration-200 hover:text-pink-400 hover:translate-x-1.5 font-medium"
+            >
+              Privacy Policy
+            </Link>
+            <Link
+              href="/about"
+              className="text-zinc-400 transition-all duration-200 hover:text-pink-400 hover:translate-x-1.5 font-medium"
+            >
+              Platform FAQ
+            </Link>
+            <span className="text-[11px] lg:text-xs text-zinc-600 font-medium leading-relaxed block">
+              OsuStocks is a fantasy simulation game and has no real-world monetary affiliation.
+            </span>
+          </nav>
         </div>
 
-        <nav aria-label="Game" className="flex flex-col gap-3 text-sm">
-          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-600">
-            Game
-          </span>
-          <Link
-            href="/about"
-            className="text-zinc-400 transition-all duration-200 hover:text-pink-400 hover:translate-x-1"
-          >
-            About
-          </Link>
-          <Link
-            href="/patch-notes"
-            className="text-zinc-400 transition-all duration-200 hover:text-pink-400 hover:translate-x-1"
-          >
-            Patch Notes
-          </Link>
-        </nav>
-
-        <nav aria-label="Legal" className="flex flex-col gap-3 text-sm">
-          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-600">
-            Legal
-          </span>
-          <Link
-            href="/terms"
-            className="text-zinc-400 transition-all duration-200 hover:text-pink-400 hover:translate-x-1"
-          >
-            Terms of Use
-          </Link>
-          <Link
-            href="/privacy"
-            className="text-zinc-400 transition-all duration-200 hover:text-pink-400 hover:translate-x-1"
-          >
-            Privacy Policy
-          </Link>
-          <a
-            href={API_REPO}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-zinc-400 transition-all duration-200 hover:text-pink-400 hover:translate-x-1"
-          >
-            API source
-          </a>
-        </nav>
-      </div>
-
-      <div className="border-t border-white/5">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-6 text-xs text-zinc-600 sm:flex-row sm:items-center sm:justify-between">
-          <p className="font-medium">
-            OsuStocks &middot; virtual entertainment only &mdash; no real money,
-            no payouts, not gambling.
-          </p>
-          <SponsorCredit className="text-xs text-zinc-500 font-semibold" />
+        <div className="mt-16 pt-10 border-t border-zinc-900/60 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="text-center md:text-left">
+            <p className="text-xs lg:text-sm text-zinc-500 font-medium leading-relaxed">
+              &copy; {new Date().getFullYear()} OsuStocks &bull; Fantasy Virtual Gaming System. All holdings are completely virtual.
+            </p>
+            <p className="text-[11px] lg:text-xs text-zinc-600 font-medium mt-1">
+              This platform is not official, fan-made, and is not associated with osu! or ppy Pty Ltd.
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 rounded-2xl bg-zinc-950/60 border border-zinc-900 px-5 py-3 hover:border-pink-500/25 transition-all duration-350 shadow-md">
+              <SponsorCredit className="text-xs font-bold text-zinc-350" />
+            </div>
+            
+            <button
+              onClick={scrollToTop}
+              aria-label="Scroll back to top"
+              className="grid h-10 w-10 place-items-center rounded-2xl bg-zinc-900 border border-zinc-800 text-zinc-400 transition-all duration-300 hover:border-pink-500/40 hover:text-pink-400 hover:-translate-y-1 shadow-md"
+            >
+              <ArrowUp size={16} weight="bold" />
+            </button>
+          </div>
         </div>
       </div>
     </footer>

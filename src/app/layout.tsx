@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Rajdhani, Outfit } from "next/font/google";
 import "./globals.css";
 import { MotionProvider } from "@/components/MotionProvider";
 import { AuthProvider } from "@/lib/auth/auth-context";
@@ -17,6 +17,17 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+const rajdhani = Rajdhani({
+  variable: "--font-rajdhani",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+});
+
+const outfit = Outfit({
+  variable: "--font-outfit",
   subsets: ["latin"],
 });
 
@@ -116,7 +127,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${rajdhani.variable} ${outfit.variable} antialiased`}
     >
       <body className="flex min-h-screen flex-col bg-zinc-950 font-sans text-zinc-100">
         <a

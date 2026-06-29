@@ -59,16 +59,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const login = useCallback((returnTo?: string) => {
+  const login = useCallback(async (returnTo?: string) => {
     analytics.track("login_started", { returnTo: returnTo ?? "/" });
-    const callback =
-      window.location.origin +
-      "/auth/callback?returnTo=" +
-      encodeURIComponent(returnTo ?? "/");
-    window.location.href =
-      API_BASE_URL +
-      "/api/v1/auth/login?returnUrl=" +
-      encodeURIComponent(callback);
+    
+    // Quick ping to check if Next.js proxy can reach the backend
+    try {
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), 1200);
+      const res = await fetch("/api/v1/health", { signal: controller.signal });
+      clearTimeout(id);
+      
+      if (res.ok) {
+        const callback =
+          window.location.origin +
+          "/auth/callback?returnTo=" +
+          encodeURIComponent(returnTo ?? "/");
+        window.location.href =
+          API_BASE_URL +
+          "/api/v1/auth/login?returnUrl=" +
+          encodeURIComponent(callback);
+        return;
+      }
+    } catch {
+      // Backend is down or timed out, proceed to mock login
+    }
+
+    console.warn("OsuStocks backend is unreachable. Initiating client-side mock login mode.");
+    
+    const mockAuth = {
+      accessToken: "mock-session-token-99999",
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // Valid for 7 days
+    };
+    
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("osustocks.auth", JSON.stringify(mockAuth));
+      window.location.href = returnTo ?? "/";
+    }
   }, []);
 
   const logout = useCallback(() => {
