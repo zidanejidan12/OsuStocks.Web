@@ -79,17 +79,10 @@ export function MarketTicker() {
   const clickable = !!user;
 
   const [movers, setMovers] = useState<LiveMover[] | null>(null);
-  const [hidden, setHidden] = useState(true); // hidden until we read the pref (no flash)
+  const [hidden, setHidden] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const [userPaused, setUserPaused] = useState(false);
-
-  useEffect(() => {
-    setHidden(
-      typeof window !== "undefined" &&
-        window.localStorage.getItem(STORAGE_KEY) === "1",
-    );
-  }, []);
 
   useEffect(() => {
     if (hidden) return;
@@ -112,12 +105,7 @@ export function MarketTicker() {
     return (
       <button
         type="button"
-        onClick={() => {
-          setHidden(false);
-          try {
-            window.localStorage.removeItem(STORAGE_KEY);
-          } catch {}
-        }}
+        onClick={() => setHidden(false)}
         className="fixed bottom-4 right-4 z-40 flex items-center gap-2 px-3.5 py-2 rounded-full border border-zinc-800 bg-zinc-950/90 backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.4)] hover:border-pink-500/40 hover:bg-zinc-900/30 transition-all duration-300 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/50"
       >
         <span className="h-1.5 w-1.5 rounded-full bg-pink-500 animate-pulse" />
@@ -132,11 +120,6 @@ export function MarketTicker() {
 
   const dismiss = () => {
     setHidden(true);
-    try {
-      window.localStorage.setItem(STORAGE_KEY, "1");
-    } catch {
-      /* ignore */
-    }
   };
 
   const paused = hovered || focused || userPaused;
