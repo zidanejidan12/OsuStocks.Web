@@ -218,7 +218,7 @@ export function Nav() {
               </span>
               <span className="text-[15px] font-semibold tracking-tight transition-transform group-hover:translate-x-0.5">
                 <span className="text-pink-500 font-extrabold drop-shadow-[0_0_8px_rgba(236,72,153,0.5)] font-display">Osu</span>
-                <span className="text-zinc-950 dark:text-zinc-100 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] font-display">Stocks</span>
+                <span className="text-zinc-50 dark:text-zinc-100 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] font-display">Stocks</span>
               </span>
             </Link>
 
@@ -353,7 +353,7 @@ export function Nav() {
               transition={spring}
             >
               <div className="flex h-16 shrink-0 items-center justify-between border-b border-white/5 px-4">
-                <span className="text-[15px] font-semibold tracking-tight text-zinc-950 dark:text-zinc-100">
+                <span className="text-[15px] font-semibold tracking-tight text-zinc-50 dark:text-zinc-100">
                   <span className="text-pink-500">Osu</span>Stocks
                 </span>
                 <div className="flex items-center gap-2">

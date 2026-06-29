@@ -1313,7 +1313,7 @@ function InteractiveChartSection() {
       <Reveal>
         <div className="text-center max-w-2xl mx-auto mb-12">
           <p className="text-[10px] font-bold text-cyan-400 uppercase tracking-[0.25em] mb-2">SANDBOX STAGE</p>
-          <h2 className="text-3xl sm:text-4xl font-display font-black tracking-tight text-zinc-950 dark:text-white uppercase">
+          <h2 className="text-3xl sm:text-4xl font-display font-black tracking-tight text-zinc-50 uppercase">
             Order Book <span className="text-cyan-400">Simulator</span>
           </h2>
           <p className="mt-3 text-zinc-400 text-sm leading-relaxed">

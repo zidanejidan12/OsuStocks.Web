@@ -42,7 +42,7 @@ export default function AboutPage() {
           <p className="text-[10px] font-mono font-bold uppercase tracking-[0.25em] text-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.35)]">
             SYSTEM SPECIFICATION
           </p>
-          <h1 className="mt-2 text-4xl sm:text-5xl font-display font-black tracking-tight text-zinc-950 dark:text-white uppercase">
+          <h1 className="mt-2 text-4xl sm:text-5xl font-display font-black tracking-tight text-zinc-50 uppercase">
             Inside <span className="text-pink-500 drop-shadow-[0_0_15px_rgba(244,63,94,0.3)] font-display">OsuStocks</span>
           </h1>
           <p className="mt-3 text-sm text-zinc-400 max-w-[65ch]">
@@ -62,7 +62,7 @@ export default function AboutPage() {
                   {SPONSOR.tier}
                 </span>
               </div>
-              <h2 className="text-3xl font-display font-black tracking-tight text-zinc-950 dark:text-white leading-none uppercase">
+              <h2 className="text-3xl font-display font-black tracking-tight text-zinc-50 leading-none uppercase">
                 Championship Partner: <span className="text-pink-500">{SPONSOR.name}</span>
               </h2>
               <p className="mt-5 text-xs sm:text-sm text-zinc-400 leading-relaxed max-w-[55ch]">

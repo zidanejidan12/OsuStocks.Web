@@ -17,7 +17,7 @@ export function Footer() {
         <div className="grid gap-12 lg:grid-cols-4 sm:grid-cols-2 lg:gap-16">
           
           <div className="flex flex-col gap-6 sm:col-span-2 lg:col-span-2">
-            <div className="text-2xl lg:text-3xl font-black tracking-tight text-zinc-950 dark:text-white transition-all duration-300 hover:scale-102">
+            <div className="text-2xl lg:text-3xl font-black tracking-tight text-zinc-50 transition-all duration-300 hover:scale-102">
               <span className="text-pink-500 drop-shadow-[0_0_15px_rgba(244,63,94,0.4)]">Osu</span>Stocks
             </div>
             <p className="text-sm lg:text-base leading-relaxed text-zinc-450 font-medium">
