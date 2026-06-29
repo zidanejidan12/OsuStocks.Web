@@ -269,15 +269,15 @@ function LiveActivityPopup() {
 
   return (
     <div
-      className={`fixed bottom-20 right-6 z-50 max-w-sm w-[calc(100vw-3rem)] rounded-2xl p-4.5 pb-5.5 border bg-zinc-950/90 backdrop-blur-xl ${borderToneClass} transition-all duration-500 ease-out transform ${
+      className={`fixed bottom-20 right-6 z-50 max-w-[300px] w-[calc(100vw-3rem)] rounded-xl p-3 pb-3.5 border bg-zinc-950/90 backdrop-blur-xl ${borderToneClass} transition-all duration-500 ease-out transform ${
         visible ? "translate-y-0 opacity-100 scale-100" : "translate-y-4 opacity-0 scale-95 pointer-events-none"
       }`}
     >
-      <div className="flex items-start gap-4">
+      <div className="flex items-start gap-3">
         {/* Dynamic Avatar Container */}
         <div className="relative shrink-0 select-none">
           {activeEvent.avatarUrl && imgErrorId !== activeEvent.id ? (
-            <div className={`relative h-11 w-11 overflow-hidden rounded-xl ring-2 ring-zinc-950 bg-zinc-900 border ${
+            <div className={`relative h-9 w-9 overflow-hidden rounded-lg ring-2 ring-zinc-950 bg-zinc-900 border ${
               activeEvent.type === "alert"
                 ? "border-pink-500/30"
                 : activeEvent.type === "trade"
@@ -294,13 +294,13 @@ function LiveActivityPopup() {
               />
             </div>
           ) : (
-            <div className="grid h-11 w-11 place-items-center rounded-xl bg-zinc-900 text-xs font-bold border border-zinc-800 ring-2 ring-zinc-950 text-zinc-300">
+            <div className="grid h-9 w-9 place-items-center rounded-lg bg-zinc-900 text-xs font-bold border border-zinc-800 ring-2 ring-zinc-950 text-zinc-300">
               {activeEvent.playerName ? activeEvent.playerName.substring(0, 2).toUpperCase() : activeEvent.icon}
             </div>
           )}
           
           {/* Circular badge indicator at the corner of the avatar */}
-          <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-zinc-950 text-[10px] border border-zinc-800 shadow-sm">
+          <span className="absolute -bottom-0.5 -right-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-zinc-950 text-[9px] border border-zinc-800 shadow-sm">
             {activeEvent.icon}
           </span>
         </div>
@@ -308,26 +308,26 @@ function LiveActivityPopup() {
         {/* Details and Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${badgeClass}`}>
+            <span className={`rounded-full px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider ${badgeClass}`}>
               {activeEvent.badgeText}
             </span>
-            <span className="text-[10px] text-zinc-500 font-mono">
+            <span className="text-[9px] text-zinc-500 font-mono">
               Just now
             </span>
           </div>
           
-          <div className="mt-2 text-sm leading-snug font-sans">
+          <div className="mt-1.5 text-xs leading-snug font-sans">
             {activeEvent.title}
           </div>
           
-          <div className="mt-1.5 flex items-center justify-between">
+          <div className="mt-1 flex items-center justify-between">
             {activeEvent.subText}
           </div>
         </div>
       </div>
       
       {/* Visual countdown progress bar */}
-      <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-zinc-900/30 overflow-hidden rounded-b-2xl">
+      <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-zinc-900/30 overflow-hidden rounded-b-xl">
         <div 
           className={`h-full bg-gradient-to-r ${
             activeEvent.type === "alert"
