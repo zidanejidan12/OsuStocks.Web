@@ -871,19 +871,19 @@ function HowItWorksSection() {
     {
       title: "1. Buy & Sell Shares",
       desc: "Buy shares of your favorite osu! players using virtual coins. Monitor the market, hold your position, and sell when the player performs well.",
-      color: "from-pink-500/20 to-pink-500/0",
+      color: "from-pink-500/40 via-pink-500/10 to-transparent",
       accent: "text-pink-400"
     },
     {
       title: "2. Live PP & Rank Sync",
       desc: "Player prices are directly linked to their official osu! performance. If they rank up, set a new top play, or gain PP, their share value skyrockets.",
-      color: "from-cyan-500/20 to-cyan-500/0",
+      color: "from-cyan-500/40 via-cyan-500/10 to-transparent",
       accent: "text-cyan-400"
     },
     {
       title: "3. Build Your Portfolio",
       desc: "Diversify your assets. Compete with other managers globally on the leaderboard, climb the broker ladder, and show off your trading instincts.",
-      color: "from-amber-500/20 to-amber-500/0",
+      color: "from-amber-500/40 via-amber-500/10 to-transparent",
       accent: "text-amber-400"
     }
   ];
@@ -910,15 +910,15 @@ function HowItWorksSection() {
 
           const glowStyles = isClicked
             ? isPink
-              ? "border-pink-500/60 shadow-[0_0_35px_rgba(236,72,153,0.25)] bg-pink-500/[0.04]"
+              ? "border-pink-400 shadow-[0_0_25px_rgba(236,72,153,0.45),0_0_50px_rgba(236,72,153,0.2)] bg-pink-500/[0.06]"
               : isCyan
-              ? "border-cyan-500/60 shadow-[0_0_35px_rgba(6,182,212,0.25)] bg-cyan-500/[0.04]"
-              : "border-amber-500/60 shadow-[0_0_35px_rgba(245,158,11,0.25)] bg-amber-500/[0.04]"
+              ? "border-cyan-400 shadow-[0_0_25px_rgba(6,182,212,0.45),0_0_50px_rgba(6,182,212,0.2)] bg-cyan-500/[0.06]"
+              : "border-amber-400 shadow-[0_0_25px_rgba(245,158,11,0.45),0_0_50px_rgba(245,158,11,0.2)] bg-amber-500/[0.06]"
             : isPink
-            ? "hover:border-pink-500/35 hover:shadow-[0_0_25px_rgba(236,72,153,0.12)] hover:bg-pink-500/[0.02]"
+            ? "hover:border-pink-500/60 hover:shadow-[0_0_20px_rgba(236,72,153,0.25)] hover:bg-pink-500/[0.03]"
             : isCyan
-            ? "hover:border-cyan-500/35 hover:shadow-[0_0_25px_rgba(6,182,212,0.12)] hover:bg-cyan-500/[0.02]"
-            : "hover:border-amber-500/35 hover:shadow-[0_0_25px_rgba(245,158,11,0.12)] hover:bg-amber-500/[0.02]";
+            ? "hover:border-cyan-500/60 hover:shadow-[0_0_20px_rgba(6,182,212,0.25)] hover:bg-cyan-500/[0.03]"
+            : "hover:border-amber-500/60 hover:shadow-[0_0_20px_rgba(245,158,11,0.25)] hover:bg-amber-500/[0.03]";
 
           return (
             <Reveal key={idx} delay={idx * 0.05}>
@@ -927,7 +927,7 @@ function HowItWorksSection() {
                 className={`glass relative group h-full overflow-hidden rounded-3xl p-8 transition-all duration-500 cursor-pointer border ${glowStyles}`}
               >
                 {/* Soft corner color glow */}
-                <div className={"absolute top-0 right-0 w-24 h-24 bg-gradient-to-br " + step.color + " rounded-bl-full opacity-30 pointer-events-none group-hover:opacity-60 transition-opacity duration-300"} />
+                <div className={"absolute top-0 right-0 w-24 h-24 bg-gradient-to-br " + step.color + " rounded-bl-full opacity-40 pointer-events-none group-hover:opacity-75 transition-all duration-300"} />
                 
                 <h3 className={"text-xl font-bold tracking-tight " + step.accent}>{step.title}</h3>
                 <p className="mt-4 text-sm leading-relaxed text-zinc-400">{step.desc}</p>
