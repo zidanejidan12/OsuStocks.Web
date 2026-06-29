@@ -123,7 +123,7 @@ export function MarketTicker() {
   };
 
   const paused = hovered || focused || userPaused;
-  const durationSec = Math.max(24, movers.length * 4);
+  const durationSec = Math.max(16, movers.length * 2.5);
 
   return (
     <>
