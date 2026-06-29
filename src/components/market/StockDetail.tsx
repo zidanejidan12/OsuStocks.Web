@@ -206,7 +206,6 @@ function PriceChartCard({
   refreshKey: number;
 }) {
   const [range, setRange] = useState<HistoryRange>("24h");
-  const [mode, setMode] = useState<"candle" | "line">("candle");
   const [candles, setCandles] = useState<Candle[]>([]);
   const [loaded, setLoaded] = useState(false);
 
@@ -260,27 +259,6 @@ function PriceChartCard({
           </h2>
         </div>
         <div className="flex items-center gap-2">
-          {/* Candle / line mode toggle */}
-          <div className="flex rounded-lg border border-zinc-800 bg-zinc-900/60 p-0.5">
-            {(["candle", "line"] as const).map((m) => {
-              const Icon = m === "candle" ? ChartBar : ChartLine;
-              return (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => setMode(m)}
-                  aria-label={m === "candle" ? "Candlestick" : "Line"}
-                  className={`grid h-8 w-8 place-items-center rounded-md transition-colors ${
-                    mode === m
-                      ? "bg-zinc-800 text-zinc-100"
-                      : "text-zinc-500 hover:text-zinc-300"
-                  }`}
-                >
-                  <Icon size={15} weight="bold" />
-                </button>
-              );
-            })}
-          </div>
           {/* Range selector */}
           <div className="flex rounded-lg border border-zinc-800 bg-zinc-900/60 p-0.5">
             {RANGES.map((r) => (
@@ -318,11 +296,7 @@ function PriceChartCard({
       ) : (
         <div className="w-full">
           <div className="relative">
-            {mode === "candle" ? (
-              <CandleChart candles={candles} />
-            ) : (
-              <LineChart candles={candles} />
-            )}
+            <LineChart candles={candles} />
             <span className="pointer-events-none absolute right-0 top-0 rounded-md bg-zinc-950/60 px-1.5 py-0.5 font-mono text-[11px] tabular-nums text-zinc-400 backdrop-blur-sm">
               <Money value={max} />
             </span>
