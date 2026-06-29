@@ -272,10 +272,25 @@ function LiveActivityPopup({ isMuted, setIsMuted }: { isMuted: boolean; setIsMut
     : "bg-amber-500/10 text-amber-400 border border-amber-500/20";
 
   return (
-    <div
-      className={`fixed bottom-20 right-6 z-50 max-w-[300px] w-[calc(100vw-3rem)] rounded-xl p-3 pb-3.5 border bg-zinc-950/90 backdrop-blur-xl ${borderToneClass} transition-all duration-500 ease-out transform ${
-        visible ? "translate-y-0 opacity-100 scale-100" : "translate-y-4 opacity-0 scale-95 pointer-events-none"
-      }`}
+    <motion.div
+      drag="x"
+      dragConstraints={{ left: 0, right: 0 }}
+      dragElastic={0.6}
+      onDragEnd={(event, info) => {
+        if (Math.abs(info.offset.x) > 80) {
+          setVisible(false);
+        }
+      }}
+      animate={{
+        y: visible ? 0 : 20,
+        opacity: visible ? 1 : 0,
+        scale: visible ? 1 : 0.95,
+      }}
+      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+      className={`fixed bottom-20 right-6 z-50 max-w-[300px] w-[calc(100vw-3rem)] rounded-xl p-3 pb-3.5 border bg-zinc-950/90 backdrop-blur-xl ${borderToneClass} cursor-grab active:cursor-grabbing select-none`}
+      style={{
+        pointerEvents: visible ? "auto" : "none",
+      }}
     >
       <div className="flex items-start gap-3">
         {/* Dynamic Avatar Container */}
@@ -365,7 +380,7 @@ function LiveActivityPopup({ isMuted, setIsMuted }: { isMuted: boolean; setIsMut
           }}
         />
       </div>
-    </div>
+    </motion.div>
   );
 }
 
