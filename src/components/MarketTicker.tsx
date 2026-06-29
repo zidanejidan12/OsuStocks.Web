@@ -128,13 +128,13 @@ export function MarketTicker() {
       <div aria-hidden="true" className="h-9" />
       <aside
         aria-label="Live market movers"
-        className="fixed inset-x-0 bottom-0 z-40 flex h-9 items-center border-t border-white/10 bg-zinc-950/85 backdrop-blur-xl"
+        className="fixed inset-x-0 bottom-0 z-40 flex h-9 items-center border-t border-zinc-900/50 bg-zinc-950/50 backdrop-blur-xl shadow-[0_-10px_30px_rgba(0,0,0,0.5)]"
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
       >
-        <div className="flex h-full shrink-0 items-center gap-1.5 border-r border-white/10 px-3">
+        <div className="flex h-full shrink-0 items-center gap-1.5 border-r border-zinc-800/40 px-3">
           <StatusDot tone="pink" />
           <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500">
             Live
@@ -143,7 +143,7 @@ export function MarketTicker() {
 
         {/* Pinned sponsor slug — doesn't scroll with the marquee; hidden on the
             narrowest screens so the moving strip keeps room. */}
-        <div className="hidden h-full shrink-0 items-center border-r border-white/10 px-3 sm:flex">
+        <div className="hidden h-full shrink-0 items-center border-r border-zinc-800/40 px-3 sm:flex">
           <SponsorCredit className="text-[11px] text-zinc-500" />
         </div>
 
@@ -181,7 +181,7 @@ export function MarketTicker() {
           )}
         </div>
 
-        <div className="flex h-full shrink-0 items-center gap-1 border-l border-white/10 px-2">
+        <div className="flex h-full shrink-0 items-center gap-1 border-l border-zinc-800/40 px-2">
           {!reduce && (
             <button
               type="button"

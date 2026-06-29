@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, WarningCircle, Lock, Wallet as WalletIcon } from "@phosphor-icons/react";
+import { ArrowRight, WarningCircle, Lock, Wallet as WalletIcon, TrendUp, Users, Trophy, Question, ChartLineUp, Plus, Minus, CaretDown, Coins } from "@phosphor-icons/react";
 import type { MarketOverview, Paged, StockSort, StockSummary, Wallet } from "@/lib/api/types";
 import { getMarketOverview, getStocks, getWallet, ApiError } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/auth-context";
@@ -19,6 +19,7 @@ import { StockList } from "@/components/market/StockList";
 import { LiveMarketPanel } from "@/components/market/LiveMarketPanel";
 import { Coin } from "@/components/ui/Coin";
 import { Avatar } from "@/components/ui/Avatar";
+import { motion, AnimatePresence } from "framer-motion";
 
 const PAGE_SIZE = 25;
 
@@ -39,6 +40,7 @@ function LoginNotice() {
   );
 }
 
+// Custom Error Notification
 function ErrorNotice({ message }: { message: string }) {
   return (
     <div className="flex items-start gap-2.5 rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-300">
@@ -48,21 +50,318 @@ function ErrorNotice({ message }: { message: string }) {
   );
 }
 
-function IceRain() {
-  const [particles, setParticles] = useState<{ id: number; left: number; top: number; size: number; delay: number; duration: number; type: "diamond" | "orb"; color: "pink" | "cyan" | "white" }[]>([]);
+// Live Trading Activity Popup Component
+function LiveActivityPopup() {
+  const [stocks, setStocks] = useState<StockSummary[]>([]);
+  const [activeEvent, setActiveEvent] = useState<{
+    id: number;
+    type: "trade" | "alert" | "reward";
+    badgeText: string;
+    icon: string;
+    avatarUrl: string | null;
+    playerName: string;
+    title: React.ReactNode;
+    subText: React.ReactNode;
+  } | null>(null);
+  const [visible, setVisible] = useState(false);
+  const [imgErrorId, setImgErrorId] = useState<number | null>(null);
+
+  // Fetch real market stock list on mount
+  useEffect(() => {
+    getStocks({ page: 1, pageSize: 50 })
+      .then((data) => {
+        if (data && data.items && data.items.length > 0) {
+          setStocks(data.items);
+        }
+      })
+      .catch(() => {
+        // Silently fallback if backend is down/unreachable
+      });
+  }, []);
 
   useEffect(() => {
-    const list = Array.from({ length: 40 }).map((_, i) => {
-      const type = (Math.random() > 0.4 ? "diamond" : "orb") as "diamond" | "orb";
+    const fallbackPlayers = ["mrekk", "Akolibed", "Lifeline", "Gasha", "Chicony", "Kalanluu", "WhiteCat", "Ryuk", "Intersect"];
+    const randomUsernames = [
+      "Cookiezi", "peppy", "shigetora", "zidan", "jason", "toy", "HappyStick", 
+      "BeasttrollMC", "BTMC", "Azer", "Rafis", "Vaxei", "WubWoofWolf", 
+      "Idke", "Rohulk", "Varvalian", "FlyingTuna", "Bubbleman", "Karthy"
+    ];
+
+    let timer: any;
+    let fadeOutTimer: any;
+
+    const showNextEvent = () => {
+      setVisible(false);
+      
+      fadeOutTimer = setTimeout(() => {
+        let playerName = "";
+        let playerTicker = "";
+        let playerPrice = 100;
+        let playerChange = 0;
+        let avatarUrl = null;
+
+        if (stocks.length > 0) {
+          const randomStock = stocks[Math.floor(Math.random() * stocks.length)];
+          playerName = randomStock.playerName;
+          playerTicker = randomStock.stockId;
+          playerPrice = randomStock.currentPrice;
+          playerChange = randomStock.priceChange24h;
+          avatarUrl = randomStock.avatarUrl ?? null;
+        } else {
+          playerName = fallbackPlayers[Math.floor(Math.random() * fallbackPlayers.length)];
+          playerTicker = playerName.toUpperCase().substring(0, 4);
+          playerPrice = Math.floor(Math.random() * 800) + 150;
+          playerChange = (Math.random() * 25) - 10;
+        }
+
+        const buyer = randomUsernames[Math.floor(Math.random() * randomUsernames.length)];
+        const amount = Math.floor(Math.random() * 25) + 2;
+        const totalCredits = (amount * playerPrice).toLocaleString("en-US", { maximumFractionDigits: 1 });
+
+        // Choose event type: "buy", "sell", "surge", "reward", "volume"
+        const eventTypes = ["buy", "sell", "surge", "reward", "volume"];
+        const chosenType = eventTypes[Math.floor(Math.random() * eventTypes.length)];
+
+        let activeEv: {
+          type: "trade" | "alert" | "reward";
+          badgeText: string;
+          icon: string;
+          avatar: string | null;
+          title: React.ReactNode;
+          subText: React.ReactNode;
+        };
+
+        if (chosenType === "buy") {
+          activeEv = {
+            type: "trade",
+            badgeText: "Live Buy",
+            icon: "🛒",
+            avatar: avatarUrl,
+            title: (
+              <span className="text-zinc-300 text-xs sm:text-sm">
+                <strong className="text-zinc-50 font-semibold">{buyer}</strong> bought{" "}
+                <strong className="text-pink-400 font-semibold">{amount} shares</strong> of{" "}
+                <span className="text-zinc-100 font-semibold">{playerName}</span>
+              </span>
+            ),
+            subText: (
+              <span className="flex items-center gap-1.5 text-[11px] text-zinc-400 font-mono">
+                Total: <span className="text-cyan-400 font-bold">{totalCredits} Cr</span> • Price: <span className="text-zinc-300">{playerPrice.toFixed(1)}</span>
+              </span>
+            )
+          };
+        } else if (chosenType === "sell") {
+          activeEv = {
+            type: "trade",
+            badgeText: "Live Sell",
+            icon: "💸",
+            avatar: avatarUrl,
+            title: (
+              <span className="text-zinc-300 text-xs sm:text-sm">
+                <strong className="text-zinc-50 font-semibold">{buyer}</strong> sold{" "}
+                <strong className="text-zinc-400 font-semibold">{amount} shares</strong> of{" "}
+                <span className="text-zinc-100 font-semibold">{playerName}</span>
+              </span>
+            ),
+            subText: (
+              <span className="flex items-center gap-1.5 text-[11px] text-zinc-400 font-mono">
+                Total: <span className="text-zinc-300 font-semibold">{totalCredits} Cr</span> • Price: <span className="text-zinc-300">{playerPrice.toFixed(1)}</span>
+              </span>
+            )
+          };
+        } else if (chosenType === "surge") {
+          const isSurge = playerChange >= 0;
+          activeEv = {
+            type: "alert",
+            badgeText: isSurge ? "Price Surge" : "Price Dip",
+            icon: isSurge ? "📈" : "📉",
+            avatar: avatarUrl,
+            title: (
+              <span className="text-zinc-300 text-xs sm:text-sm">
+                <span className="text-zinc-50 font-semibold">{playerName} ({playerTicker})</span>{" "}
+                {isSurge ? "surged" : "dipped"}{" "}
+                <span className={isSurge ? "text-emerald-400 font-bold" : "text-rose-400 font-bold"}>
+                  {isSurge ? "+" : ""}{playerChange.toFixed(2)}%
+                </span>
+              </span>
+            ),
+            subText: (
+              <span className="flex items-center gap-1.5 text-[11px] text-zinc-400 font-mono">
+                Current Price: <span className="text-zinc-100 font-bold">{playerPrice.toFixed(1)} Cr</span>
+              </span>
+            )
+          };
+        } else if (chosenType === "reward") {
+          activeEv = {
+            type: "reward",
+            badgeText: "Daily Reward",
+            icon: "💰",
+            avatar: null,
+            title: (
+              <span className="text-zinc-300 text-xs sm:text-sm">
+                <strong className="text-zinc-50 font-semibold">{buyer}</strong> claimed their daily credits
+              </span>
+            ),
+            subText: (
+              <span className="flex items-center gap-1.5 text-[11px] text-zinc-400 font-mono">
+                Bonus: <span className="text-amber-400 font-bold">+1,000 Credits</span>
+              </span>
+            )
+          };
+        } else {
+          activeEv = {
+            type: "alert",
+            badgeText: "Volume Spike",
+            icon: "⚡",
+            avatar: avatarUrl,
+            title: (
+              <span className="text-zinc-300 text-xs sm:text-sm">
+                Trading activity spiking for{" "}
+                <span className="text-zinc-50 font-semibold">{playerName} ({playerTicker})</span>
+              </span>
+            ),
+            subText: (
+              <span className="flex items-center gap-1.5 text-[11px] text-zinc-400 font-mono">
+                24h Change: <span className={playerChange >= 0 ? "text-emerald-400 font-semibold" : "text-rose-400 font-semibold"}>{playerChange >= 0 ? "+" : ""}{playerChange.toFixed(2)}%</span>
+              </span>
+            )
+          };
+        }
+
+        setImgErrorId(null);
+        setActiveEvent({
+          id: Date.now(),
+          type: activeEv.type,
+          badgeText: activeEv.badgeText,
+          icon: activeEv.icon,
+          avatarUrl: activeEv.avatar,
+          playerName: playerName,
+          title: activeEv.title,
+          subText: activeEv.subText,
+        });
+        setVisible(true);
+      }, 400);
+    };
+
+    timer = setTimeout(showNextEvent, 2000);
+    const interval = setInterval(showNextEvent, 9000);
+
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(fadeOutTimer);
+      clearInterval(interval);
+    };
+  }, [stocks]);
+
+  if (!activeEvent) return null;
+
+  const glowColorClass = activeEvent.type === "alert"
+    ? "from-pink-500/5 via-transparent to-transparent"
+    : activeEvent.type === "trade"
+    ? "from-cyan-500/5 via-transparent to-transparent"
+    : "from-amber-500/5 via-transparent to-transparent";
+
+  const glowShadow = activeEvent.type === "alert"
+    ? "shadow-[0_8px_30px_rgba(236,72,153,0.06)]"
+    : activeEvent.type === "trade"
+    ? "shadow-[0_8px_30px_rgba(6,182,212,0.06)]"
+    : "shadow-[0_8px_30px_rgba(245,158,11,0.06)]";
+
+  const badgeClass = activeEvent.type === "alert"
+    ? "bg-pink-500/10 text-pink-400 border border-pink-500/20"
+    : activeEvent.type === "trade"
+    ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
+    : "bg-amber-500/10 text-amber-400 border border-amber-500/20";
+
+  return (
+    <div
+      className={`fixed bottom-6 right-6 z-50 max-w-sm w-[calc(100vw-3rem)] rounded-[20px] p-5 pb-6 border border-zinc-800/80 bg-gradient-to-br ${glowColorClass} bg-zinc-950/95 backdrop-blur-2xl ${glowShadow} transition-all duration-500 ease-out transform ${
+        visible ? "translate-y-0 opacity-100 scale-100" : "translate-y-4 opacity-0 scale-95 pointer-events-none"
+      }`}
+    >
+      <div className="flex items-start gap-4">
+        {/* Dynamic Avatar Container */}
+        <div className="relative shrink-0 select-none">
+          {activeEvent.avatarUrl && imgErrorId !== activeEvent.id ? (
+            <div className="relative h-11 w-11 overflow-hidden rounded-[14px] ring-2 ring-zinc-900/50 bg-zinc-900 border border-zinc-800/50 flex items-center justify-center">
+              <img 
+                src={activeEvent.avatarUrl} 
+                alt="" 
+                className="h-full w-full object-cover"
+                onError={() => {
+                  setImgErrorId(activeEvent.id);
+                }}
+              />
+            </div>
+          ) : (
+            <div className="grid h-11 w-11 place-items-center rounded-[14px] bg-gradient-to-br from-zinc-800 to-zinc-900 text-xs font-bold border border-zinc-700/30 ring-2 ring-zinc-900/50 text-zinc-300">
+              {activeEvent.playerName ? activeEvent.playerName.substring(0, 2).toUpperCase() : activeEvent.icon}
+            </div>
+          )}
+          
+          {/* Circular badge indicator at the corner of the avatar */}
+          <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-zinc-950 text-[10px] border border-zinc-800 shadow-sm">
+            {activeEvent.icon}
+          </span>
+        </div>
+
+        {/* Details and Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${badgeClass}`}>
+              {activeEvent.badgeText}
+            </span>
+            <span className="text-[10px] text-zinc-500 font-mono">
+              Just now
+            </span>
+          </div>
+          
+          <div className="mt-2 text-sm leading-snug">
+            {activeEvent.title}
+          </div>
+          
+          <div className="mt-1.5 flex items-center justify-between">
+            {activeEvent.subText}
+          </div>
+        </div>
+      </div>
+      
+      {/* Visual countdown progress bar */}
+      <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-zinc-900/30 overflow-hidden rounded-b-2xl">
+        <div 
+          className={`h-full bg-gradient-to-r ${
+            activeEvent.type === "alert"
+              ? "from-pink-500 to-rose-500"
+              : activeEvent.type === "trade"
+              ? "from-cyan-500 to-blue-500"
+              : "from-amber-500 to-yellow-500"
+          } transition-all linear`}
+          style={{ 
+            width: visible ? "100%" : "0%",
+            transitionDuration: visible ? "8200ms" : "0ms"
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+// Premium Background Layer
+function OsuAuroraBackground() {
+  const [particles, setParticles] = useState<any[]>([]);
+
+  useEffect(() => {
+    const list = Array.from({ length: 30 }).map((_, i) => {
+      const type = Math.random() > 0.4 ? "diamond" : "orb";
       const colorRand = Math.random();
-      const color = (colorRand > 0.6 ? "pink" : colorRand > 0.3 ? "cyan" : "white") as "pink" | "cyan" | "white";
+      const color = colorRand > 0.6 ? "pink" : colorRand > 0.3 ? "cyan" : "white";
       return {
         id: i,
         left: Math.random() * 100,
         top: Math.random() * 100,
-        size: type === "diamond" ? Math.random() * 4 + 3 : Math.random() * 40 + 20,
+        size: type === "diamond" ? Math.random() * 4 + 3 : Math.random() * 30 + 15,
         delay: Math.random() * -10,
-        duration: type === "diamond" ? Math.random() * 8 + 6 : Math.random() * 20 + 15,
+        duration: type === "diamond" ? Math.random() * 8 + 6 : Math.random() * 20 + 12,
         type,
         color
       };
@@ -71,26 +370,40 @@ function IceRain() {
   }, []);
 
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+      {/* Moving Aurora Mesh Gradients */}
+      <div className="absolute -top-[10%] -right-[10%] w-[60%] h-[60%] rounded-full bg-pink-500/10 blur-[120px] animate-aurora-1" />
+      <div className="absolute -bottom-[10%] -left-[10%] w-[60%] h-[60%] rounded-full bg-cyan-500/10 blur-[120px] animate-aurora-2" />
+      <div className="absolute top-[20%] right-[10%] w-[50%] h-[50%] rounded-full bg-purple-600/10 blur-[130px] animate-aurora-3" />
+
+      {/* Grid overlay */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
 
+      {/* osu! Approach Circles */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] z-0">
+        <div className="absolute top-1/2 left-1/2 w-full h-full rounded-full border border-pink-500/15 shadow-[0_0_15px_rgba(236,72,153,0.08)] animate-approach-1" />
+        <div className="absolute top-1/2 left-1/2 w-full h-full rounded-full border border-cyan-500/10 shadow-[0_0_15px_rgba(6,182,212,0.08)] animate-approach-2" />
+        <div className="absolute top-1/2 left-1/2 w-full h-full rounded-full border border-pink-500/5 shadow-[0_0_15px_rgba(236,72,153,0.04)] animate-approach-3" />
+      </div>
+
+      {/* falling snowflakes (diamonds) & floating blurred orbs */}
       {particles.map((p) => {
         if (p.type === "diamond") {
           const bgGradient = p.color === "pink" 
-            ? "from-pink-500/40 to-pink-400/20" 
+            ? "from-pink-500/30 to-pink-400/10" 
             : p.color === "cyan" 
-            ? "from-cyan-500/40 to-cyan-400/20" 
-            : "from-white/40 to-zinc-400/20";
+            ? "from-cyan-500/30 to-cyan-400/10" 
+            : "from-white/30 to-zinc-400/10";
           const shadowColor = p.color === "pink"
-            ? "rgba(236,72,153,0.3)"
+            ? "rgba(236,72,153,0.2)"
             : p.color === "cyan"
-            ? "rgba(6,182,212,0.3)"
-            : "rgba(255,255,255,0.2)";
+            ? "rgba(6,182,212,0.2)"
+            : "rgba(255,255,255,0.15)";
           
           return (
             <span
               key={p.id}
-              className={`absolute transform rotate-45 bg-gradient-to-tr ${bgGradient} border border-white/10 animate-fall`}
+              className={`absolute transform rotate-45 bg-gradient-to-tr ${bgGradient} border border-white/5 animate-fall`}
               style={{
                 left: `${p.left}%`,
                 width: `${p.size}px`,
@@ -106,10 +419,10 @@ function IceRain() {
           );
         } else {
           const colorClass = p.color === "pink"
-            ? "bg-pink-500/4"
+            ? "bg-pink-500/3"
             : p.color === "cyan"
-            ? "bg-cyan-500/4"
-            : "bg-zinc-400/3";
+            ? "bg-cyan-500/3"
+            : "bg-zinc-400/2";
           
           return (
             <span
@@ -132,17 +445,17 @@ function IceRain() {
   );
 }
 
+// Hero Landing Module
 function Hero({ onLogin }: { onLogin: () => void }) {
   return (
-    <section className="relative mx-auto w-full max-w-6xl px-4 pt-12 pb-24 sm:pt-16 sm:pb-32 overflow-hidden">
-      <IceRain />
+    <section className="relative w-full min-h-[75vh] flex items-center pt-12 pb-16 sm:pt-16 sm:pb-20">
       <div className="absolute top-1/4 left-1/4 -z-10 h-72 w-72 rounded-full bg-cyan-500/10 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 -z-10 h-72 w-72 rounded-full bg-pink-500/10 blur-[120px] pointer-events-none" />
       
-      <div className="relative z-10 grid items-center gap-12 md:grid-cols-2 md:gap-10">
+      <div className="relative z-10 mx-auto w-full max-w-6xl px-4 grid items-center gap-8 md:grid-cols-2 md:gap-10">
         <Reveal>
           <div className="flex flex-col items-center md:items-start text-center md:text-left">
-            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.95] text-white">
+            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.95] text-zinc-100">
               Trade osu!<br className="hidden md:inline" />
               {" "}players like<br />
               <span className="text-pink-400 drop-shadow-[0_0_20px_rgba(236,72,153,0.75)] animate-pulse">stocks.</span>
@@ -328,7 +641,17 @@ export default function Home() {
   }
 
   if (!user) {
-    return <Hero onLogin={() => login("/")} />;
+    return (
+      <div className="relative w-full overflow-x-hidden pb-16">
+        <OsuAuroraBackground />
+        <LiveActivityPopup />
+        <Hero onLogin={() => login("/")} />
+        <StatsSection />
+        <HowItWorksSection />
+        <InteractiveChartSection />
+        <FaqSection />
+      </div>
+    );
   }
 
   return (
@@ -446,6 +769,481 @@ export default function Home() {
           </Reveal>
         </div>
       )}
+    </div>
+  );
+}
+
+// ==========================================
+// NEW LANDING PAGE SECTIONS (CLIENT-SIDE ONLY)
+// ==========================================
+
+function StatsSection() {
+  const stats = [
+    { label: "Total Volume Traded", value: "15.8M+ Cr", icon: <Coins size={22} className="text-pink-400" /> },
+    { label: "Active Managers", value: "2,400+ Traders", icon: <Users size={22} className="text-cyan-400" /> },
+    { label: "Top Players Tracked", value: "15,000+ Stocks", icon: <Trophy size={22} className="text-amber-400" /> },
+  ];
+
+  return (
+    <section className="relative z-10 mx-auto w-full max-w-6xl px-4 py-8">
+      <Reveal>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {stats.map((s, idx) => (
+            <div 
+              key={idx}
+              className="glass relative overflow-hidden rounded-2xl p-5 flex items-center gap-4 transition-all duration-300"
+            >
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/[0.02] border border-white/5">
+                {s.icon}
+              </div>
+              <div>
+                <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider block">{s.label}</span>
+                <span className="text-lg font-bold text-zinc-100 tracking-tight block mt-0.5">{s.value}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Reveal>
+    </section>
+  );
+}
+
+function HowItWorksSection() {
+  const steps = [
+    {
+      title: "1. Buy & Sell Shares",
+      desc: "Buy shares of your favorite osu! players using virtual coins. Monitor the market, hold your position, and sell when the player performs well.",
+      color: "from-pink-500/20 to-pink-500/0",
+      accent: "text-pink-400"
+    },
+    {
+      title: "2. Live PP & Rank Sync",
+      desc: "Player prices are directly linked to their official osu! performance. If they rank up, set a new top play, or gain PP, their share value skyrockets.",
+      color: "from-cyan-500/20 to-cyan-500/0",
+      accent: "text-cyan-400"
+    },
+    {
+      title: "3. Build Your Portfolio",
+      desc: "Diversify your assets. Compete with other managers globally on the leaderboard, climb the broker ladder, and show off your trading instincts.",
+      color: "from-amber-500/20 to-amber-500/0",
+      accent: "text-amber-400"
+    }
+  ];
+
+  return (
+    <section className="relative z-10 mx-auto w-full max-w-6xl px-4 py-16 sm:py-24">
+      <Reveal>
+        <div className="text-center max-w-2xl mx-auto mb-16">
+          <h2 className="text-3xl font-black tracking-tight text-zinc-100 sm:text-4xl">
+            How does <span className="text-pink-400">OsuStocks</span> work?
+          </h2>
+          <p className="mt-4 text-zinc-400 text-sm sm:text-base leading-relaxed">
+            A fully simulated, data-driven fantasy stock exchange based entirely on actual osu! community performance.
+          </p>
+        </div>
+      </Reveal>
+
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        {steps.map((step, idx) => (
+          <Reveal key={idx} delay={idx * 0.05}>
+            <div className="glass relative group h-full overflow-hidden rounded-3xl p-8 transition-all duration-300">
+              {/* Soft corner color glow */}
+              <div className={"absolute top-0 right-0 w-24 h-24 bg-gradient-to-br " + step.color + " rounded-bl-full opacity-30 pointer-events-none group-hover:opacity-50 transition-opacity duration-300"} />
+              
+              <h3 className={"text-xl font-bold tracking-tight " + step.accent}>{step.title}</h3>
+              <p className="mt-4 text-sm leading-relaxed text-zinc-400">{step.desc}</p>
+            </div>
+          </Reveal>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+const MOCK_PREVIEW_PLAYERS = [
+  {
+    id: "mrekk",
+    name: "mrekk",
+    rank: "#1 Global",
+    price: 2450.5,
+    change: "+15.2%",
+    color: "pink",
+    chartPath: "M 0 130 C 50 145, 100 90, 150 110 C 200 65, 250 135, 300 45",
+    points: [{x: 0, y: 130}, {x: 50, y: 145}, {x: 100, y: 90}, {x: 150, y: 110}, {x: 200, y: 65}, {x: 250, y: 135}, {x: 300, y: 45}],
+    avatar: "https://a.ppy.sh/2211396",
+  },
+  {
+    id: "akolibed",
+    name: "Akolibed",
+    rank: "#2 Global",
+    price: 2310.0,
+    change: "+8.7%",
+    color: "cyan",
+    chartPath: "M 0 115 C 50 120, 100 100, 150 115 C 200 80, 250 90, 300 60",
+    points: [{x: 0, y: 115}, {x: 50, y: 120}, {x: 100, y: 100}, {x: 150, y: 115}, {x: 200, y: 80}, {x: 250, y: 90}, {x: 300, y: 60}],
+    avatar: "https://a.ppy.sh/9269014",
+  },
+  {
+    id: "lifeline",
+    name: "Lifeline",
+    rank: "#4 Global",
+    price: 1850.2,
+    change: "+4.1%",
+    color: "amber",
+    chartPath: "M 0 140 C 50 130, 100 135, 150 110 C 200 120, 250 95, 300 85",
+    points: [{x: 0, y: 140}, {x: 50, y: 130}, {x: 100, y: 135}, {x: 150, y: 110}, {x: 200, y: 120}, {x: 250, y: 95}, {x: 300, y: 85}],
+    avatar: "https://a.ppy.sh/11311039",
+  }
+];
+
+function InteractiveChartSection() {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [sharesOwned, setSharesOwned] = useState(0);
+  const [alertMsg, setAlertMsg] = useState<string | null>(null);
+  const [alertType, setAlertType] = useState<"buy" | "sell">("buy");
+  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number; svgX: number; svgY: number; visible: boolean; price: string }>({
+    x: 0, y: 0, svgX: 0, svgY: 0, visible: false, price: ""
+  });
+
+  const player = MOCK_PREVIEW_PLAYERS[activeIndex];
+  const colorHex = player.color === "pink" ? "#ec4899" : player.color === "cyan" ? "#06b6d4" : "#f59e0b";
+
+  const triggerAlert = (msg: string, type: "buy" | "sell") => {
+    setAlertMsg(msg);
+    setAlertType(type);
+    setTimeout(() => setAlertMsg(null), 2500);
+  };
+
+  const handleBuy = () => {
+    setSharesOwned(prev => prev + 1);
+    triggerAlert("+1 Share of " + player.name + " bought successfully!", "buy");
+  };
+
+  const handleSell = () => {
+    if (sharesOwned <= 0) {
+      triggerAlert("You don't own any shares of this player to sell!", "sell");
+      return;
+    }
+    setSharesOwned(prev => prev - 1);
+    triggerAlert("-1 Share of " + player.name + " sold successfully!", "sell");
+  };
+
+  const getSvgY = (pct: number, points: { x: number; y: number }[]) => {
+    const targetX = pct * 300;
+    for (let i = 0; i < points.length - 1; i++) {
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      if (targetX >= p1.x && targetX <= p2.x) {
+        const ratio = (targetX - p1.x) / (p2.x - p1.x);
+        return p1.y + ratio * (p2.y - p1.y);
+      }
+    }
+    return points[points.length - 1].y;
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement, MouseEvent>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const pct = Math.max(0, Math.min(1, x / rect.width));
+    const priceVal = player.price - (1 - pct) * 200 + Math.sin(pct * 10) * 45;
+    
+    const svgX = pct * 300;
+    const svgY = getSvgY(pct, player.points);
+    
+    setTooltipPos({
+      x,
+      y: (svgY / 150) * rect.height,
+      svgX,
+      svgY,
+      visible: true,
+      price: priceVal.toFixed(1)
+    });
+  };
+
+  const handleMouseLeave = () => {
+    setTooltipPos(prev => ({ ...prev, visible: false }));
+  };
+
+  return (
+    <section className="relative z-10 mx-auto w-full max-w-6xl px-4 py-16">
+      <Reveal>
+        <div className="text-center max-w-2xl mx-auto mb-14">
+          <h2 className="text-3xl font-black tracking-tight text-zinc-100 sm:text-4xl">
+            Experience the <span className="text-cyan-400">Trade Simulator</span>
+          </h2>
+          <p className="mt-4 text-zinc-400 text-sm sm:text-base leading-relaxed">
+            Test the interface in real time below. Switch players, view price histories, and simulate buy/sell transactions.
+          </p>
+        </div>
+      </Reveal>
+
+      <Reveal delay={0.05}>
+        <div className="glow-card relative overflow-hidden rounded-[28px] p-6 sm:p-8">
+          <div className="absolute top-0 right-0 w-48 h-48 rounded-full blur-3xl opacity-30 pointer-events-none transition-all duration-500" style={{ backgroundColor: colorHex }} />
+          
+          <div className={"absolute top-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-semibold border backdrop-blur-md shadow-lg transition-all duration-300 " + (
+            alertMsg ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4 pointer-events-none"
+          ) + " " + (
+            alertType === "buy" 
+              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 shadow-emerald-500/5" 
+              : "bg-red-500/10 border-red-500/20 text-red-400 shadow-red-500/5"
+          )}>
+            {alertMsg}
+          </div>
+
+          <div className="relative z-10 flex flex-col lg:flex-row gap-8 items-stretch">
+            <div className="flex flex-col justify-between w-full lg:w-1/3">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 block mb-4">
+                  Tradable Players
+                </span>
+                <div className="flex flex-col gap-2">
+                  {MOCK_PREVIEW_PLAYERS.map((p, idx) => (
+                    <button
+                      key={p.id}
+                      onClick={() => {
+                        setActiveIndex(idx);
+                        setSharesOwned(0);
+                      }}
+                      className={"flex items-center gap-3.5 px-4 py-3 rounded-2xl border text-left transition-all duration-300 " + (
+                        activeIndex === idx
+                          ? "bg-zinc-900/40 border-zinc-800/80 shadow-[0_0_20px_rgba(255,255,255,0.02)]"
+                          : "bg-transparent border-transparent hover:bg-zinc-900/20"
+                      )}
+                    >
+                      <Avatar src={p.avatar} name={p.name} size="sm" />
+                      <div className="flex-1 min-w-0">
+                        <span className="text-sm font-bold text-zinc-200 block">{p.name}</span>
+                        <span className="text-xs text-zinc-500 block">{p.rank}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-sm font-mono font-bold text-zinc-300 block">{p.price.toFixed(1)}</span>
+                        <span className={"text-xs font-semibold block " + (p.change.startsWith("+") ? "text-emerald-400" : "text-rose-400")}>{p.change}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-8 pt-6 border-t border-zinc-800/40">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-xs text-zinc-400 font-medium">Your Virtual Holdings</span>
+                  <span className="text-xs font-mono font-bold text-zinc-100 flex items-center gap-1">
+                    {sharesOwned} Shares
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={handleBuy}
+                    className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-pink-500 hover:bg-pink-600 text-white font-semibold text-sm border border-pink-600/50 transition-all duration-300 shadow-[0_2px_10px_rgba(236,72,153,0.2)] hover:shadow-[0_4px_16px_rgba(236,72,153,0.3)] active:scale-[0.98]"
+                  >
+                    <Plus size={14} weight="bold" />
+                    Buy Share
+                  </button>
+                  <button
+                    onClick={handleSell}
+                    className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-zinc-900/60 hover:bg-zinc-900 text-zinc-400 hover:text-zinc-200 font-semibold text-sm border border-zinc-800/80 transition-all duration-300 active:scale-[0.98]"
+                  >
+                    <Minus size={14} weight="bold" />
+                    Sell Share
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex-1 flex flex-col justify-between rounded-[20px] bg-zinc-950/20 border border-zinc-900/60 p-5 sm:p-6 min-h-[300px]">
+              <div>
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <h3 className="text-xl font-black text-zinc-100 leading-none">{player.name}</h3>
+                    <p className="text-xs text-zinc-500 mt-1">{player.rank}</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-2xl font-mono font-black text-zinc-100">{player.price.toFixed(1)} Cr</span>
+                    <span className={"text-xs font-bold block mt-1 " + (player.change.startsWith("+") ? "text-emerald-400" : "text-rose-400")}>
+                      {player.change} (24h)
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid grid-cols-3 gap-4 border-t border-zinc-900/60 pt-4">
+                  <div>
+                    <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider block">Market Cap</span>
+                    <span className="text-sm font-semibold text-zinc-300 block mt-0.5">
+                      {(player.price * 10000).toLocaleString("en-US", { maximumFractionDigits: 0 })} Cr
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider block">24h High</span>
+                    <span className="text-sm font-semibold text-emerald-500 block mt-0.5">
+                      {(player.price * 1.045).toFixed(1)} Cr
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider block">24h Low</span>
+                    <span className="text-sm font-semibold text-rose-500 block mt-0.5">
+                      {(player.price * 0.942).toFixed(1)} Cr
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative flex-1 flex items-end h-[160px] sm:h-[200px] mt-6 select-none">
+                <svg
+                  className="w-full h-full cursor-crosshair overflow-visible"
+                  viewBox="0 0 300 150"
+                  preserveAspectRatio="none"
+                  onMouseMove={handleMouseMove}
+                  onMouseLeave={handleMouseLeave}
+                >
+                  <defs>
+                    <linearGradient id={"grad-" + player.id} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={colorHex} stopOpacity="0.18" />
+                      <stop offset="100%" stopColor={colorHex} stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+
+                  <path
+                    d={player.chartPath + " L 300 150 L 0 150 Z"}
+                    fill={"url(#grad-" + player.id + ")"}
+                    className="transition-all duration-500 ease-out"
+                  />
+
+                  <path
+                    d={player.chartPath}
+                    fill="none"
+                    stroke={colorHex}
+                    strokeWidth="2.5"
+                    className="transition-all duration-500 ease-out"
+                    style={{ filter: "drop-shadow(0 0 6px " + colorHex + "80)" }}
+                  />
+
+                  {tooltipPos.visible && (
+                    <>
+                      <line
+                        x1={tooltipPos.svgX}
+                        y1="0"
+                        x2={tooltipPos.svgX}
+                        y2="150"
+                        stroke="rgba(255,255,255,0.08)"
+                        strokeDasharray="4 4"
+                        strokeWidth="1.2"
+                        className="pointer-events-none"
+                      />
+                      <circle
+                        cx={tooltipPos.svgX}
+                        cy={tooltipPos.svgY}
+                        r="5"
+                        fill={colorHex}
+                        stroke="#fff"
+                        strokeWidth="2"
+                        className="pointer-events-none"
+                        style={{ filter: "drop-shadow(0 0 6px " + colorHex + ")" }}
+                      />
+                    </>
+                  )}
+                </svg>
+
+                {tooltipPos.visible && (
+                  <div
+                    className="absolute bg-zinc-950/85 backdrop-blur-md border border-zinc-800/80 text-[11px] font-mono font-bold text-zinc-100 px-3 py-1.5 rounded-xl shadow-lg pointer-events-none transform -translate-x-1/2 -translate-y-full"
+                    style={{
+                      left: tooltipPos.x + "px",
+                      top: (tooltipPos.y - 12) + "px"
+                    }}
+                  >
+                    {tooltipPos.price} Cr
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </Reveal>
+    </section>
+  );
+}
+
+function FaqSection() {
+  const faqs = [
+    {
+      q: "Is this real money or real investing?",
+      a: "No! OsuStocks is 100% virtual and free to play. The coins, shares, and portfolio values are exclusively for fun and virtual competition. You cannot buy or withdraw coins for real-world money, and there is no gambling involved."
+    },
+    {
+      q: "How are player share prices calculated?",
+      a: "Prices are calculated dynamically using an algorithm tied to a player's official osu! performance metrics (Performance Points (PP), global rank, and active play history) combined with our internal buying and selling supply/demand."
+    },
+    {
+      q: "How often do player prices update?",
+      a: "The market syncs periodically to update stats from the official osu! leaderboards. Price fluctuations triggered by trades on OsuStocks happen in real-time."
+    },
+    {
+      q: "Can I list my own name as a stock?",
+      a: "The platform automatically tracks the top 15,000 global osu! players. If you reach the global ranking threshold, you will automatically become a tradable stock for managers to invest in!"
+    }
+  ];
+
+  return (
+    <section className="relative z-10 mx-auto w-full max-w-3xl px-4 py-16 sm:py-24">
+      <Reveal>
+        <div className="text-center mb-14">
+          <h2 className="text-3xl font-black tracking-tight text-zinc-100 sm:text-4xl">
+            Frequently Asked <span className="text-amber-400">Questions</span>
+          </h2>
+        </div>
+      </Reveal>
+
+      <div className="flex flex-col gap-3">
+        {faqs.map((faq, idx) => (
+          <Reveal key={idx} delay={idx * 0.05}>
+            <FaqItem q={faq.q} a={faq.a} />
+          </Reveal>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function FaqItem({ q, a }: { q: string; a: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className={"glass overflow-hidden rounded-2xl transition-all duration-300 " + (
+      isOpen 
+        ? "border-pink-500/20 bg-zinc-950/40 shadow-[0_4px_20px_rgba(236,72,153,0.04)]" 
+        : "hover:border-zinc-700/50"
+    )}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="relative flex w-full items-center justify-between px-5 py-4 text-left font-semibold text-sm sm:text-base text-zinc-200 transition-colors hover:text-zinc-100"
+      >
+        {isOpen && (
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-r bg-pink-500 animate-pulse" />
+        )}
+        <span className={isOpen ? "pl-3 transition-all duration-300" : "pl-0 transition-all duration-300"}>{q}</span>
+        <CaretDown 
+          size={16} 
+          weight="bold" 
+          className={"text-zinc-500 transition-transform duration-300 " + (isOpen ? "rotate-180 text-pink-400" : "")} 
+        />
+      </button>
+
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="overflow-hidden border-t border-zinc-900/60"
+          >
+            <div className="p-5 pt-4 pl-8">
+              <p className="text-xs sm:text-sm leading-relaxed text-zinc-400">{a}</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

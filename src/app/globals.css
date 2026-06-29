@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-background: #141015;
-  --color-foreground: #f3eef2;
+  --color-background: #120e13;
+  --color-foreground: #f6f0f5;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --color-accent: #ec4899;
@@ -12,17 +12,17 @@
    purplish-dark so every existing zinc-* utility inherits the osu! profile look.
    The pink accent stays as Tailwind's pink (#ec4899) — our magenta twist. */
 @theme {
-  --color-zinc-50: #f9f6f8;
-  --color-zinc-100: #f3eef2;
-  --color-zinc-200: #e7e0e6;
-  --color-zinc-300: #cfc5ce;
-  --color-zinc-400: #aa9fa9;
-  --color-zinc-500: #847a83;
-  --color-zinc-600: #645b63;
-  --color-zinc-700: #483f47;
-  --color-zinc-800: #2e2630;
-  --color-zinc-900: #1f1a1e;
-  --color-zinc-950: #141015;
+  --color-zinc-50: #faf7fb;
+  --color-zinc-100: #f4edf3;
+  --color-zinc-200: #e8e0e7;
+  --color-zinc-300: #d1c4d0;
+  --color-zinc-400: #ac9fa9;
+  --color-zinc-500: #867985;
+  --color-zinc-600: #665b65;
+  --color-zinc-700: #4a3e49;
+  --color-zinc-800: #30262f;
+  --color-zinc-900: #211920;
+  --color-zinc-950: #120e13;
 }
 
 @layer base {
@@ -34,52 +34,94 @@
     color: var(--color-foreground);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    overflow-x: hidden;
   }
   ::selection {
-    background: color-mix(in oklab, var(--color-accent) 40%, transparent);
+    background: color-mix(in oklab, var(--color-accent) 45%, transparent);
     color: #fff;
   }
   :focus-visible {
     outline: 2px solid color-mix(in oklab, var(--color-accent) 70%, transparent);
     outline-offset: 2px;
-    border-radius: 6px;
+    border-radius: 8px;
   }
+  
+  /* Customized Premium Scrollbars */
   * {
     scrollbar-width: thin;
-    scrollbar-color: #2e2630 transparent;
+    scrollbar-color: #30262f transparent;
   }
   *::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
   }
   *::-webkit-scrollbar-thumb {
-    background: #2e2630;
+    background: #30262f;
     border-radius: 9999px;
+    border: 1.5px solid var(--color-background);
   }
   *::-webkit-scrollbar-thumb:hover {
-    background: #483f47;
+    background: #4a3e49;
   }
 }
 
 @layer components {
   /* Shimmer skeleton surface */
   .skeleton {
-    background: linear-gradient(90deg, #1f1a1e 25%, #2e2630 37%, #1f1a1e 63%);
+    background: linear-gradient(95deg, #211920 25%, #30262f 37%, #211920 63%);
     background-size: 200% 100%;
-    animation: skeleton-shimmer 1.6s linear infinite;
+    animation: skeleton-shimmer 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
-  /* Frosted glass with inner refraction edge */
+
+  /* Frosted glass with inner refraction edge and subtle colored reflection */
   .glass {
-    background: color-mix(in oklab, #1f1a1e 72%, transparent);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    background: color-mix(in oklab, #191318 78%, transparent);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 
+      inset 0 1px 0 rgba(255, 255, 255, 0.04),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.2),
+      0 4px 30px rgba(0, 0, 0, 0.3);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
   }
+
+  .glass:hover {
+    border-color: rgba(236, 72, 153, 0.15);
+    box-shadow: 
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 10px 40px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Premium High-Contrast Neon-Glow Panel */
+  .glow-card {
+    background: color-mix(in oklab, #120e13 85%, transparent);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(236, 72, 153, 0.12);
+    box-shadow: 
+      0 0 35px rgba(236, 72, 153, 0.04),
+      inset 0 1px 1px rgba(255, 255, 255, 0.06);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .glow-card:hover {
+    border-color: rgba(236, 72, 153, 0.25);
+    box-shadow: 
+      0 0 45px rgba(236, 72, 153, 0.08),
+      0 12px 40px rgba(0, 0, 0, 0.5),
+      inset 0 1px 1px rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+  }
+
   /* Fine film grain — only ever on a fixed, pointer-events-none layer */
   .grain {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
+  
   /* Suppress the native number-input spinners — we render our own −/+ stepper. */
   .no-spinner {
     -moz-appearance: textfield;
@@ -101,9 +143,7 @@
   }
 }
 
-/* Market ticker marquee — the track holds two copies of the movers, so a -50%
-   shift loops seamlessly. Only applied when motion is allowed (the component
-   renders a static strip under prefers-reduced-motion). */
+/* Market ticker marquee */
 @keyframes ticker-marquee {
   from {
     transform: translateX(0);
@@ -124,75 +164,87 @@
   }
 }
 
+/* --- Theme Config for LIGHT mode --- */
 :root.light {
-  --color-background: #EAE6EC;
-  --color-foreground: #1E1720;
-  --color-zinc-50: #1E1720;
-  --color-zinc-100: #2C242E;
-  --color-zinc-200: #403842;
-  --color-zinc-300: #59505a;
-  --color-zinc-400: #786f79;
-  --color-zinc-500: #9c929d;
-  --color-zinc-600: #bebebe;
-  --color-zinc-700: #d6cbd7;
-  --color-zinc-800: #ede6ee;
-  --color-zinc-900: #f5edf6;
-  --color-zinc-950: #F6F1F8;
+  --color-background: #faf7fa;
+  --color-foreground: #1c151c;
+  --color-zinc-50: #1c151c;
+  --color-zinc-100: #2b212b;
+  --color-zinc-200: #3f333f;
+  --color-zinc-300: #584b57;
+  --color-zinc-400: #766975;
+  --color-zinc-500: #988a97;
+  --color-zinc-600: #bbadbb;
+  --color-zinc-700: #d6cbd6;
+  --color-zinc-800: #ebddeb;
+  --color-zinc-900: #f6edf5;
+  --color-zinc-950: #fdfafc;
 }
 
 :root.light header {
-  background-color: rgba(234, 230, 236, 0.8) !important;
-  border-bottom-color: rgba(0, 0, 0, 0.08) !important;
+  background-color: rgba(250, 247, 250, 0.8) !important;
+  border-bottom-color: rgba(0, 0, 0, 0.06) !important;
 }
 
 :root.light header nav a, 
 :root.light header nav span {
-  color: #1E1720 !important;
+  color: #1c151c !important;
 }
 
 :root.light header nav button {
-  color: #59505a !important;
+  color: #584b57 !important;
 }
 
 :root.light header nav button:hover {
-  background-color: rgba(0, 0, 0, 0.05) !important;
-  color: #1E1720 !important;
+  background-color: rgba(0, 0, 0, 0.04) !important;
+  color: #1c151c !important;
 }
 
 :root.light .glass {
-  background: rgba(245, 237, 246, 0.72);
+  background: rgba(246, 237, 245, 0.72);
   border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+:root.light .glow-card {
+  background: rgba(253, 250, 252, 0.8);
+  border: 1px solid rgba(236, 72, 153, 0.2);
+  box-shadow: 
+    0 0 25px rgba(236, 72, 153, 0.04),
+    0 4px 20px rgba(0, 0, 0, 0.03);
 }
 
 :root.light footer {
-  background-color: rgba(234, 230, 236, 0.4) !important;
-  border-top-color: rgba(0, 0, 0, 0.06) !important;
+  background-color: rgba(250, 247, 250, 0.5) !important;
+  border-top-color: rgba(0, 0, 0, 0.04) !important;
 }
 
 :root.light footer a {
-  color: #59505a !important;
+  color: #584b57 !important;
 }
 
 :root.light footer a:hover {
-  color: #1E1720 !important;
+  color: #1c151c !important;
 }
 
 :root.light footer p,
 :root.light footer span {
-  color: #786f79 !important;
+  color: #766975 !important;
 }
 
+/* --- Premium Background & Particle Animations --- */
 @keyframes fall {
   0% {
     transform: translateY(-20px) rotate(0deg);
     opacity: 0;
   }
-  10% {
-    opacity: 0.8;
+  12% {
+    opacity: 0.85;
   }
-  90% {
-    opacity: 0.8;
+  88% {
+    opacity: 0.85;
   }
   100% {
     transform: translateY(105vh) rotate(360deg);
@@ -206,15 +258,15 @@
 
 @keyframes float {
   0%, 100% {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
   50% {
-    transform: translateY(-8px);
+    transform: translateY(-12px) scale(1.02);
   }
 }
 
 .animate-float {
-  animation: float 4s ease-in-out infinite;
+  animation: float 5s ease-in-out infinite;
 }
 
 @keyframes spin-slow {
@@ -227,5 +279,100 @@
 }
 
 .animate-spin-slow {
-  animation: spin-slow 12s linear infinite;
+  animation: spin-slow 16s linear infinite;
+}
+
+/* Aurora Fluid Motion Mesh Gradients */
+@keyframes aurora-morph-1 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(60px, -90px) scale(1.25);
+  }
+  66% {
+    transform: translate(-50px, 50px) scale(0.8);
+  }
+}
+
+@keyframes aurora-morph-2 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1.15);
+  }
+  50% {
+    transform: translate(-80px, 70px) scale(0.85);
+  }
+}
+
+@keyframes aurora-morph-3 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(0.9);
+  }
+  40% {
+    transform: translate(70px, 60px) scale(1.2);
+  }
+}
+
+@keyframes approach-circle {
+  0% {
+    transform: translate(-50%, -50%) scale(2.2);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.18;
+  }
+  85% {
+    opacity: 0.18;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 0;
+  }
+}
+
+@keyframes particle-drift {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.4;
+  }
+  90% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translate(80px, -110px) rotate(45deg);
+    opacity: 0;
+  }
+}
+
+.animate-aurora-1 {
+  animation: aurora-morph-1 25s ease-in-out infinite;
+}
+
+.animate-aurora-2 {
+  animation: aurora-morph-2 30s ease-in-out infinite;
+}
+
+.animate-aurora-3 {
+  animation: aurora-morph-3 22s ease-in-out infinite;
+}
+
+.animate-approach-1 {
+  animation: approach-circle 10s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.animate-approach-2 {
+  animation: approach-circle 10s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  animation-delay: 3.3s;
+}
+
+.animate-approach-3 {
+  animation: approach-circle 10s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  animation-delay: 6.6s;
+}
+
+.animate-particle-drift {
+  animation: particle-drift 15s linear infinite;
 }

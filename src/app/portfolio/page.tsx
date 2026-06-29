@@ -458,7 +458,7 @@ function MissionsSummary() {
     };
   }, []);
 
-  if (missions === null || missions.length === 0) return null;
+  if (!missions || missions.length === 0) return null;
 
   const daily = missions.filter((m) => m.period === "Daily");
   const done = daily.filter((m) => m.completed).length;

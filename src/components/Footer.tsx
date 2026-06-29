@@ -5,7 +5,9 @@ const API_REPO = "https://github.com/zidanejidan12/OsuStocks.API";
 
 export function Footer() {
   return (
-    <footer className="relative z-10 mt-24 border-t border-white/5 bg-zinc-950/20 backdrop-blur-md">
+    <footer className="relative z-10 mt-28 border-t border-zinc-900/60 bg-zinc-950/15 backdrop-blur-xl">
+      {/* Top glowing ambient line */}
+      <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-pink-500/20 to-transparent" />
       <div className="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-12 sm:flex-row sm:items-start sm:justify-between">
         <div className="max-w-sm">
           <div className="text-lg font-black tracking-tight text-white transition-transform duration-300 hover:scale-102">

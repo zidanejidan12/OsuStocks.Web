@@ -61,6 +61,9 @@ export class ApiError extends Error {
 }
 
 function getMockResponse(path: string, init?: RequestInit): any {
+  if (process.env.NODE_ENV === "test") {
+    return undefined;
+  }
   // Extract path and query params
   const cleanPath = path.split("?")[0];
   const method = init?.method?.toUpperCase() ?? "GET";
@@ -365,10 +368,12 @@ function getMockResponse(path: string, init?: RequestInit): any {
   }
 
   if (cleanPath === "/missions") {
-    return [
-      { code: "m_1", name: "Daily Trade", description: "Execute any trade today", period: "Daily", periodKey: "2026-06-28", metric: "trades", target: 1, currentValue: 1, rewardCredits: 50, completed: true, completedAt: new Date().toISOString(), resetsAt: new Date(Date.now() + 3600000 * 8).toISOString() },
-      { code: "m_2", name: "Weekly Volume", description: "Trade 50 shares this week", period: "Weekly", periodKey: "2026-w26", metric: "volume", target: 50, currentValue: 15, rewardCredits: 300, completed: false, completedAt: null, resetsAt: new Date(Date.now() + 3600000 * 24 * 3).toISOString() }
-    ];
+    return {
+      items: [
+        { code: "m_1", name: "Daily Trade", description: "Execute any trade today", period: "Daily", periodKey: "2026-06-28", metric: "trades", target: 1, currentValue: 1, rewardCredits: 50, completed: true, completedAt: new Date().toISOString(), resetsAt: new Date(Date.now() + 3600000 * 8).toISOString() },
+        { code: "m_2", name: "Weekly Volume", description: "Trade 50 shares this week", period: "Weekly", periodKey: "2026-w26", metric: "volume", target: 50, currentValue: 15, rewardCredits: 300, completed: false, completedAt: null, resetsAt: new Date(Date.now() + 3600000 * 24 * 3).toISOString() }
+      ]
+    };
   }
 
   if (cleanPath === "/notifications") {
