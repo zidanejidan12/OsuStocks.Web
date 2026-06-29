@@ -462,12 +462,7 @@ function Hero({ onLogin }: { onLogin: () => void }) {
             </h1>
 
             <p className="mt-6 max-w-[44ch] text-lg sm:text-xl font-normal leading-relaxed text-zinc-400">
-              Buy and sell shares tied to osu! player performance. Track the
-              market, build a portfolio, and ride every rank-up.
-            </p>
-
-            <p className="mt-4 max-w-[48ch] text-xs sm:text-sm leading-relaxed text-zinc-500 font-normal">
-              A fan-made virtual simulation game. All credits, prices, and holdings are completely virtual. They have no real-world value and can never be exchanged for money. Not affiliated with osu! or ppy Pty Ltd.
+              The ultimate fantasy market for osu! players. Build your portfolio with shares tied directly to live performance, predict the next top plays, and dominate the global leaderboards.
             </p>
 
             <div className="mt-8 flex flex-wrap justify-center md:justify-start items-center gap-3">
