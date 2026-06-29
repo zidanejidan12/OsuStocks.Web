@@ -359,7 +359,7 @@ function OsuAuroraBackground() {
         id: i,
         left: Math.random() * 100,
         top: Math.random() * 100,
-        size: type === "diamond" ? Math.random() * 4 + 3 : Math.random() * 30 + 15,
+        size: type === "diamond" ? Math.random() * 3 + 2.5 : Math.random() * 30 + 15,
         delay: Math.random() * -10,
         duration: type === "diamond" ? Math.random() * 8 + 6 : Math.random() * 20 + 12,
         type,
@@ -370,7 +370,7 @@ function OsuAuroraBackground() {
   }, []);
 
   return (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 animate-hue-shift">
       {/* Moving Aurora Mesh Gradients */}
       <div className="absolute -top-[10%] -right-[10%] w-[60%] h-[60%] rounded-full bg-pink-500/10 blur-[120px] animate-aurora-1" />
       <div className="absolute -bottom-[10%] -left-[10%] w-[60%] h-[60%] rounded-full bg-cyan-500/10 blur-[120px] animate-aurora-2" />
@@ -390,26 +390,26 @@ function OsuAuroraBackground() {
       {particles.map((p) => {
         if (p.type === "diamond") {
           const bgGradient = p.color === "pink" 
-            ? "from-pink-400 to-pink-300" 
+            ? "from-pink-500/15 to-transparent" 
             : p.color === "cyan" 
-            ? "from-cyan-400 to-cyan-300" 
-            : "from-white to-zinc-100";
+            ? "from-cyan-500/15 to-transparent" 
+            : "from-white/10 to-transparent";
           const shadowColor = p.color === "pink"
-            ? "rgba(236,72,153,0.7)"
+            ? "rgba(236,72,153,0.15)"
             : p.color === "cyan"
-            ? "rgba(6,182,212,0.7)"
-            : "rgba(255,255,255,0.55)";
+            ? "rgba(6,182,212,0.15)"
+            : "rgba(255,255,255,0.1)";
           
           return (
             <span
               key={p.id}
-              className={`absolute transform rotate-45 bg-gradient-to-tr ${bgGradient} border border-white/20 animate-fall-wobble`}
+              className={`absolute transform rotate-45 bg-gradient-to-tr ${bgGradient} border border-white/5 animate-fall-wobble`}
               style={{
                 left: `${p.left}%`,
                 width: `${p.size}px`,
                 height: `${p.size}px`,
                 top: `-20px`,
-                boxShadow: `0 0 12px ${shadowColor}, 0 0 24px ${shadowColor}`,
+                boxShadow: `0 0 6px ${shadowColor}`,
                 animationDelay: `${p.delay}s`,
                 animationDuration: `${p.duration}s`,
                 animationIterationCount: "infinite",
@@ -467,7 +467,7 @@ function Hero({ onLogin }: { onLogin: () => void }) {
             </p>
 
             <p className="mt-4 max-w-[48ch] text-xs sm:text-sm leading-relaxed text-zinc-500 font-normal">
-              A free, fan-made game for fun. All credits, prices, and holdings are <strong className="text-zinc-400 font-semibold">virtual</strong>—they have no real-world value, can&apos;t be bought or cashed out, and this isn&apos;t real investing or gambling. Not affiliated with osu! or ppy Pty Ltd.
+              A fan-made virtual simulation game. All credits, prices, and holdings are completely virtual. They have no real-world value and can never be exchanged for money. Not affiliated with osu! or ppy Pty Ltd.
             </p>
 
             <div className="mt-8 flex flex-wrap justify-center md:justify-start items-center gap-3">
@@ -515,8 +515,63 @@ function DashboardSkeleton() {
   );
 }
 
+function WelcomeBanner({ show, onDismiss }: { show: boolean; onDismiss: () => void }) {
+  return (
+    <AnimatePresence>
+      {show && (
+        <motion.div
+          initial={{ y: -100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: -100, opacity: 0 }}
+          transition={{ type: "spring", stiffness: 100, damping: 18 }}
+          className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100vw-2rem)] max-w-xl p-[1.5px] rounded-2xl bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 shadow-[0_20px_50px_rgba(236,72,153,0.2)]"
+        >
+          <div className="bg-zinc-950/95 backdrop-blur-3xl rounded-[15px] p-5 flex items-start gap-4">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-pink-500/10 text-pink-400 border border-pink-500/20">
+              <ChartLineUp size={22} weight="bold" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h4 className="text-sm font-black text-zinc-100 flex items-center gap-1.5">
+                Welcome to OsuStocks! 📈
+              </h4>
+              <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
+                You have entered the ultimate virtual fantasy stock exchange. Buy & sell shares of your favorite osu! players, track live rank stats, and build your portfolio!
+              </p>
+            </div>
+            <button
+              onClick={onDismiss}
+              className="shrink-0 text-xs font-bold text-zinc-100 hover:text-white bg-pink-500 hover:bg-pink-600 border border-pink-600/50 shadow-md hover:shadow-lg px-3.5 py-2 rounded-xl transition-all duration-200"
+            >
+              Let's Trade
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
 export default function Home() {
   const { user, loading: authLoading, login } = useAuth();
+
+  const [showWelcome, setShowWelcome] = useState(false);
+
+  useEffect(() => {
+    if (!user) {
+      const hasSeen = localStorage.getItem("osustocks_welcome_seen");
+      if (!hasSeen) {
+        const timer = setTimeout(() => {
+          setShowWelcome(true);
+        }, 1500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [user]);
+
+  const handleDismissWelcome = () => {
+    localStorage.setItem("osustocks_welcome_seen", "true");
+    setShowWelcome(false);
+  };
 
   const [overview, setOverview] = useState<MarketOverview | null>(null);
   const [overviewError, setOverviewError] = useState<string | null>(null);
@@ -644,6 +699,7 @@ export default function Home() {
     return (
       <div className="relative w-full overflow-x-hidden pb-16">
         <OsuAuroraBackground />
+        <WelcomeBanner show={showWelcome} onDismiss={handleDismissWelcome} />
         <LiveActivityPopup />
         <Hero onLogin={() => login("/")} />
         <StatsSection />
