@@ -108,7 +108,27 @@ export function MarketTicker() {
     };
   }, [hidden]);
 
-  if (hidden || !movers || movers.length === 0) return null;
+  if (hidden) {
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          setHidden(false);
+          try {
+            window.localStorage.removeItem(STORAGE_KEY);
+          } catch {}
+        }}
+        className="fixed bottom-4 right-4 z-40 flex items-center gap-2 px-3.5 py-2 rounded-full border border-zinc-800 bg-zinc-950/90 backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.4)] hover:border-pink-500/40 hover:bg-zinc-900/30 transition-all duration-300 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/50"
+      >
+        <span className="h-1.5 w-1.5 rounded-full bg-pink-500 animate-pulse" />
+        <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-400 group-hover:text-zinc-200">
+          Show Ticker
+        </span>
+      </button>
+    );
+  }
+
+  if (!movers || movers.length === 0) return null;
 
   const dismiss = () => {
     setHidden(true);
