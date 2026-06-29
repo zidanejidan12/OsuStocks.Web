@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { Pause, Play, CaretLeft, CaretRight } from "@phosphor-icons/react";
 import { getLiveMovers } from "@/lib/api/client";
 import type { LiveMover } from "@/lib/api/types";
@@ -115,7 +115,7 @@ export function MarketTicker() {
         style={{
           width: "100%",
           left: 0,
-          transform: collapsed ? "translateX(calc(-100% + 42px))" : "translateX(0)",
+          transform: collapsed ? "translateX(calc(-100% + 64px))" : "translateX(0)",
         }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
@@ -189,20 +189,44 @@ export function MarketTicker() {
           )}
         </div>
 
-        {/* Slide Toggle Button Area */}
-        <div className="flex h-full shrink-0 items-center border-l border-zinc-800/40 px-2 bg-zinc-950/80 backdrop-blur-md z-50">
-          <button
-            type="button"
+        {/* Slide Toggle Switch Area */}
+        <div className="flex h-full w-[64px] shrink-0 items-center justify-center border-l border-zinc-800/40 bg-zinc-950/80 backdrop-blur-md z-50">
+          <div 
             onClick={() => setCollapsed(!collapsed)}
-            aria-label={collapsed ? "Expand live ticker" : "Collapse live ticker"}
-            className="grid h-7 w-7 place-items-center rounded-md text-zinc-400 transition-all duration-300 hover:bg-pink-500/10 hover:text-pink-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/50"
+            className={`w-11 h-6 rounded-full border transition-colors duration-300 flex items-center p-0.5 cursor-pointer relative ${
+              collapsed 
+                ? "bg-zinc-900 border-zinc-800 justify-start" 
+                : "bg-pink-500/20 border-pink-500/30 justify-end"
+            }`}
+            title={collapsed ? "Slide right to expand" : "Slide left to collapse"}
           >
-            {collapsed ? (
-              <CaretRight size={16} weight="bold" className="animate-pulse" />
-            ) : (
-              <CaretLeft size={16} weight="bold" />
-            )}
-          </button>
+            {/* Draggable/Animated Thumb */}
+            <motion.div
+              layout
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.2}
+              onDragEnd={(event, info) => {
+                if (info.offset.x < -10 && !collapsed) {
+                  setCollapsed(true);
+                }
+                if (info.offset.x > 10 && collapsed) {
+                  setCollapsed(false);
+                }
+              }}
+              className={`w-4.5 h-4.5 rounded-full flex items-center justify-center shadow-md transition-colors duration-300 ${
+                collapsed 
+                  ? "bg-zinc-500" 
+                  : "bg-pink-500"
+              }`}
+            >
+              {collapsed ? (
+                <CaretRight size={10} weight="bold" className="text-zinc-950" />
+              ) : (
+                <CaretLeft size={10} weight="bold" className="text-white" />
+              )}
+            </motion.div>
+          </div>
         </div>
       </aside>
     </>
