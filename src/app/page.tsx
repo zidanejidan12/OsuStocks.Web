@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, WarningCircle, Lock, Wallet as WalletIcon, TrendUp, Users, Trophy, Question, ChartLineUp, Plus, Minus, CaretDown, Coins, TerminalWindow, Shield, Broadcast, Flame, X, GameController, Bell, BellSlash } from "@phosphor-icons/react";
+import { ArrowRight, WarningCircle, Lock, Wallet as WalletIcon, TrendUp, Users, Trophy, Question, ChartLineUp, Plus, Minus, CaretDown, Coins, TerminalWindow, Shield, Broadcast, Flame, X, Bell, BellSlash } from "@phosphor-icons/react";
 import type { MarketOverview, Paged, StockSort, StockSummary, Wallet } from "@/lib/api/types";
 import { getMarketOverview, getStocks, getWallet, ApiError } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/auth-context";
@@ -16,10 +16,12 @@ import { Reveal } from "@/components/motion/Reveal";
 import { SponsorCard } from "@/components/SponsorCredit";
 import { MarketOverviewCards } from "@/components/market/MarketOverviewCards";
 import { StockList } from "@/components/market/StockList";
+import { StockDetail } from "@/components/market/StockDetail";
 import { LiveMarketPanel } from "@/components/market/LiveMarketPanel";
 import { Coin } from "@/components/ui/Coin";
 import { Avatar } from "@/components/ui/Avatar";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
+import { spring } from "@/lib/motion";
 
 const PAGE_SIZE = 25;
 
@@ -386,83 +388,8 @@ function LiveActivityPopup({ isMuted, setIsMuted }: { isMuted: boolean; setIsMut
 
 
 
-const TEAM = [
-  { 
-    id: 3484548, 
-    name: "Almond Eye", 
-    role: "Backend"
-  },
-  { 
-    id: 11421465, 
-    name: "Verxina", 
-    role: "Frontend"
-  },
-  { 
-    id: 6560131, 
-    name: "Nishino Flower", 
-    role: "BUM"
-  },
-];
 
-function DevTeamCard({ isMuted, setIsMuted }: { isMuted: boolean; setIsMuted: (val: boolean) => void }) {
-  return (
-    <div className="rounded-[24px] border border-zinc-800/80 bg-zinc-900/10 p-5 shadow-sm glow-card">
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <GameController size={18} className="text-pink-500" />
-          <span className="text-xs font-display font-extrabold uppercase tracking-wider text-zinc-300">
-            Development Team
-          </span>
-        </div>
-        <button
-          type="button"
-          onClick={() => {
-            const newMuted = !isMuted;
-            setIsMuted(newMuted);
-            localStorage.setItem("muteLiveActivity", newMuted ? "true" : "false");
-          }}
-          className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[10px] font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
-            isMuted 
-              ? "bg-zinc-900/50 border-zinc-800/80 text-zinc-500 hover:text-zinc-400"
-              : "bg-pink-500/10 border-pink-500/20 text-pink-400 hover:bg-pink-500/20"
-          }`}
-          title={isMuted ? "Turn On Live Popups" : "Turn Off Live Popups"}
-        >
-          {isMuted ? <BellSlash size={12} /> : <Bell size={12} />}
-          <span className="hidden sm:inline">{isMuted ? "Muted" : "Live Feed"}</span>
-        </button>
-      </div>
-      <div className="grid grid-cols-3 gap-3">
-        {TEAM.map((member) => (
-          <a
-            key={member.id}
-            href={`https://osu.ppy.sh/users/${member.id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group flex flex-col items-center text-center p-3 rounded-2xl border border-zinc-900/60 bg-zinc-950/40 hover:border-pink-500/40 hover:bg-zinc-900/10 transition-all duration-300"
-          >
-            <Avatar
-              src={`https://a.ppy.sh/${member.id}`}
-              name={member.name}
-              size="sm"
-              className="ring-2 ring-zinc-800 transition-all duration-300 group-hover:ring-pink-500/50 mb-2 h-10 w-10 sm:h-12 sm:w-12"
-            />
-            <div className="min-w-0 w-full">
-              <div className="truncate text-xs font-display font-black text-zinc-200 group-hover:text-pink-400">
-                {member.name}
-              </div>
-              <div className="text-[8px] text-zinc-500 font-mono uppercase tracking-wider truncate mt-0.5">
-                {member.role}
-              </div>
-            </div>
-          </a>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function Hero({ onLogin, isMuted, setIsMuted }: { onLogin: () => void; isMuted: boolean; setIsMuted: (val: boolean) => void }) {
+function Hero({ onLogin }: { onLogin: () => void }) {
   return (
     <section className="relative w-full min-h-[75vh] flex items-center pt-12 pb-16 sm:pt-16 sm:pb-20">
       <div className="absolute top-1/4 left-1/4 -z-10 h-72 w-72 rounded-full bg-cyan-500/10 blur-[120px] pointer-events-none" />
@@ -497,7 +424,6 @@ function Hero({ onLogin, isMuted, setIsMuted }: { onLogin: () => void; isMuted: 
         <Reveal delay={0.1} className="md:pl-4">
           <div className="flex flex-col gap-4">
             <SponsorCard />
-            <DevTeamCard isMuted={isMuted} setIsMuted={setIsMuted} />
             <LiveMarketPanel />
           </div>
         </Reveal>
@@ -653,6 +579,8 @@ export default function Home() {
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState<StockSort>("change24h_desc");
   const [country, setCountry] = useState("ALL");
+  const [selectedStockId, setSelectedStockId] = useState<string | null>(null);
+  const [balanceLoaded, setBalanceLoaded] = useState(false);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
@@ -702,7 +630,10 @@ export default function Home() {
 
     getWallet()
       .then((data) => {
-        if (!cancelled) setWallet(data);
+        if (!cancelled) {
+          setWallet(data);
+          setTimeout(() => setBalanceLoaded(true), 500);
+        }
       })
       .catch(() => {
         // fail silently
@@ -829,6 +760,14 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [overview]);
 
+  const handleQuickTrade = () => {
+    const searchInput = document.getElementById("stock-search");
+    if (searchInput) {
+      searchInput.scrollIntoView({ behavior: "smooth", block: "center" });
+      searchInput.focus();
+    }
+  };
+
   if (authLoading) {
     return <DashboardSkeleton />;
   }
@@ -836,8 +775,7 @@ export default function Home() {
   if (!user) {
     return (
       <div className="relative w-full overflow-x-hidden pb-16">
-        <LiveActivityPopup isMuted={isMuted} setIsMuted={setIsMuted} />
-        <Hero onLogin={() => login("/")} isMuted={isMuted} setIsMuted={setIsMuted} />
+        <Hero onLogin={() => login("/")} />
         <InteractiveChartSection />
         <FaqSection />
       </div>
@@ -850,44 +788,98 @@ export default function Home() {
       <div className="absolute top-0 right-0 -z-10 h-[300px] w-[300px] rounded-full bg-pink-500/5 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 -z-10 h-[300px] w-[300px] rounded-full bg-purple-500/5 blur-[120px] pointer-events-none" />
 
+      {/* Floating Live Buy / activity popup */}
+      <LiveActivityPopup isMuted={isMuted} setIsMuted={setIsMuted} />
+
       <Reveal>
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between border-b border-zinc-900 pb-8 mb-8">
           {/* Welcome User Section */}
           <div className="flex items-center gap-4">
-            <Avatar
-              src={user.avatarUrl}
-              name={user.username}
-              size="lg"
-              className="ring-2 ring-pink-500/20"
-            />
+            <div className="relative group shrink-0">
+              <Avatar
+                src={user.avatarUrl}
+                name={user.username}
+                size="lg"
+                className="ring-2 ring-pink-500/20 group-hover:ring-pink-500/40 transition-all duration-300"
+              />
+              <div className="absolute -bottom-1 -right-1 bg-pink-500 border border-zinc-950 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full shadow tracking-wider">
+                PRO
+              </div>
+            </div>
             <div>
-              <div className="flex items-center gap-2.5">
-                <h1 className="text-2xl font-semibold tracking-tighter text-zinc-100 sm:text-3xl">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <h1 className="text-2xl font-black font-display tracking-tight text-zinc-100 sm:text-3xl">
                   {user.username}
                 </h1>
-                {user.equippedTitle && (
-                  <span className="rounded-full bg-pink-500/10 px-2.5 py-0.5 text-xs font-medium text-pink-400 border border-pink-500/20">
+                {user.equippedTitle ? (
+                  <span className="rounded-full bg-pink-500/10 px-2.5 py-0.5 text-[10px] font-bold text-pink-400 border border-pink-500/20 uppercase tracking-wider">
                     {user.equippedTitle}
+                  </span>
+                ) : (
+                  <span className="rounded-full bg-cyan-500/10 px-2.5 py-0.5 text-[10px] font-bold text-cyan-400 border border-cyan-500/20 uppercase tracking-wider">
+                    Trader
                   </span>
                 )}
               </div>
-              <p className="text-sm text-zinc-500 mt-1">
-                Good to see you back on the stock market today.
-              </p>
+              
+              {/* Gamified Level Progress Bar HUD */}
+              <div className="mt-2 flex items-center gap-2.5 min-w-[200px] sm:w-60">
+                <span className="text-[9px] font-black text-zinc-400 uppercase tracking-wider shrink-0">LV. 14</span>
+                <div className="h-1.5 flex-1 bg-zinc-950 border border-zinc-900 rounded-full overflow-hidden relative">
+                  <div className="absolute top-0 left-0 bottom-0 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full" style={{ width: "74%" }} />
+                </div>
+                <span className="font-mono text-[9px] font-bold text-pink-400 shrink-0">74% XP</span>
+              </div>
             </div>
           </div>
 
-          {/* Quick Wallet Stats Widget */}
-          <div className="flex items-center gap-3 self-start md:self-auto bg-zinc-900/40 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-4 min-w-[200px]">
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-pink-500/10 text-pink-400 border border-pink-500/20">
-              <WalletIcon size={20} weight="bold" />
+          {/* Quick Wallet Stats Widget & Actions */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="flex items-center gap-3 bg-zinc-900/40 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-4 min-w-[210px]">
+              <div className="grid h-10 w-10 place-items-center rounded-xl bg-pink-500/10 text-pink-400 border border-pink-500/20">
+                <WalletIcon size={20} weight="bold" />
+              </div>
+              <div>
+                <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block">Available Balance</span>
+                <span className="text-lg font-mono font-bold text-zinc-100 tabular-nums flex items-center gap-1.5 mt-0.5">
+                  <Coin />
+                  {!wallet ? (
+                    <span className="h-5 w-16 skeleton rounded inline-block" />
+                  ) : !balanceLoaded ? (
+                    <motion.span
+                      initial={{ opacity: 0.4 }}
+                      animate={{ opacity: [0.4, 1, 0.4] }}
+                      transition={{ repeat: Infinity, duration: 1 }}
+                    >
+                      Loading...
+                    </motion.span>
+                  ) : (
+                    <motion.span
+                      initial={{ scale: 0.9, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={spring}
+                    >
+                      {wallet.balance.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+                    </motion.span>
+                  )}
+                </span>
+              </div>
             </div>
-            <div>
-              <span className="text-xs text-zinc-500 block font-medium">Available Balance</span>
-              <span className="text-lg font-mono font-bold text-zinc-100 tabular-nums flex items-center gap-1.5 mt-0.5">
-                <Coin />
-                {wallet ? wallet.balance.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : "..."}
-              </span>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleQuickTrade}
+                className="flex items-center justify-center h-11 px-4 rounded-2xl border border-zinc-800 bg-zinc-900/45 hover:border-pink-500/30 text-zinc-300 hover:text-pink-400 font-display font-bold text-xs uppercase tracking-wider transition-all duration-300 hover:shadow-[0_0_15px_rgba(236,72,153,0.05)] cursor-pointer"
+              >
+                Quick Trade
+              </button>
+              <Link
+                href="/wallet"
+                title="Deposit Coins"
+                className="flex items-center justify-center h-11 w-11 rounded-2xl border border-zinc-800 bg-zinc-900/45 hover:border-cyan-500/30 text-zinc-300 hover:text-cyan-400 font-display font-black text-sm uppercase transition-all duration-300 hover:shadow-[0_0_15px_rgba(6,182,212,0.05)]"
+              >
+                D
+              </Link>
             </div>
           </div>
         </div>
@@ -897,13 +889,13 @@ export default function Home() {
       <Reveal delay={0.02}>
         <div className="flex items-end justify-between gap-3 mb-6">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl font-semibold tracking-tighter text-zinc-100 sm:text-2xl">
-              Market Overview
+            <h2 className="text-xl font-black font-display tracking-tight bg-gradient-to-r from-zinc-100 via-pink-100 to-pink-500 bg-clip-text text-transparent sm:text-2xl">
+              Market Dashboard
             </h2>
-            <div className="flex items-center gap-1.5 rounded-full bg-cyan-500/10 px-2 py-0.5 border border-cyan-500/20">
+            <div className="flex items-center gap-1.5 rounded-full bg-cyan-500/10 px-2.5 py-0.5 border border-cyan-500/20">
               <StatusDot tone="cyan" />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-cyan-400">
-                Live
+              <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-cyan-400">
+                Live Feed
               </span>
             </div>
           </div>
@@ -955,10 +947,46 @@ export default function Home() {
               pageSize={PAGE_SIZE}
               totalCount={totalCount}
               onPageChange={setPage}
+              onSelectStock={setSelectedStockId}
             />
           </Reveal>
         </div>
       )}
+
+      {/* Modern Player Details Modal Dialog */}
+      <AnimatePresence>
+        {selectedStockId && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedStockId(null)}
+              className="absolute inset-0 bg-zinc-950/80 backdrop-blur-md cursor-pointer"
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 15 }}
+              transition={{ type: "spring", duration: 0.4 }}
+              className="relative w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-3xl border border-zinc-800/80 bg-zinc-950/95 shadow-2xl p-4 sm:p-6"
+            >
+              <button
+                onClick={() => setSelectedStockId(null)}
+                className="absolute top-4 right-4 z-50 flex h-8 w-8 items-center justify-center rounded-xl bg-zinc-900/60 border border-zinc-800 text-zinc-400 hover:text-zinc-100 transition-colors hover:border-zinc-700 active:scale-90 focus:outline-none cursor-pointer"
+                aria-label="Close modal"
+              >
+                <X size={16} weight="bold" />
+              </button>
+              <StockDetail
+                stockId={selectedStockId}
+                isModal={true}
+                onClose={() => setSelectedStockId(null)}
+              />
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

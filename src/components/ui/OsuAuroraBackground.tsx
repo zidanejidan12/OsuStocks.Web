@@ -25,9 +25,9 @@ const PATH_CONFIGS: Record<string, PathConfig> = {
       bg3: "rgba(147, 51, 234, 0.1)",  // Purple
     },
     lightColors: {
-      bg1: "rgba(236, 72, 153, 0.05)",
-      bg2: "rgba(6, 182, 212, 0.05)",
-      bg3: "rgba(147, 51, 234, 0.04)",
+      bg1: "rgba(236, 72, 153, 0.16)", // Stronger Pink Aurora
+      bg2: "rgba(6, 182, 212, 0.14)",  // Stronger Cyan Aurora
+      bg3: "rgba(147, 51, 234, 0.12)",  // Stronger Purple Aurora
     },
     gridOpacity: 0.015,
   },
@@ -38,9 +38,9 @@ const PATH_CONFIGS: Record<string, PathConfig> = {
       bg3: "rgba(6, 182, 212, 0.14)",   // Light Cyan
     },
     lightColors: {
-      bg1: "rgba(236, 72, 153, 0.08)",
-      bg2: "rgba(147, 51, 234, 0.06)",
-      bg3: "rgba(6, 182, 212, 0.05)",
+      bg1: "rgba(236, 72, 153, 0.20)",
+      bg2: "rgba(147, 51, 234, 0.16)",
+      bg3: "rgba(6, 182, 212, 0.12)",
     },
     gridOpacity: 0.02,
   },
@@ -52,9 +52,9 @@ const PATH_CONFIGS: Record<string, PathConfig> = {
       bg3: "rgba(220, 38, 38, 0.08)",  // Red
     },
     lightColors: {
-      bg1: "rgba(249, 115, 22, 0.06)",
-      bg2: "rgba(236, 72, 153, 0.05)",
-      bg3: "rgba(220, 38, 38, 0.03)",
+      bg1: "rgba(249, 115, 22, 0.15)",
+      bg2: "rgba(236, 72, 153, 0.12)",
+      bg3: "rgba(220, 38, 38, 0.08)",
     },
     gridOpacity: 0.012,
   },
@@ -66,9 +66,9 @@ const PATH_CONFIGS: Record<string, PathConfig> = {
       bg3: "rgba(236, 72, 153, 0.08)", // Pink
     },
     lightColors: {
-      bg1: "rgba(234, 179, 8, 0.06)",
-      bg2: "rgba(99, 102, 241, 0.05)",
-      bg3: "rgba(236, 72, 153, 0.03)",
+      bg1: "rgba(234, 179, 8, 0.15)",
+      bg2: "rgba(99, 102, 241, 0.12)",
+      bg3: "rgba(236, 72, 153, 0.08)",
     },
     gridOpacity: 0.02,
   },
@@ -80,9 +80,9 @@ const PATH_CONFIGS: Record<string, PathConfig> = {
       bg3: "rgba(59, 130, 246, 0.08)",  // Blue
     },
     lightColors: {
-      bg1: "rgba(16, 185, 129, 0.05)",
-      bg2: "rgba(6, 182, 212, 0.05)",
-      bg3: "rgba(59, 130, 246, 0.03)",
+      bg1: "rgba(16, 185, 129, 0.14)",
+      bg2: "rgba(6, 182, 212, 0.12)",
+      bg3: "rgba(59, 130, 246, 0.08)",
     },
     gridOpacity: 0.01,
   },
@@ -179,15 +179,15 @@ export function OsuAuroraBackground() {
   const isLogin = pathname === "/login";
 
   const gridColor = isLightMode 
-    ? `rgba(28, 21, 28, ${config.gridOpacity})` 
+    ? `rgba(28, 21, 28, ${config.gridOpacity * 2.2})` 
     : `rgba(255, 255, 255, ${config.gridOpacity})`;
 
   return (
-    <div className={`fixed inset-0 overflow-hidden pointer-events-none z-0 ${isLogin ? "" : "animate-hue-shift"}`}>
+    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 animate-hue-shift">
       {/* Moving Aurora Mesh Gradients */}
-      <motion.div style={{ y: y1, backgroundColor: activeColors.bg1 }} className={`absolute -top-[10%] -right-[10%] w-[60%] h-[60%] rounded-full blur-[120px] ${isLogin ? "" : "animate-aurora-1"}`} />
-      <motion.div style={{ y: y2, backgroundColor: activeColors.bg2 }} className={`absolute -bottom-[10%] -left-[10%] w-[60%] h-[60%] rounded-full blur-[120px] ${isLogin ? "" : "animate-aurora-2"}`} />
-      <motion.div style={{ y: y3, backgroundColor: activeColors.bg3 }} className={`absolute top-[20%] right-[10%] w-[50%] h-[50%] rounded-full blur-[130px] ${isLogin ? "" : "animate-aurora-3"}`} />
+      <motion.div style={{ y: y1, backgroundColor: activeColors.bg1 }} className="absolute -top-[10%] -right-[10%] w-[60%] h-[60%] rounded-full blur-[120px] animate-aurora-1" />
+      <motion.div style={{ y: y2, backgroundColor: activeColors.bg2 }} className="absolute -bottom-[10%] -left-[10%] w-[60%] h-[60%] rounded-full blur-[120px] animate-aurora-2" />
+      <motion.div style={{ y: y3, backgroundColor: activeColors.bg3 }} className="absolute top-[20%] right-[10%] w-[50%] h-[50%] rounded-full blur-[130px] animate-aurora-3" />
 
       {/* Grid overlay */}
       <motion.div 
@@ -198,14 +198,27 @@ export function OsuAuroraBackground() {
         className="absolute inset-0 bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]" 
       />
 
+      {/* Scanning Laser/Grid Sweep */}
+      <motion.div
+        initial={{ y: "-10%" }}
+        animate={{ y: "110%" }}
+        transition={{
+          duration: 16,
+          repeat: Infinity,
+          ease: "linear",
+        }}
+        className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-pink-500/10 to-transparent opacity-25"
+        style={{
+          boxShadow: "0 0 15px rgba(236, 72, 153, 0.15)",
+        }}
+      />
+
       {/* osu! Approach Circles */}
-      {!isLogin && (
-        <motion.div style={{ y: yApproach }} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] z-0">
-          <div className="absolute top-1/2 left-1/2 w-full h-full rounded-full border border-pink-500/15 shadow-[0_0_15px_rgba(236,72,153,0.08)] animate-approach-1" />
-          <div className="absolute top-1/2 left-1/2 w-full h-full rounded-full border border-cyan-500/10 shadow-[0_0_15px_rgba(6,182,212,0.08)] animate-approach-2" />
-          <div className="absolute top-1/2 left-1/2 w-full h-full rounded-full border border-pink-500/5 shadow-[0_0_15px_rgba(236,72,153,0.04)] animate-approach-3" />
-        </motion.div>
-      )}
+      <motion.div style={{ y: yApproach }} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] z-0">
+        <div className="absolute top-1/2 left-1/2 w-full h-full rounded-full border border-pink-500/15 shadow-[0_0_15px_rgba(236,72,153,0.08)] animate-approach-1" />
+        <div className="absolute top-1/2 left-1/2 w-full h-full rounded-full border border-cyan-500/10 shadow-[0_0_15px_rgba(6,182,212,0.08)] animate-approach-2" />
+        <div className="absolute top-1/2 left-1/2 w-full h-full rounded-full border border-pink-500/5 shadow-[0_0_15px_rgba(236,72,153,0.04)] animate-approach-3" />
+      </motion.div>
 
       {/* falling snowflakes (diamonds) & floating blurred orbs */}
       {!isLogin && particles.map((p) => {

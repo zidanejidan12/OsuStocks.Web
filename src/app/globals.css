@@ -219,6 +219,10 @@
   --color-zinc-950: #fdfafc;
 }
 
+:root.light body {
+  background: linear-gradient(135deg, #faf7fa 0%, #f5ecf4 35%, #fdfafc 70%, #f4edf3 100%) !important;
+}
+
 :root.light header {
   background-color: rgba(250, 247, 250, 0.8) !important;
   border-bottom-color: rgba(0, 0, 0, 0.06) !important;

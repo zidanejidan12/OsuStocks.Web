@@ -1166,7 +1166,15 @@ function ProfileCover({ bannerUrl }: { bannerUrl?: string | null }) {
   );
 }
 
-export function StockDetail({ stockId }: { stockId: string }) {
+export function StockDetail({
+  stockId,
+  isModal = false,
+  onClose,
+}: {
+  stockId: string;
+  isModal?: boolean;
+  onClose?: () => void;
+}) {
   const [stock, setStock] = useState<StockSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -1220,7 +1228,19 @@ export function StockDetail({ stockId }: { stockId: string }) {
     };
   }, [stockId]);
 
-  const backLink = (
+  const backLink = isModal ? (
+    <button
+      onClick={onClose}
+      className="group inline-flex items-center gap-1.5 text-sm text-zinc-400 transition-colors hover:text-zinc-100 cursor-pointer focus:outline-none bg-zinc-900/60 border border-zinc-800 px-3.5 py-1.5 rounded-xl hover:border-zinc-700 active:scale-95"
+    >
+      <CaretLeft
+        size={16}
+        weight="bold"
+        className="transition-transform group-hover:-translate-x-0.5"
+      />
+      Back to Market
+    </button>
+  ) : (
     <Link
       href="/"
       className="group inline-flex items-center gap-1.5 text-sm text-zinc-400 transition-colors hover:text-zinc-100"
@@ -1234,10 +1254,14 @@ export function StockDetail({ stockId }: { stockId: string }) {
     </Link>
   );
 
+  const containerClass = isModal
+    ? "w-full max-w-5xl mx-auto px-1.5 py-3 sm:py-5"
+    : "mx-auto max-w-6xl px-4 py-10 sm:py-14";
+
   if (loading) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-10 sm:py-14">
-        <Skeleton className="h-5 w-24" />
+      <div className={containerClass}>
+        <Skeleton className="h-8 w-32 rounded-xl" />
         <div className="mt-8 flex flex-col gap-4 border-b border-zinc-800/60 pb-8 sm:flex-row sm:items-end sm:justify-between">
           <div className="flex items-center gap-4">
             <Skeleton className="h-16 w-16 rounded-full" />
@@ -1261,7 +1285,7 @@ export function StockDetail({ stockId }: { stockId: string }) {
 
   if (unauthorized) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-10 sm:py-14">
+      <div className={containerClass}>
         {backLink}
         <div className="mt-8">
           <EmptyState
@@ -1281,7 +1305,7 @@ export function StockDetail({ stockId }: { stockId: string }) {
 
   if (notFound) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-10 sm:py-14">
+      <div className={containerClass}>
         {backLink}
         <div className="mt-8">
           <EmptyState
@@ -1289,9 +1313,15 @@ export function StockDetail({ stockId }: { stockId: string }) {
             message="We couldn't find a stock with that id."
             icon={<WarningCircle size={20} weight="bold" />}
             action={
-              <Link href="/" className={buttonClasses({ variant: "secondary" })}>
-                Back to market
-              </Link>
+              isModal ? (
+                <button onClick={onClose} className={buttonClasses({ variant: "secondary" })}>
+                  Close
+                </button>
+              ) : (
+                <Link href="/" className={buttonClasses({ variant: "secondary" })}>
+                  Back to market
+                </Link>
+              )
             }
           />
         </div>
@@ -1301,24 +1331,33 @@ export function StockDetail({ stockId }: { stockId: string }) {
 
   if (error || !stock) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-10 sm:py-14">
+      <div className={containerClass}>
         {backLink}
         <div className="mt-8 flex items-start gap-2.5 rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-300">
           <WarningCircle size={18} weight="bold" className="mt-0.5 shrink-0" />
           <span>{error ?? "Failed to load this stock."}</span>
         </div>
-        <Link
-          href="/"
-          className={buttonClasses({ variant: "secondary", size: "sm", className: "mt-6" })}
-        >
-          Back to market
-        </Link>
+        {isModal ? (
+          <button
+            onClick={onClose}
+            className={buttonClasses({ variant: "secondary", size: "sm", className: "mt-6" })}
+          >
+            Close
+          </button>
+        ) : (
+          <Link
+            href="/"
+            className={buttonClasses({ variant: "secondary", size: "sm", className: "mt-6" })}
+          >
+            Back to market
+          </Link>
+        )}
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:py-14">
+    <div className={containerClass}>
       {backLink}
 
       <Reveal className="mt-8">

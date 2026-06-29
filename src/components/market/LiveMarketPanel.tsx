@@ -35,7 +35,7 @@ function TickerRow({ row }: { row: LiveMover }) {
   );
 }
 
-function LiveMarketPanelBase({ className = "" }: { className?: string } = {}) {
+function LiveMarketPanelBase({ className = "", heightClass = "h-[280px]" }: { className?: string; heightClass?: string } = {}) {
   const reduceMotion = useReducedMotion();
   const [rows, setRows] = useState<LiveMover[] | null>(null);
 
@@ -70,7 +70,7 @@ function LiveMarketPanelBase({ className = "" }: { className?: string } = {}) {
         </span>
       </div>
 
-      <div className="relative h-[280px] overflow-hidden">
+      <div className={`relative ${heightClass} overflow-hidden`}>
         {rows === null ? (
           <div className="divide-y divide-zinc-800/60">
             {Array.from({ length: 6 }).map((_, i) => (
