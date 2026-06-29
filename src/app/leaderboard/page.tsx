@@ -267,10 +267,10 @@ export default function LeaderboardPage() {
           <p className="text-[10px] font-mono font-bold uppercase tracking-[0.25em] text-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.35)]">
             GLOBAL LEADERBOARD
           </p>
-          <h1 className="mt-2 text-4xl sm:text-5xl font-black tracking-tight text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+          <h1 className="mt-2 text-4xl sm:text-5xl font-black tracking-tight text-zinc-50 drop-shadow-sm dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
             Rankings
           </h1>
-          <p className="mt-2 text-sm text-zinc-400">
+          <p className="mt-2 text-sm text-zinc-300">
             Compare active brokers, track portfolio margins, and climb the ranks.
           </p>
         </header>
