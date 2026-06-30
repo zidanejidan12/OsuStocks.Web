@@ -224,11 +224,11 @@ export default function TrendingPage() {
                 </header>
               </Reveal>
 
-              <div className="flex flex-col gap-3">
-                <span className="text-[10px] font-mono font-bold text-zinc-550 uppercase tracking-widest block mb-2 px-1">
+              <div className="flex flex-col gap-4">
+                <span className="text-[10px] font-mono font-bold text-zinc-555 uppercase tracking-widest block px-1">
                   Select Trend Category
                 </span>
-              <div className="flex flex-col gap-2.5">
+              <div className="flex flex-col gap-4">
                 {BUCKETS.map((b, idx) => {
                   const isSelected = selectedBucketIndex === idx;
                   const Icon = b.Icon;
@@ -236,7 +236,7 @@ export default function TrendingPage() {
                     <button
                       key={b.key}
                       onClick={() => setSelectedBucketIndex(idx)}
-                      className={`relative flex items-center justify-between p-4 rounded-xl border transition-all duration-300 text-left cursor-pointer select-none group outline-none overflow-hidden ${
+                      className={`relative flex items-center justify-between py-5 px-5 rounded-xl border transition-all duration-300 text-left cursor-pointer select-none group outline-none overflow-hidden ${
                         isSelected
                           ? "border-pink-500 shadow-[0_0_25px_rgba(236,72,153,0.2)] translate-x-2 skew-x-[-4deg]"
                           : "border-zinc-200 dark:border-zinc-900 bg-zinc-100/50 dark:bg-zinc-950/20 backdrop-blur-md hover:bg-zinc-200/50 dark:hover:bg-zinc-900/30 hover:border-zinc-300 dark:hover:border-zinc-800 hover:translate-x-1 skew-x-[-4deg]"
