@@ -12,20 +12,23 @@ const TEAM = [
   { 
     id: 3484548, 
     name: "Almond Eye", 
-    role: "Backend",
-    stats: { apm: "350+", polish: "S-Tier", mod: "Hidden" }
+    role: "Backend Architect",
+    mod: "Hidden",
+    tagline: "Engineers high-concurrency transaction cores, real-time pricing feeds, and database security audits."
   },
   { 
     id: 11421465, 
     name: "Verxina", 
-    role: "Frontend",
-    stats: { response: "4ms", uptime: "99.9%", mod: "DoubleTime" }
+    role: "Lead Frontend Engineer",
+    mod: "DoubleTime",
+    tagline: "Designs premium responsive layouts, visual interactive elements, and adaptive color palettes."
   },
   { 
     id: 6560131, 
     name: "Nishino Flower", 
-    role: "BUM",
-    stats: { bandwidth: "10Gbps", safety: "100%", mod: "HardRock" }
+    role: "Business Operations",
+    mod: "HardRock",
+    tagline: "Coordinates financial systems, partner relationships, and strategic roadmap goals."
   },
 ];
 
@@ -148,52 +151,34 @@ export default function AboutPage() {
                 {/* Decorative neon line on top */}
                 <div className={`absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r ${theme.banner}`} />
                 <div className="absolute -right-16 -top-16 w-32 h-32 bg-current opacity-[0.02] rounded-full blur-2xl pointer-events-none group-hover:opacity-[0.04] transition-opacity" />
-
                 <div>
                   <div className="flex items-center gap-4 border-b border-zinc-200/60 dark:border-zinc-900/60 pb-4 mb-4">
                     <Avatar
                       src={`https://a.ppy.sh/${member.id}`}
                       name={member.name}
                       size="md"
-                      className="ring-2 ring-zinc-300 dark:ring-zinc-800 transition-all duration-300 group-hover:ring-purple-500/50 shrink-0"
+                      className="ring-2 ring-zinc-300/60 dark:ring-zinc-800 transition-all duration-300 group-hover:ring-purple-500/50 shrink-0"
                     />
                     <div className="min-w-0">
                       <div className="truncate text-base font-display font-black text-zinc-900 dark:text-zinc-100 transition-colors group-hover:text-pink-500 dark:group-hover:text-purple-300">
                         {member.name}
                       </div>
-                      <div className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5 font-bold truncate uppercase tracking-wider font-mono">
-                        {member.role}
+                      <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+                        <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold truncate uppercase tracking-wider font-mono">
+                          {member.role}
+                        </span>
+                        <span className="text-zinc-350 dark:text-zinc-700 font-mono text-[9px]">•</span>
+                        <span className={`font-black tracking-wide px-1.5 py-0.5 rounded text-[8px] uppercase bg-zinc-900/5 dark:bg-zinc-950/60 border border-zinc-200/50 dark:border-zinc-800/50 ${theme.text}`}>
+                          {member.mod}
+                        </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="space-y-2.5 font-mono text-[10px] text-zinc-600 dark:text-zinc-400">
-                    {Object.entries(member.stats).map(([key, val]) => {
-                      if (key === "mod") return null;
-                      const labelMap: Record<string, string> = {
-                        apm: "SPEED STAT",
-                        response: "RESPONSE TIME",
-                        bandwidth: "BANDWIDTH",
-                        polish: "ACCURACY",
-                        uptime: "UPTIME",
-                        safety: "SAFETY",
-                      };
-                      const label = labelMap[key] || key.toUpperCase() + " STAT";
-                      return (
-                        <div key={key} className="flex justify-between border-b border-zinc-200/50 dark:border-zinc-900/40 pb-1.5">
-                          <span className="text-zinc-450 dark:text-zinc-500 font-semibold">{label}:</span>
-                          <span className="text-zinc-900 dark:text-zinc-200 font-bold">{val}</span>
-                        </div>
-                      );
-                    })}
-                    <div className="flex justify-between items-center pb-0.5">
-                      <span className="text-zinc-400 dark:text-zinc-500 font-semibold">FAV MODIFIER:</span>
-                      <span className={`font-black tracking-wide px-2 py-0.5 rounded text-[9px] bg-zinc-900/5 dark:bg-zinc-950/60 border border-zinc-200/50 dark:border-zinc-800/50 ${theme.text}`}>
-                        {member.stats.mod}
-                      </span>
-                    </div>
-                  </div>                </div>
-
+                  <p className="text-xs text-zinc-650 dark:text-zinc-400 leading-relaxed font-sans font-medium">
+                    {member.tagline}
+                  </p>
+                </div>
                 <div className="mt-5 text-right">
                   <span className="text-[9px] font-mono text-pink-500 dark:text-purple-400 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     View Beatmap Profile &rarr;
