@@ -38,9 +38,15 @@ function PageHeader() {
   return (
     <Reveal>
       <header className="mb-8">
-        <h1 className="text-3xl sm:text-4xl font-black tracking-tight font-display bg-gradient-to-r from-zinc-100 via-pink-100 to-pink-500 bg-clip-text text-transparent animate-gradient-text">
-          Missions
-        </h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tight font-display bg-gradient-to-r from-zinc-100 via-pink-100 to-pink-500 bg-clip-text text-transparent animate-gradient-text">
+            Missions
+          </h1>
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-emerald-400 ring-1 ring-inset ring-emerald-500/30 animate-pulse mt-1">
+            <span className="h-1 w-1 rounded-full bg-emerald-400" />
+            System Live
+          </span>
+        </div>
         <p className="mt-2 text-sm text-zinc-400">
           Recurring objectives that refresh on a schedule. Clear them for credit rewards.
         </p>
@@ -131,7 +137,7 @@ function MissionsSummary({ missions }: { missions: Mission[] }) {
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {/* Progress Section */}
-          <div className="flex flex-col justify-between p-5 rounded-2xl border border-zinc-850/60 bg-zinc-950/30">
+          <div className="flex flex-col justify-between p-5 rounded-2xl border border-zinc-850/60 border-t-2 border-t-pink-500 bg-zinc-950/40 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
             <div>
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-pink-400 drop-shadow-[0_0_8px_rgba(236,72,153,0.15)]">Operation Progress</span>
               <h2 className="text-3xl font-black font-display text-zinc-100 mt-2 flex items-baseline gap-2">
@@ -140,24 +146,24 @@ function MissionsSummary({ missions }: { missions: Mission[] }) {
               </h2>
             </div>
             <div className="mt-4">
-              <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-900 border border-zinc-800/40">
+              <div className="h-2.5 w-full overflow-hidden rounded-full bg-zinc-900 border border-zinc-800/40">
                 <div 
                   className="h-full rounded-full bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 transition-all duration-500 shadow-[0_0_12px_rgba(236,72,153,0.5)]" 
                   style={{ width: `${completionRate}%` }} 
                 />
               </div>
               <div className="flex justify-between items-center text-[10px] text-zinc-500 mt-3 font-mono">
-                <span className="flex items-center gap-1">
+                <span className="flex items-center gap-1.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-pink-500 animate-pulse shrink-0" />
                   {completed}/{total} Missions Clear
                 </span>
-                <span className="text-zinc-400">+{claimedRewards} / {totalRewards} Credits</span>
+                <span className="text-zinc-400 font-semibold">+{claimedRewards} / {totalRewards} Credits</span>
               </div>
             </div>
           </div>
 
           {/* Claimed Rewards Card */}
-          <div className="group/bounty flex flex-col justify-between p-5 rounded-2xl border border-zinc-850/60 bg-gradient-to-br from-zinc-900/60 to-zinc-950/80 hover:border-pink-500/20 hover:shadow-[0_0_20px_rgba(236,72,153,0.05)] transition-all duration-300">
+          <div className="group/bounty flex flex-col justify-between p-5 rounded-2xl border border-zinc-850/60 border-t-2 border-t-purple-500 bg-gradient-to-br from-zinc-900/60 to-zinc-950/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] hover:border-pink-500/20 hover:shadow-[0_0_20px_rgba(236,72,153,0.05)] transition-all duration-300">
             <div>
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-pink-400 drop-shadow-[0_0_8px_rgba(236,72,153,0.15)]">Total Available Bounty</span>
               <div className="flex items-center gap-3.5 mt-3.5">
@@ -166,18 +172,18 @@ function MissionsSummary({ missions }: { missions: Mission[] }) {
                 </div>
                 <div>
                   <div className="text-2xl font-black font-mono text-zinc-100 leading-none tracking-tight">{formatNumber(totalRewards)}</div>
-                  <div className="text-[10px] text-zinc-500 mt-1 font-semibold">Credits up for grabs</div>
+                  <div className="text-[10px] text-zinc-500 mt-1.5 font-semibold">Credits up for grabs</div>
                 </div>
               </div>
             </div>
             <div className="mt-4 flex items-center justify-between text-[10px] text-zinc-500 pt-2.5 border-t border-zinc-800/40">
               <span className="font-semibold uppercase tracking-wider">Earned Today:</span>
-              <span className="font-mono text-emerald-400 font-bold bg-emerald-500/5 px-2 py-0.5 rounded-md border border-emerald-500/10">+{formatNumber(claimedRewards)} Cr</span>
+              <span className="font-mono text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 shadow-[0_0_8px_rgba(16,185,129,0.08)]">+{formatNumber(claimedRewards)} Cr</span>
             </div>
           </div>
 
           {/* Reset Countdown Card */}
-          <div className="group/clock flex flex-col justify-between p-5 rounded-2xl border border-zinc-850/60 bg-gradient-to-br from-zinc-900/60 to-zinc-950/80 hover:border-indigo-500/20 hover:shadow-[0_0_20px_rgba(99,102,241,0.05)] transition-all duration-300">
+          <div className="group/clock flex flex-col justify-between p-5 rounded-2xl border border-zinc-850/60 border-t-2 border-t-indigo-500 bg-gradient-to-br from-zinc-900/60 to-zinc-950/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] hover:border-indigo-500/20 hover:shadow-[0_0_20px_rgba(99,102,241,0.05)] transition-all duration-300">
             <div>
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 drop-shadow-[0_0_8px_rgba(99,102,241,0.15)]">System Refresh Clock</span>
               <div className="flex items-center gap-3.5 mt-3.5">
@@ -186,7 +192,7 @@ function MissionsSummary({ missions }: { missions: Mission[] }) {
                 </div>
                 <div>
                   <div className="text-2xl font-black font-mono text-zinc-100 leading-none tracking-tight">{resetLabel}</div>
-                  <div className="text-[10px] text-zinc-500 mt-1 font-semibold">Until objective rotation</div>
+                  <div className="text-[10px] text-zinc-500 mt-1.5 font-semibold">Until objective rotation</div>
                 </div>
               </div>
             </div>
@@ -224,57 +230,57 @@ function MissionRow({ mission }: { mission: Mission }) {
 
   return (
     <Card
-      className={`group relative overflow-hidden transition-all duration-300 hover:-translate-y-1 border ${
+      className={`group relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 border ${
         completed 
-          ? "border-emerald-500/25 bg-emerald-950/[0.03] shadow-[0_0_20px_rgba(16,185,129,0.02)]" 
-          : "border-zinc-800/80 hover:border-zinc-700/80 hover:shadow-[0_8px_30px_rgba(236,72,153,0.08)] bg-zinc-900/[0.15]"
+          ? "border-emerald-500/30 bg-gradient-to-r from-emerald-950/10 via-zinc-950/20 to-zinc-950/40 shadow-[0_8px_30px_rgba(16,185,129,0.06)]" 
+          : "border-zinc-800/80 hover:border-pink-500/30 hover:shadow-[0_12px_40px_rgba(236,72,153,0.12)] bg-zinc-900/15"
       }`}
     >
       {/* Decorative vertical color bar on the left edge */}
-      <div className={`absolute left-0 top-0 bottom-0 w-1 ${
+      <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${
         completed
-          ? "bg-gradient-to-b from-emerald-400 via-teal-500 to-emerald-600"
+          ? "bg-gradient-to-b from-emerald-400 via-teal-500 to-emerald-600 shadow-[2px_0_10px_rgba(52,211,153,0.4)]"
           : mission.period === "Daily"
-          ? "bg-gradient-to-b from-pink-500 via-purple-500 to-pink-600"
-          : "bg-gradient-to-b from-indigo-500 via-purple-600 to-cyan-500"
+          ? "bg-gradient-to-b from-pink-500 via-purple-500 to-pink-600 shadow-[2px_0_10px_rgba(236,72,153,0.4)]"
+          : "bg-gradient-to-b from-indigo-500 via-purple-600 to-cyan-500 shadow-[2px_0_10px_rgba(99,102,241,0.4)]"
       }`} />
 
       {/* Visual background element for completed state */}
       {completed ? (
-        <div className="absolute -right-6 -top-6 -z-10 h-28 w-28 rounded-full bg-emerald-500/5 blur-2xl transition-all duration-500 group-hover:scale-110" />
+        <div className="absolute -right-6 -top-6 -z-10 h-32 w-32 rounded-full bg-emerald-500/5 blur-2xl transition-all duration-500 group-hover:scale-110" />
       ) : (
-        <div className="absolute -right-6 -top-6 -z-10 h-28 w-28 rounded-full bg-pink-500/[0.01] blur-2xl transition-all duration-500 group-hover:scale-110 group-hover:bg-pink-500/[0.04]" />
+        <div className="absolute -right-6 -top-6 -z-10 h-32 w-32 rounded-full bg-pink-500/[0.02] blur-2xl transition-all duration-500 group-hover:scale-110 group-hover:bg-pink-500/[0.06]" />
       )}
       
-      {/* Subtle sweeping shine animation for completed cards to make them feel highly satisfying */}
-      {completed && <div className="absolute inset-0 pointer-events-none opacity-20 bg-gradient-to-r from-transparent via-white/5 to-transparent -skew-x-12 translate-x-[-150%] animate-[shimmer_8s_infinite]" style={{ backgroundSize: '200% 100%' }} />}
+      {/* Subtle sweeping shine animation */}
+      <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-20 transition-opacity duration-500 bg-gradient-to-r from-transparent via-white/5 to-transparent -skew-x-12 translate-x-[-150%] animate-[shimmer_5s_infinite]" style={{ backgroundSize: '200% 100%' }} />
 
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pl-3">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pl-4 pr-2">
         {/* Left column: Icon & Text Info */}
-        <div className="flex items-start gap-3.5 min-w-0">
-          <div className={`p-2.5 rounded-xl border shrink-0 mt-0.5 transition-all duration-300 ${
+        <div className="flex items-start gap-4 min-w-0">
+          <div className={`p-3 rounded-2xl border shrink-0 mt-0.5 transition-all duration-300 ${
             completed 
-              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.15)]" 
-              : "bg-zinc-950/60 border-zinc-800/80 text-zinc-400 group-hover:border-zinc-700/80 group-hover:text-pink-400 group-hover:shadow-[0_0_12px_rgba(236,72,153,0.1)]"
+              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.2)]" 
+              : "bg-zinc-950/80 border-zinc-800/80 text-zinc-400 group-hover:border-pink-500/30 group-hover:text-pink-400 group-hover:shadow-[0_0_15px_rgba(236,72,153,0.15)]"
           }`}>
             {getMissionIcon(mission.metric)}
           </div>
-          <div className="min-w-0 space-y-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-sm font-bold tracking-tight text-zinc-100 group-hover:text-white transition-colors">
+          <div className="min-w-0 space-y-1.5">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <h3 className="text-base font-extrabold tracking-tight text-zinc-100 group-hover:text-white transition-colors">
                 {name}
               </h3>
               {mission.period && (
-                <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${
+                <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full ${
                   mission.period === "Daily"
-                    ? "bg-pink-500/10 text-pink-400 border border-pink-500/20 shadow-[0_0_8px_rgba(236,72,153,0.05)]"
-                    : "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-[0_0_8px_rgba(99,102,241,0.05)]"
+                    ? "bg-pink-500/15 text-pink-400 border border-pink-500/25 shadow-[0_0_10px_rgba(236,72,153,0.08)]"
+                    : "bg-indigo-500/15 text-indigo-400 border border-indigo-500/25 shadow-[0_0_10px_rgba(99,102,241,0.08)]"
                 }`}>
                   {mission.period}
                 </span>
               )}
             </div>
-            <p className="text-xs text-zinc-400 leading-relaxed max-w-xl">
+            <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed max-w-xl">
               {description}
             </p>
           </div>
@@ -283,13 +289,13 @@ function MissionRow({ mission }: { mission: Mission }) {
         {/* Right column: Status badge or reset time */}
         <div className="flex items-center gap-2 shrink-0 md:self-start">
           {completed ? (
-            <Badge tone="success" className="animate-fade-in py-1 px-2.5 font-bold shadow-[0_0_12px_rgba(16,185,129,0.15)]">
-              <CheckCircle size={13} weight="fill" className="mr-0.5" />
+            <Badge tone="success" className="animate-fade-in py-1 px-3 font-black uppercase tracking-wider text-[10px] shadow-[0_0_15px_rgba(16,185,129,0.25)] border border-emerald-500/30">
+              <CheckCircle size={13} weight="fill" className="mr-1" />
               Completed
             </Badge>
           ) : (
-            <span className="inline-flex items-center gap-1 rounded-full bg-zinc-900/60 px-2.5 py-1 text-[10px] font-medium text-zinc-400 ring-1 ring-inset ring-zinc-800/60 font-mono">
-              <Clock size={11} className="text-zinc-500" />
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-950/80 px-3 py-1.5 text-[10px] font-bold text-zinc-400 ring-1 ring-inset ring-zinc-800/80 font-mono shadow-sm">
+              <Clock size={12} className="text-zinc-500" />
               resets in {resetsLabel}
             </span>
           )}
@@ -297,21 +303,25 @@ function MissionRow({ mission }: { mission: Mission }) {
       </div>
 
       {/* Progress & Reward Container */}
-      <div className="mt-5 grid grid-cols-1 md:grid-cols-[1fr_auto] items-center gap-4 pt-4 border-t border-zinc-800/40 pl-3">
+      <div className="mt-6 grid grid-cols-1 md:grid-cols-[1fr_auto] items-center gap-5 pt-4.5 border-t border-zinc-800/40 pl-4 pr-2">
         {/* Progress Bar with numeric progress */}
-        <div className="space-y-2">
+        <div className="space-y-2.5">
           <div className="flex items-center justify-between text-xs tabular-nums text-zinc-500">
-            <span className="font-semibold text-[10px] uppercase tracking-wider text-zinc-500">Mission Progress</span>
-            <span className={`font-mono font-bold ${completed ? "text-emerald-400" : "text-zinc-300"}`}>
+            <span className="font-black text-[9px] uppercase tracking-widest text-zinc-500">Mission Progress</span>
+            <span className={`font-mono font-bold text-xs px-2.5 py-0.5 rounded border ${
+              completed 
+                ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" 
+                : "text-zinc-300 bg-zinc-950/60 border-zinc-800/60"
+            }`}>
               {formatNumber(Math.min(currentValue, target))} / {formatNumber(target)}
             </span>
           </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-950">
+          <div className="h-2.5 w-full overflow-hidden rounded-full bg-zinc-950 border border-zinc-900">
             <div
               className={`h-full rounded-full transition-all duration-500 bg-[length:200%_auto] ${
                 completed 
-                  ? "bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-500 animate-[gradient-text-move_3s_linear_infinite] shadow-[0_0_10px_rgba(16,185,129,0.4)]" 
-                  : "bg-gradient-to-r from-pink-500 via-purple-500 to-pink-500 animate-[gradient-text-move_3s_linear_infinite] shadow-[0_0_10px_rgba(236,72,153,0.4)]"
+                  ? "bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-500 animate-[gradient-text-move_3s_linear_infinite] shadow-[0_0_12px_rgba(16,185,129,0.5)]" 
+                  : "bg-gradient-to-r from-pink-500 via-purple-500 to-pink-500 animate-[gradient-text-move_3s_linear_infinite] shadow-[0_0_12px_rgba(236,72,153,0.5)]"
               }`}
               style={{ width: `${progressPct}%` }}
             />
@@ -325,13 +335,13 @@ function MissionRow({ mission }: { mission: Mission }) {
               Cleared {formatRelativeTime(completedAt)}
             </span>
           )}
-          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all duration-300 ${
+          <div className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl border transition-all duration-300 font-display ${
             completed 
-              ? "bg-emerald-500/10 border-emerald-500/25 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)]" 
-              : "bg-zinc-950/60 border-zinc-800/80 text-zinc-300 group-hover:border-zinc-700/80 group-hover:shadow-[0_0_15px_rgba(236,72,153,0.15)] group-hover:text-pink-300"
+              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.2)] font-black" 
+              : "bg-zinc-950/80 border-zinc-800/80 text-zinc-300 group-hover:border-pink-500/30 group-hover:shadow-[0_0_15px_rgba(236,72,153,0.25)] group-hover:text-pink-300 font-bold"
           }`}>
             <Coin size="h-3.5 w-3.5" className={completed ? "text-emerald-400" : "text-amber-400"} />
-            <span className="font-mono text-xs font-black tabular-nums">+{formatNumber(rewardCredits)}</span>
+            <span className="font-mono text-xs tabular-nums">+{formatNumber(rewardCredits)}</span>
           </div>
         </div>
       </div>
