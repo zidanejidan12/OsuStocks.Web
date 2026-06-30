@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { ArrowRight, WarningCircle, Lock, Wallet as WalletIcon, TrendUp, Users, Trophy, Question, ChartLineUp, Plus, Minus, CaretDown, Coins, TerminalWindow, Shield, Broadcast, Flame, X, Bell, BellSlash } from "@phosphor-icons/react";
 import type { MarketOverview, Paged, StockSort, StockSummary, Wallet } from "@/lib/api/types";
@@ -583,16 +583,24 @@ export default function Home() {
   const [balanceLoaded, setBalanceLoaded] = useState(false);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Debounce the search input so we don't fetch on every keystroke. Resetting to
-  // page 1 belongs with the query change here, not in a separate state-sync effect.
-  useEffect(() => {
-    const handle = setTimeout(() => {
-      setDebouncedSearch(search);
+  const handleSearchChange = (value: string, immediate?: boolean) => {
+    setSearch(value);
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (immediate) {
+      setDebouncedSearch(value);
       setPage(1);
-    }, 300);
-    return () => clearTimeout(handle);
-  }, [search]);
+    } else {
+      searchTimeoutRef.current = setTimeout(() => {
+        setDebouncedSearch(value);
+        setPage(1);
+      }, 400);
+    }
+  };
 
   // Fetch the market overview once the user is authenticated.
   useEffect(() => {
@@ -932,7 +940,7 @@ export default function Home() {
               stocks={stocks}
               loading={stocksLoading}
               search={search}
-              onSearchChange={setSearch}
+              onSearchChange={handleSearchChange}
               sort={sort}
               onSortChange={(value) => {
                 setSort(value);

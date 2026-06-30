@@ -132,7 +132,7 @@ type Props = {
   stocks: StockSummary[];
   loading: boolean;
   search: string;
-  onSearchChange: (value: string) => void;
+  onSearchChange: (value: string, immediate?: boolean) => void;
   sort: StockSort;
   onSortChange: (value: StockSort) => void;
   country: string;
@@ -432,20 +432,35 @@ export function StockList({
       <div className="flex flex-col gap-4">
         {/* Row 1: Search & minimal selector dropdowns */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="relative w-full sm:max-w-xs">
-            <MagnifyingGlass
-              size={16}
-              weight="bold"
-              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500"
-            />
-            <input
-              id="stock-search"
-              type="search"
-              value={search}
-              onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Search player name..."
-              className="w-full rounded-xl border border-zinc-800 bg-zinc-950/60 py-2.5 pl-10 pr-3.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-colors focus:border-pink-500/50 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
-            />
+          <div className="flex w-full items-center gap-2 sm:max-w-xs">
+            <div className="relative flex-1">
+              <MagnifyingGlass
+                size={16}
+                weight="bold"
+                className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500"
+              />
+              <input
+                id="stock-search"
+                type="search"
+                value={search}
+                onChange={(e) => onSearchChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    onSearchChange(search, true);
+                  }
+                }}
+                placeholder="Search player name..."
+                className="w-full rounded-xl border border-zinc-800 bg-zinc-950/60 py-2.5 pl-10 pr-3.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-colors focus:border-pink-500/50 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => onSearchChange(search, true)}
+              className="px-4 py-2.5 bg-pink-500 hover:bg-pink-400 active:scale-95 text-white font-display font-black text-xs uppercase tracking-wider rounded-xl transition-all duration-200 shadow-[0_2px_10px_rgba(236,72,153,0.15)] hover:shadow-[0_2px_15px_rgba(236,72,153,0.35)] flex items-center gap-1.5 shrink-0 cursor-pointer"
+            >
+              <MagnifyingGlass size={13} weight="bold" />
+              <span>Search</span>
+            </button>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
