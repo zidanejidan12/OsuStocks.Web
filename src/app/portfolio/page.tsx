@@ -102,7 +102,7 @@ function ProfileBanner({
         </>
       ) : (
         <>
-          <div className="absolute inset-0 bg-gradient-to-br from-pink-600/25 via-pink-500/5 to-zinc-950" />
+          <div className="absolute inset-0 bg-gradient-to-br from-pink-600/25 via-pink-500/5 to-zinc-955" />
           <div className="absolute inset-0 bg-[radial-gradient(120%_150%_at_12%_-30%,rgba(236,72,153,0.2),transparent_55%)]" />
         </>
       )}
@@ -124,7 +124,7 @@ function ProfileHeaderCard({
       <div className="overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/20 shadow-[0_8px_32px_rgba(0,0,0,0.35)] mb-8">
         {/* Cover Banner at the top */}
         <ProfileBanner coverUrl={user.coverUrl}>
-          <span className="absolute left-4 top-4 rounded-md bg-zinc-950/60 border border-zinc-800/50 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-pink-400 backdrop-blur">
+          <span className="absolute left-4 top-4 rounded-md bg-zinc-955/60 border border-zinc-800/50 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-pink-400 backdrop-blur">
             Active Investor
           </span>
         </ProfileBanner>
@@ -140,7 +140,7 @@ function ProfileHeaderCard({
                 <div className="flex items-center gap-2.5">
                   <h2 className="text-2xl font-bold tracking-tight text-zinc-100">{user.username}</h2>
                   {user.countryCode && (
-                    <span className="inline-block bg-zinc-950 border border-zinc-800 rounded px-1.5 py-0.5">
+                    <span className="inline-block bg-zinc-955 border border-zinc-800 rounded px-1.5 py-0.5">
                       <Flag countryCode={user.countryCode} className="h-3" />
                     </span>
                   )}
@@ -168,7 +168,7 @@ function ProfileHeaderCard({
                 className={buttonClasses({
                   variant: "secondary",
                   size: "sm",
-                  className: "gap-1.5 text-xs font-semibold text-zinc-350 border border-zinc-800/80 bg-zinc-950/30 hover:bg-zinc-900/60",
+                  className: "gap-1.5 text-xs font-semibold text-zinc-350 border border-zinc-800/80 bg-zinc-955/30 hover:bg-zinc-900/60",
                 })}
               >
                 Verify osu! Profile
@@ -180,7 +180,7 @@ function ProfileHeaderCard({
           {/* 4 Symmetrical stats cards */}
           <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
             {/* Current Value */}
-            <div className="p-4 rounded-xl border border-zinc-850/60 bg-zinc-950/20 hover:border-pink-500/20 transition-all duration-350">
+            <div className="p-4 rounded-xl border border-zinc-850/60 bg-zinc-955/20 hover:border-pink-500/20 transition-all duration-355">
               <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500 block">Current Value</span>
               <div className="mt-1.5 font-mono text-lg sm:text-xl font-bold tabular-nums text-zinc-100 flex items-center gap-1.5">
                 <Coins size={14} className="text-pink-400" />
@@ -189,7 +189,7 @@ function ProfileHeaderCard({
             </div>
 
             {/* Cost Basis */}
-            <div className="p-4 rounded-xl border border-zinc-850/60 bg-zinc-950/20 hover:border-pink-500/20 transition-all duration-350">
+            <div className="p-4 rounded-xl border border-zinc-850/60 bg-zinc-955/20 hover:border-pink-500/20 transition-all duration-355">
               <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500 block">Cost Basis</span>
               <div className="mt-1.5 font-mono text-lg sm:text-xl font-bold tabular-nums text-zinc-150 flex items-center gap-1.5">
                 <Coins size={14} className="text-zinc-500" />
@@ -198,7 +198,7 @@ function ProfileHeaderCard({
             </div>
 
             {/* Profit / Loss */}
-            <div className="p-4 rounded-xl border border-zinc-850/60 bg-zinc-950/20 hover:border-pink-500/20 transition-all duration-350">
+            <div className="p-4 rounded-xl border border-zinc-850/60 bg-zinc-955/20 hover:border-pink-500/20 transition-all duration-355">
               <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500 block">Profit / Loss</span>
               <div className="mt-1.5">
                 {portfolio ? (
@@ -210,7 +210,7 @@ function ProfileHeaderCard({
             </div>
 
             {/* Holdings count */}
-            <div className="p-4 rounded-xl border border-zinc-850/60 bg-zinc-950/20 hover:border-pink-500/20 transition-all duration-350">
+            <div className="p-4 rounded-xl border border-zinc-850/60 bg-zinc-955/20 hover:border-pink-500/20 transition-all duration-355">
               <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500 block">Holdings</span>
               <div className="mt-1.5 font-mono text-lg sm:text-xl font-bold tabular-nums text-zinc-300">
                 {portfolio ? formatNumber(portfolio.holdings.length) : "—"}
@@ -232,7 +232,7 @@ function HoldingsTable({ holdings, totalValuation }: { holdings: Holding[]; tota
           Investment holdings ledger: player, positions, average cost, current price, net value, and returns.
         </caption>
         <thead>
-          <tr className="border-b border-zinc-800/80 text-xs font-semibold text-zinc-400 bg-zinc-900/35">
+          <tr className="border-b border-zinc-800/80 text-[10px] font-bold uppercase tracking-wider text-zinc-500 bg-zinc-900/35">
             <th className="px-5 py-3.5 text-left">Asset</th>
             <th className="px-5 py-3.5 text-right">Holdings Size</th>
             <th className="hidden px-5 py-3.5 text-right sm:table-cell">Avg Cost</th>
@@ -512,7 +512,7 @@ function ShowcaseCard({ user }: { user: Me }) {
                       type="button"
                       onClick={() => toggleShowcase(a.code)}
                       className={`rounded px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider transition-colors ${
-                        picked ? "bg-emerald-500/20 text-emerald-200 border border-emerald-500/30" : "text-zinc-555 hover:text-zinc-305"
+                        picked ? "bg-emerald-500/20 text-emerald-200 border border-emerald-500/30" : "text-zinc-550 hover:text-zinc-355"
                       }`}
                     >
                       Pin
@@ -579,9 +579,9 @@ function MissionsSummary() {
             <div key={m.code} className="space-y-1.5">
               <div className="flex items-center justify-between text-xs">
                 <span className={`text-[11px] font-semibold ${m.completed ? "text-emerald-455" : "text-zinc-300"}`}>{m.name}</span>
-                <span className="text-[10px] text-zinc-500 font-mono">{formatNumber(Math.min(m.currentValue, m.target))}/{formatNumber(m.target)}</span>
+                <span className="text-[10px] text-zinc-550 font-mono">{formatNumber(Math.min(m.currentValue, m.target))}/{formatNumber(m.target)}</span>
               </div>
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-950">
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-955">
                 <div
                   className={`h-full rounded-full transition-all duration-355 ${m.completed ? "bg-emerald-500" : "bg-pink-500"}`}
                   style={{ width: `${pct}%` }}
@@ -675,7 +675,7 @@ function HoldingsEmpty() {
   return (
     <Card className="border border-zinc-800/80 bg-zinc-950/10 p-10 text-center">
       <EmptyState
-        icon={<Briefcase size={24} className="text-zinc-550 mx-auto" />}
+        icon={<Briefcase size={24} className="text-zinc-555 mx-auto" />}
         title="No Assets Held"
         message="Your portfolio is currently empty. Browse the stock market to initiate player trades."
         action={
@@ -773,7 +773,7 @@ export default function PortfolioPage() {
           {/* Main Content Layout Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
             {/* Holdings & Positions Ledger */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-6 min-w-0">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-400">
                   Asset Ledger Positions ({portfolio.holdings.length})
