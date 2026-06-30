@@ -198,7 +198,7 @@ function VirtualCreditCard({ balance, username, userId, osuUserId }: { balance: 
         {/* Card Header */}
         <div className="flex justify-between items-start z-10">
           <div>
-            <span className="text-sm font-black tracking-tight text-zinc-150 font-display">
+            <span className="text-sm font-black tracking-tight text-zinc-950 dark:text-zinc-100 font-display">
               <span className="text-pink-500 font-black">Osu</span>Stocks
             </span>
             <div className={`text-[7px] font-bold uppercase tracking-widest mt-0.5 font-mono ${currentTier.textStyle}`}>{currentTier.name}</div>
