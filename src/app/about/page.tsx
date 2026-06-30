@@ -172,22 +172,31 @@ export default function AboutPage() {
                   </div>
 
                   <div className="space-y-2.5 font-mono text-[10px] text-zinc-600 dark:text-zinc-400">
-                    <div className="flex justify-between border-b border-zinc-200/50 dark:border-zinc-900/40 pb-1.5">
-                      <span className="text-zinc-400 dark:text-zinc-500 font-semibold">SPEED STAT:</span>
-                      <span className="text-zinc-900 dark:text-zinc-200 font-bold">{member.stats.apm || member.stats.response}</span>
-                    </div>
-                    <div className="flex justify-between border-b border-zinc-200/50 dark:border-zinc-900/40 pb-1.5">
-                      <span className="text-zinc-400 dark:text-zinc-500 font-semibold">ACCURACY:</span>
-                      <span className="text-zinc-900 dark:text-zinc-200 font-bold">{member.stats.polish || member.stats.uptime}</span>
-                    </div>
+                    {Object.entries(member.stats).map(([key, val]) => {
+                      if (key === "mod") return null;
+                      const labelMap: Record<string, string> = {
+                        apm: "SPEED STAT",
+                        response: "RESPONSE TIME",
+                        bandwidth: "BANDWIDTH",
+                        polish: "ACCURACY",
+                        uptime: "UPTIME",
+                        safety: "SAFETY",
+                      };
+                      const label = labelMap[key] || key.toUpperCase() + " STAT";
+                      return (
+                        <div key={key} className="flex justify-between border-b border-zinc-200/50 dark:border-zinc-900/40 pb-1.5">
+                          <span className="text-zinc-450 dark:text-zinc-500 font-semibold">{label}:</span>
+                          <span className="text-zinc-900 dark:text-zinc-200 font-bold">{val}</span>
+                        </div>
+                      );
+                    })}
                     <div className="flex justify-between items-center pb-0.5">
                       <span className="text-zinc-400 dark:text-zinc-500 font-semibold">FAV MODIFIER:</span>
                       <span className={`font-black tracking-wide px-2 py-0.5 rounded text-[9px] bg-zinc-900/5 dark:bg-zinc-950/60 border border-zinc-200/50 dark:border-zinc-800/50 ${theme.text}`}>
                         {member.stats.mod}
                       </span>
                     </div>
-                  </div>
-                </div>
+                  </div>                </div>
 
                 <div className="mt-5 text-right">
                   <span className="text-[9px] font-mono text-pink-500 dark:text-purple-400 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-300">

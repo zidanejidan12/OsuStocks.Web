@@ -126,29 +126,30 @@ function MissionsSummary({ missions }: { missions: Mission[] }) {
       setResetLabel(formatResetsIn(nextResetIso));
     }, 30000);
     return () => clearInterval(interval);
-  }, [nextResetIso]);
-
-  return (
+  }, [nextResetIso]);  return (
     <Reveal>
-      <div className="relative overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/30 p-6 md:p-8 mb-8 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+      <div className="relative overflow-hidden rounded-2xl border border-zinc-200/50 dark:border-zinc-805 bg-zinc-150/40 dark:bg-zinc-950/20 p-6 md:p-8 mb-8 backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.03)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
         {/* Subtle grid pattern overlay */}
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,#1f293708_1px,transparent_1px),linear-gradient(to_bottom,#1f293708_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-30 pointer-events-none" />
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.02)_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#1f293708_1px,transparent_1px),linear-gradient(to_bottom,#1f293708_1px,transparent_1px)] bg-[size:14px_24px] opacity-35 pointer-events-none" />
         {/* Glowing background blobs */}
-        <div className="absolute -left-12 -top-12 -z-10 h-48 w-48 rounded-full bg-pink-500/10 blur-3xl pointer-events-none" />
-        <div className="absolute -right-12 -bottom-12 -z-10 h-48 w-48 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none" />
+        <div className="absolute -left-12 -top-12 -z-10 h-48 w-48 rounded-full bg-pink-500/10 dark:bg-pink-500/5 blur-3xl pointer-events-none" />
+        <div className="absolute -right-12 -bottom-12 -z-10 h-48 w-48 rounded-full bg-indigo-500/10 dark:bg-indigo-500/5 blur-3xl pointer-events-none" />
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-3 md:divide-x md:divide-zinc-250 dark:md:divide-zinc-800/40">
           {/* Progress Section */}
-          <div className="flex flex-col justify-between p-5 rounded-2xl border border-zinc-850/60 border-t-2 border-t-pink-500 bg-zinc-950/40 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
+          <div className="flex flex-col justify-between pr-0 md:pr-6">
             <div>
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-pink-400 drop-shadow-[0_0_8px_rgba(236,72,153,0.15)]">Operation Progress</span>
-              <h2 className="text-3xl font-black font-display text-zinc-100 mt-2 flex items-baseline gap-2">
-                <span className="bg-gradient-to-r from-zinc-100 via-pink-600 to-pink-700 dark:from-zinc-100 dark:via-pink-200 dark:to-pink-500 bg-clip-text text-transparent animate-gradient-text drop-shadow-[0_0_10px_rgba(236,72,153,0.3)]">{completionRate}%</span>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Completed</span>
+              <div className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-pink-500 animate-pulse shrink-0" />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-pink-600 dark:text-pink-400">Operation Progress</span>
+              </div>
+              <h2 className="text-3xl font-black font-display text-zinc-800 dark:text-zinc-105 mt-2 flex items-baseline gap-2">
+                <span className="bg-gradient-to-r from-zinc-800 via-pink-600 to-pink-700 dark:from-zinc-100 dark:via-pink-200 dark:to-pink-500 bg-clip-text text-transparent animate-gradient-text drop-shadow-[0_0_10px_rgba(236,72,153,0.3)]">{completionRate}%</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Completed</span>
               </h2>
             </div>
             <div className="mt-4">
-              <div className="h-2.5 w-full overflow-hidden rounded-full bg-zinc-900 border border-zinc-800/40">
+              <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-900 border border-zinc-300/40 dark:border-zinc-800/40">
                 <div 
                   className="h-full rounded-full bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 transition-all duration-500 shadow-[0_0_12px_rgba(236,72,153,0.5)]" 
                   style={{ width: `${completionRate}%` }} 
@@ -156,51 +157,57 @@ function MissionsSummary({ missions }: { missions: Mission[] }) {
               </div>
               <div className="flex justify-between items-center text-[10px] text-zinc-500 mt-3 font-mono">
                 <span className="flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-pink-500 animate-pulse shrink-0" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-pink-500 shrink-0" />
                   {completed}/{total} Missions Clear
                 </span>
-                <span className="text-zinc-400 font-semibold">+{claimedRewards} / {totalRewards} Credits</span>
+                <span className="text-zinc-700 dark:text-zinc-455 font-semibold">+{claimedRewards} / {totalRewards} Credits</span>
               </div>
             </div>
           </div>
 
           {/* Claimed Rewards Card */}
-          <div className="group/bounty flex flex-col justify-between p-5 rounded-2xl border border-zinc-850/60 border-t-2 border-t-purple-500 bg-gradient-to-br from-zinc-900/60 to-zinc-950/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] hover:border-pink-500/20 hover:shadow-[0_0_20px_rgba(236,72,153,0.05)] transition-all duration-300">
+          <div className="flex flex-col justify-between px-0 md:px-6 pt-6 md:pt-0 border-t md:border-t-0 border-zinc-200/50 dark:border-zinc-900/60">
             <div>
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-pink-400 drop-shadow-[0_0_8px_rgba(236,72,153,0.15)]">Total Available Bounty</span>
+              <div className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-purple-500 animate-pulse shrink-0" />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-pink-650 dark:text-pink-400">Total Available Bounty</span>
+              </div>
               <div className="flex items-center gap-3.5 mt-3.5">
-                <div className="p-2.5 rounded-xl bg-pink-500/10 text-pink-400 border border-pink-500/20 shadow-[0_0_10px_rgba(236,72,153,0.1)] group-hover/bounty:scale-105 group-hover/bounty:shadow-[0_0_15px_rgba(236,72,153,0.25)] transition-all duration-300">
+                <div className="p-2.5 rounded-xl bg-pink-500/10 text-pink-600 dark:text-pink-400 border border-pink-500/20 shadow-[0_0_10px_rgba(236,72,153,0.1)]">
                   <Coins size={22} weight="fill" />
                 </div>
                 <div>
-                  <div className="text-2xl font-black font-mono text-zinc-100 leading-none tracking-tight">{formatNumber(totalRewards)}</div>
+                  <div className="text-2xl font-black font-mono text-zinc-800 dark:text-zinc-100 leading-none tracking-tight">{formatNumber(totalRewards)}</div>
                   <div className="text-[10px] text-zinc-500 mt-1.5 font-semibold">Credits up for grabs</div>
                 </div>
               </div>
             </div>
-            <div className="mt-4 flex items-center justify-between text-[10px] text-zinc-500 pt-2.5 border-t border-zinc-800/40">
+            <div className="mt-4 flex items-center justify-between text-[10px] text-zinc-500 pt-2.5 border-t border-zinc-200/50 dark:border-zinc-800/40">
               <span className="font-semibold uppercase tracking-wider">Earned Today:</span>
-              <span className="font-mono text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 shadow-[0_0_8px_rgba(16,185,129,0.08)]">+{formatNumber(claimedRewards)} Cr</span>
+              <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 shadow-[0_0_8px_rgba(16,185,129,0.08)]">+{formatNumber(claimedRewards)} Cr</span>
             </div>
           </div>
 
           {/* Reset Countdown Card */}
-          <div className="group/clock flex flex-col justify-between p-5 rounded-2xl border border-zinc-850/60 border-t-2 border-t-indigo-500 bg-gradient-to-br from-zinc-900/60 to-zinc-950/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] hover:border-indigo-500/20 hover:shadow-[0_0_20px_rgba(99,102,241,0.05)] transition-all duration-300">
+          <div className="flex flex-col justify-between pl-0 md:pl-6 pt-6 md:pt-0 border-t md:border-t-0 border-zinc-200/50 dark:border-zinc-900/60">
             <div>
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 drop-shadow-[0_0_8px_rgba(99,102,241,0.15)]">System Refresh Clock</span>
+              <div className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse shrink-0" />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-650 dark:text-indigo-400">System Refresh Clock</span>
+              </div>
               <div className="flex items-center gap-3.5 mt-3.5">
-                <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-[0_0_10px_rgba(99,102,241,0.1)] group-hover/clock:scale-105 group-hover/clock:shadow-[0_0_15px_rgba(99,102,241,0.25)] transition-all duration-300">
+                <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 shadow-[0_0_10px_rgba(99,102,241,0.1)]">
                   <Clock size={22} weight="fill" />
                 </div>
                 <div>
-                  <div className="text-2xl font-black font-mono text-zinc-100 leading-none tracking-tight">{resetLabel}</div>
+                  <div className="text-2xl font-black font-mono text-zinc-800 dark:text-zinc-100 leading-none tracking-tight">{resetLabel}</div>
                   <div className="text-[10px] text-zinc-500 mt-1.5 font-semibold">Until objective rotation</div>
                 </div>
               </div>
             </div>
-            <div className="mt-4 flex items-center justify-between text-[10px] text-zinc-500 pt-2.5 border-t border-zinc-800/40">
+            <div className="mt-4 flex items-center justify-between text-[10px] text-zinc-500 pt-2.5 border-t border-zinc-200/50 dark:border-zinc-800/40">
               <span className="font-semibold uppercase tracking-wider">Status:</span>
-              <span className="text-indigo-400 flex items-center gap-1 font-bold">
+              <span className="text-indigo-600 dark:text-indigo-400 flex items-center gap-1 font-bold">
                 <Sparkle size={10} weight="fill" className="animate-pulse" />
                 Online & Tracking
               </span>
