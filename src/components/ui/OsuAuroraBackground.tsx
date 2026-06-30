@@ -158,7 +158,7 @@ export function OsuAuroraBackground() {
       colors = ["emerald", "cyan", "white"];
     }
 
-    const list = Array.from({ length: 25 }).map((_, i) => {
+    const list = Array.from({ length: 45 }).map((_, i) => {
       const type = Math.random() > 0.4 ? "diamond" : "orb";
       const colorRand = Math.random();
       const color = colorRand > 0.6 ? colors[0] : colorRand > 0.3 ? colors[1] : colors[2];
