@@ -13,22 +13,19 @@ const TEAM = [
     id: 3484548, 
     name: "Almond Eye", 
     role: "Backend Architect",
-    mod: "Hidden",
-    tagline: "Engineers high-concurrency transaction cores, real-time pricing feeds, and database security audits."
+    mod: "Hidden"
   },
   { 
     id: 11421465, 
     name: "Verxina", 
     role: "Lead Frontend Engineer",
-    mod: "DoubleTime",
-    tagline: "Designs premium responsive layouts, visual interactive elements, and adaptive color palettes."
+    mod: "DoubleTime"
   },
   { 
     id: 6560131, 
     name: "Nishino Flower", 
     role: "Business Operations",
-    mod: "HardRock",
-    tagline: "Coordinates financial systems, partner relationships, and strategic roadmap goals."
+    mod: "HardRock"
   },
 ];
 
@@ -148,11 +145,10 @@ export default function AboutPage() {
                 rel="noopener noreferrer"
                 className={`group relative flex flex-col justify-between rounded-[24px] border ${theme.border} bg-zinc-100/40 dark:bg-zinc-955/25 p-5 transition-all duration-300 ${theme.glow} hover:bg-zinc-200/30 dark:hover:bg-zinc-900/20 hover:scale-[1.02] shadow-[0_8px_30px_rgb(0,0,0,0.02)] dark:shadow-none overflow-hidden`}
               >
-                {/* Decorative neon line on top */}
                 <div className={`absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r ${theme.banner}`} />
                 <div className="absolute -right-16 -top-16 w-32 h-32 bg-current opacity-[0.02] rounded-full blur-2xl pointer-events-none group-hover:opacity-[0.04] transition-opacity" />
                 <div>
-                  <div className="flex items-center gap-4 border-b border-zinc-200/60 dark:border-zinc-900/60 pb-4 mb-4">
+                  <div className="flex items-center gap-4">
                     <Avatar
                       src={`https://a.ppy.sh/${member.id}`}
                       name={member.name}
@@ -174,10 +170,6 @@ export default function AboutPage() {
                       </div>
                     </div>
                   </div>
-
-                  <p className="text-xs text-zinc-650 dark:text-zinc-400 leading-relaxed font-sans font-medium">
-                    {member.tagline}
-                  </p>
                 </div>
                 <div className="mt-5 text-right">
                   <span className="text-[9px] font-mono text-pink-500 dark:text-purple-400 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-300">

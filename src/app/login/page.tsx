@@ -531,25 +531,6 @@ export default function LoginPage() {
               <SignIn size={20} weight="bold" />
               Login with osu!
             </motion.button>
-
-            <motion.button
-              whileHover={{ scale: 1.025 }}
-              whileTap={{ scale: 0.975 }}
-              onClick={() => {
-                localStorage.setItem(
-                  "osustocks.auth",
-                  JSON.stringify({ accessToken: "dummy_token", expiresAt: "2099-12-31T23:59:59Z" })
-                );
-                window.location.href = "/";
-              }}
-              className={buttonClasses({
-                variant: "secondary",
-                size: "lg",
-                className: "w-full py-3 sm:py-3.5 border border-zinc-850 bg-zinc-900/30 text-zinc-300 hover:text-white hover:border-pink-500/20 hover:bg-zinc-850/30 active:scale-98 transition-all duration-200 text-sm sm:text-base",
-              })}
-            >
-              Bypass & Run UI Mode (Demo)
-            </motion.button>
           </motion.div>
 
           {/* Legal and Security Info */}

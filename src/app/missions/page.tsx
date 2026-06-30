@@ -129,14 +129,11 @@ function MissionsSummary({ missions }: { missions: Mission[] }) {
   }, [nextResetIso]);  return (
     <Reveal>
       <div className="relative overflow-hidden rounded-2xl border border-zinc-200/50 dark:border-zinc-805 bg-zinc-150/40 dark:bg-zinc-950/20 p-6 md:p-8 mb-8 backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.03)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-        {/* Subtle grid pattern overlay */}
         <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.02)_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#1f293708_1px,transparent_1px),linear-gradient(to_bottom,#1f293708_1px,transparent_1px)] bg-[size:14px_24px] opacity-35 pointer-events-none" />
-        {/* Glowing background blobs */}
         <div className="absolute -left-12 -top-12 -z-10 h-48 w-48 rounded-full bg-pink-500/10 dark:bg-pink-500/5 blur-3xl pointer-events-none" />
         <div className="absolute -right-12 -bottom-12 -z-10 h-48 w-48 rounded-full bg-indigo-500/10 dark:bg-indigo-500/5 blur-3xl pointer-events-none" />
 
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3 md:divide-x md:divide-zinc-250 dark:md:divide-zinc-800/40">
-          {/* Progress Section */}
           <div className="flex flex-col justify-between pr-0 md:pr-6">
             <div>
               <div className="flex items-center gap-2">
@@ -165,7 +162,6 @@ function MissionsSummary({ missions }: { missions: Mission[] }) {
             </div>
           </div>
 
-          {/* Claimed Rewards Card */}
           <div className="flex flex-col justify-between px-0 md:px-6 pt-6 md:pt-0 border-t md:border-t-0 border-zinc-200/50 dark:border-zinc-900/60">
             <div>
               <div className="flex items-center gap-2">
@@ -188,7 +184,6 @@ function MissionsSummary({ missions }: { missions: Mission[] }) {
             </div>
           </div>
 
-          {/* Reset Countdown Card */}
           <div className="flex flex-col justify-between pl-0 md:pl-6 pt-6 md:pt-0 border-t md:border-t-0 border-zinc-200/50 dark:border-zinc-900/60">
             <div>
               <div className="flex items-center gap-2">
