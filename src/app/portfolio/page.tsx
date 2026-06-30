@@ -55,7 +55,7 @@ const MAX_SHOWCASE = 3;
 
 function PageShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:py-12">{children}</div>
+    <div className="mx-auto max-w-6xl px-4 py-10 sm:py-14">{children}</div>
   );
 }
 
@@ -76,127 +76,153 @@ function PleaseLogIn() {
   );
 }
 
-function ProfileSummaryBar({ user }: { user: Me }) {
+function ProfileBanner({
+  coverUrl,
+  children,
+}: {
+  coverUrl?: string | null;
+  children?: React.ReactNode;
+}) {
+  const [failed, setFailed] = useState(false);
+  const show = Boolean(coverUrl) && !failed;
   return (
-    <Reveal>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-zinc-800/60 mb-8">
-        <div className="flex items-center gap-4">
-          <div className="rounded-full ring-2 ring-pink-500/20 overflow-hidden shrink-0 shadow-[0_4px_12px_rgba(236,72,153,0.15)]">
-            <Avatar src={user.avatarUrl} name={user.username} size="lg" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2.5">
-              <h2 className="text-2xl font-bold tracking-tight text-zinc-100">{user.username}</h2>
-              {user.countryCode && (
-                <span className="inline-block bg-zinc-900 border border-zinc-800 rounded px-1.5 py-0.5">
-                  <Flag countryCode={user.countryCode} className="h-3" />
-                </span>
-              )}
-            </div>
-            <div className="mt-1 flex items-center gap-2">
-              {user.equippedTitle ? (
-                <span className="text-xs font-medium text-pink-400 bg-pink-500/5 border border-pink-500/10 px-2 py-0.5 rounded">
-                  {user.equippedTitle}
-                </span>
-              ) : (
-                <span className="text-xs text-zinc-500 font-medium">Investor Account</span>
-              )}
-              {user.role === "Admin" && (
-                <span className="text-[10px] font-bold text-indigo-400 bg-indigo-500/5 border border-indigo-500/10 px-2 py-0.5 rounded uppercase tracking-wider">
-                  Admin
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <a
-            href={`https://osu.ppy.sh/users/${user.osuUserId}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={buttonClasses({
-              variant: "secondary",
-              size: "sm",
-              className: "gap-1.5 text-xs font-semibold text-zinc-350 border border-zinc-800 hover:bg-zinc-900/60",
-            })}
-          >
-            Verify osu! Profile
-            <ArrowSquareOut size={13} weight="bold" />
-          </a>
-        </div>
-      </div>
-    </Reveal>
+    <div className="relative h-32 sm:h-44">
+      {show ? (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={coverUrl as string}
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            onError={() => setFailed(true)}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/65 to-zinc-950/20" />
+        </>
+      ) : (
+        <>
+          <div className="absolute inset-0 bg-gradient-to-br from-pink-600/40 via-pink-500/10 to-zinc-950" />
+          <div className="absolute inset-0 bg-[radial-gradient(120%_150%_at_12%_-30%,rgba(236,72,153,0.35),transparent_55%)]" />
+        </>
+      )}
+      <div className="grain pointer-events-none absolute inset-0 opacity-[0.08]" />
+      {children}
+    </div>
   );
 }
 
-function PortfolioCockpit({ portfolio }: { portfolio: Portfolio | null }) {
-  if (!portfolio) return null;
-
-  const profitPct = portfolio.costBasis > 0 ? (portfolio.profitLoss / portfolio.costBasis) * 100 : 0;
-  const isProfit = portfolio.profitLoss >= 0;
-  
-  // Calculate percentage of holdings that represent cash value ratio
-  const ratio = portfolio.currentValue > 0 
-    ? Math.min(100, Math.max(0, (portfolio.costBasis / portfolio.currentValue) * 100)) 
-    : 0;
+function ProfileHeaderCard({
+  user,
+  portfolio,
+}: {
+  user: Me;
+  portfolio: Portfolio | null;
+}) {
+  const profitPct = portfolio && portfolio.costBasis > 0 ? (portfolio.profitLoss / portfolio.costBasis) * 100 : 0;
+  const isProfit = portfolio ? portfolio.profitLoss >= 0 : true;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
-      {/* Total Portfolio Value */}
-      <div className="p-6 rounded-2xl border border-zinc-800/80 bg-zinc-900/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.02)] flex flex-col justify-between">
-        <div>
-          <span className="text-xs font-semibold text-zinc-400">Total Portfolio Value</span>
-          <div className="mt-2.5 font-mono text-3xl font-black tabular-nums tracking-tight text-zinc-100">
-            <Money value={portfolio.currentValue} />
-          </div>
-        </div>
-        
-        {/* Cushion indicator bar */}
-        <div className="mt-4 pt-3 border-t border-zinc-850">
-          <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-zinc-500 font-bold mb-1">
-            <span>Capital Leverage Ratio</span>
-            <span className="font-mono">{ratio.toFixed(0)}% basis</span>
-          </div>
-          <div className="h-1 w-full bg-zinc-950 rounded-full overflow-hidden">
-            <div 
-              className={`h-full rounded-full transition-all duration-500 ${isProfit ? "bg-emerald-500" : "bg-pink-500"}`} 
-              style={{ width: `${ratio}%` }} 
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Net Investment Cost */}
-      <div className="p-6 rounded-2xl border border-zinc-800/80 bg-zinc-900/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.02)] flex flex-col justify-between">
-        <div>
-          <span className="text-xs font-semibold text-zinc-400">Net Invested Cost</span>
-          <div className="mt-2.5 font-mono text-3xl font-black tabular-nums tracking-tight text-zinc-200">
-            <Money value={portfolio.costBasis} />
-          </div>
-        </div>
-        <div className="mt-4 pt-3 border-t border-zinc-850 flex items-center justify-between text-xs text-zinc-500">
-          <span>Capital Basis Weight</span>
-          <span className="font-mono font-bold text-zinc-300">Base Cost</span>
-        </div>
-      </div>
-
-      {/* Performance Gain/Loss */}
-      <div className="p-6 rounded-2xl border border-zinc-800/80 bg-zinc-900/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.02)] flex flex-col justify-between">
-        <div>
-          <span className="text-xs font-semibold text-zinc-400">Net Performance (P&amp;L)</span>
-          <div className="mt-2.5 flex items-baseline gap-2">
-            <PriceChange value={portfolio.profitLoss} className="text-3xl font-black" />
-          </div>
-        </div>
-        <div className="mt-4 pt-3 border-t border-zinc-850 flex items-center justify-between text-xs text-zinc-500">
-          <span>Unrealized Rate of Return</span>
-          <span className={`font-mono font-extrabold ${isProfit ? "text-emerald-400" : "text-rose-450"}`}>
-            {isProfit ? "+" : ""}{profitPct.toFixed(2)}%
+    <Reveal>
+      <div className="overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/10 shadow-[0_8px_32px_rgba(0,0,0,0.35)] mb-8">
+        {/* Cover Banner */}
+        <ProfileBanner coverUrl={user.coverUrl}>
+          <span className="absolute left-4 top-4 rounded-md bg-zinc-950/60 border border-zinc-800/50 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-pink-400 backdrop-blur">
+            Active Investor
           </span>
+        </ProfileBanner>
+
+        <div className="px-5 pb-6 sm:px-7">
+          {/* Avatar overlap and alignment row */}
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-10 sm:-mt-14">
+            <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+              <div className="inline-block rounded-full ring-4 ring-zinc-950 shadow-xl overflow-hidden shrink-0 bg-zinc-950">
+                <Avatar src={user.avatarUrl} name={user.username} size="xl" />
+              </div>
+              <div className="mb-2">
+                <div className="flex items-center gap-2.5">
+                  <h2 className="text-2xl font-bold tracking-tight text-zinc-100">{user.username}</h2>
+                  {user.countryCode && (
+                    <span className="inline-block bg-zinc-950 border border-zinc-800 rounded px-1.5 py-0.5">
+                      <Flag countryCode={user.countryCode} className="h-3" />
+                    </span>
+                  )}
+                </div>
+                <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                  {user.equippedTitle && (
+                    <span className="text-xs font-semibold text-pink-400 bg-pink-500/5 border border-pink-500/10 px-2.5 py-0.5 rounded">
+                      {user.equippedTitle}
+                    </span>
+                  )}
+                  {user.role === "Admin" && (
+                    <span className="text-[10px] font-bold text-indigo-400 bg-indigo-500/5 border border-indigo-500/10 px-2 py-0.5 rounded uppercase tracking-wider">
+                      Admin
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-2">
+              <a
+                href={`https://osu.ppy.sh/users/${user.osuUserId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={buttonClasses({
+                  variant: "secondary",
+                  size: "sm",
+                  className: "gap-1.5 text-xs font-semibold text-zinc-350 border border-zinc-800/80 bg-zinc-950/30 hover:bg-zinc-900/60",
+                })}
+              >
+                Verify osu! Profile
+                <ArrowSquareOut size={13} weight="bold" />
+              </a>
+            </div>
+          </div>
+
+          {/* 4 Symmetrical stats cards */}
+          <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+            {/* Current Value */}
+            <div className="p-4 rounded-xl border border-zinc-850/60 bg-zinc-950/20 hover:border-pink-500/20 transition-all duration-350">
+              <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500 block">Current Value</span>
+              <div className="mt-1.5 font-mono text-lg sm:text-xl font-bold tabular-nums text-zinc-100 flex items-center gap-1.5">
+                <Coins size={14} className="text-pink-400" />
+                {portfolio ? <Money value={portfolio.currentValue} /> : "—"}
+              </div>
+            </div>
+
+            {/* Cost Basis */}
+            <div className="p-4 rounded-xl border border-zinc-850/60 bg-zinc-950/20 hover:border-pink-500/20 transition-all duration-350">
+              <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500 block">Cost Basis</span>
+              <div className="mt-1.5 font-mono text-lg sm:text-xl font-bold tabular-nums text-zinc-150 flex items-center gap-1.5">
+                <Coins size={14} className="text-zinc-500" />
+                {portfolio ? <Money value={portfolio.costBasis} /> : "—"}
+              </div>
+            </div>
+
+            {/* Profit / Loss */}
+            <div className="p-4 rounded-xl border border-zinc-850/60 bg-zinc-950/20 hover:border-pink-500/20 transition-all duration-350">
+              <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500 block">Profit / Loss</span>
+              <div className="mt-1.5">
+                {portfolio ? (
+                  <PriceChange value={portfolio.profitLoss} className="text-sm sm:text-base font-bold" />
+                ) : (
+                  <span className="font-mono text-lg sm:text-xl font-bold text-zinc-300">—</span>
+                )}
+              </div>
+            </div>
+
+            {/* Holdings count */}
+            <div className="p-4 rounded-xl border border-zinc-850/60 bg-zinc-950/20 hover:border-pink-500/20 transition-all duration-350">
+              <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500 block">Holdings</span>
+              <div className="mt-1.5 font-mono text-lg sm:text-xl font-bold tabular-nums text-zinc-300">
+                {portfolio ? formatNumber(portfolio.holdings.length) : "—"}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </Reveal>
   );
 }
 
@@ -329,7 +355,7 @@ function InvestorLevelCard() {
               {level.title}
             </span>
           </div>
-          <div className="mt-0.5 text-[11px] text-zinc-550">
+          <div className="mt-0.5 text-[11px] text-zinc-555">
             {formatNumber(level.totalXp)} total XP accumulated
           </div>
         </div>
@@ -446,13 +472,13 @@ function ShowcaseCard({ user }: { user: Me }) {
           {unlocked.length === 0 ? (
             <p className="text-xs text-zinc-500">No achievements unlocked yet.</p>
           ) : showcased.length === 0 ? (
-            <p className="text-xs text-zinc-505 font-medium text-zinc-500">No achievements showcased yet. Click Edit to showcase achievements.</p>
+            <p className="text-xs text-zinc-500 font-medium">No achievements showcased yet. Click Edit to showcase achievements.</p>
           ) : (
             <div className="flex flex-wrap gap-2">
               {showcased.map((a) => (
                 <span
                   key={a.code}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-950/40 px-2.5 py-1.5 text-xs text-zinc-300"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-950/40 px-2.5 py-1.5 text-xs text-zinc-350 font-medium"
                   title={a.description}
                 >
                   <Trophy size={12} className="text-zinc-500" />
@@ -466,14 +492,14 @@ function ShowcaseCard({ user }: { user: Me }) {
 
       {editing && (
         <div className="space-y-3">
-          <ul className="divide-y divide-zinc-855/60 overflow-hidden rounded-xl border border-zinc-800/80 bg-zinc-950/20 max-h-56 overflow-y-auto">
+          <ul className="divide-y divide-zinc-850/60 overflow-hidden rounded-xl border border-zinc-800/80 bg-zinc-950/20 max-h-56 overflow-y-auto">
             {unlocked.map((a) => {
               const picked = draftShowcase.includes(a.code);
               const isTitle = draftTitle === a.code;
               return (
                 <li key={a.code} className="flex items-center justify-between gap-3 px-3 py-2">
                   <div className="min-w-0">
-                    <div className="truncate text-xs font-bold text-zinc-200">{a.name}</div>
+                    <div className="truncate text-xs font-bold text-zinc-250">{a.name}</div>
                   </div>
                   <div className="flex shrink-0 items-center gap-1">
                     <button
@@ -489,7 +515,7 @@ function ShowcaseCard({ user }: { user: Me }) {
                       type="button"
                       onClick={() => toggleShowcase(a.code)}
                       className={`rounded px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider transition-colors ${
-                        picked ? "bg-emerald-500/20 text-emerald-200 border border-emerald-500/30" : "text-zinc-550 hover:text-zinc-300"
+                        picked ? "bg-emerald-500/20 text-emerald-200 border border-emerald-500/30" : "text-zinc-550 hover:text-zinc-305"
                       }`}
                     >
                       Pin
@@ -560,7 +586,7 @@ function MissionsSummary() {
               </div>
               <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-950">
                 <div
-                  className={`h-full rounded-full transition-all duration-300 ${m.completed ? "bg-emerald-500" : "bg-pink-500"}`}
+                  className={`h-full rounded-full transition-all duration-350 ${m.completed ? "bg-emerald-500" : "bg-pink-500"}`}
                   style={{ width: `${pct}%` }}
                 />
               </div>
@@ -627,7 +653,7 @@ function YourStockCard({ user }: { user: Me }) {
             </div>
             <div className="mt-0.5 flex items-center gap-2 text-xs">
               {stock.globalRank != null && (
-                <span className="text-[10px] font-semibold text-zinc-500 font-mono">
+                <span className="text-[10px] font-semibold text-zinc-505 font-mono">
                   Rank #{formatNumber(stock.globalRank)} Global
                 </span>
               )}
@@ -733,7 +759,8 @@ export default function PortfolioPage() {
 
   return (
     <PageShell>
-      <ProfileSummaryBar user={user} />
+      {/* Symmetrical Unified Profile & Stats Header */}
+      <ProfileHeaderCard user={user} portfolio={portfolio} />
 
       {loading && <PortfolioSkeleton />}
 
@@ -746,12 +773,9 @@ export default function PortfolioPage() {
 
       {!loading && !error && portfolio && (
         <div className="space-y-8">
-          {/* Top Performance Analytics Block */}
-          <PortfolioCockpit portfolio={portfolio} />
-
           {/* Main Content Layout Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            {/* Holdings & Positions Ledger (Left - Col-span-2) */}
+            {/* Holdings & Positions Ledger */}
             <div className="lg:col-span-2 space-y-6">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-400">
@@ -765,7 +789,7 @@ export default function PortfolioPage() {
               )}
             </div>
 
-            {/* Sidebar Controls (Right - Col-span-1) */}
+            {/* Sidebar Controls */}
             <div className="lg:col-span-1 space-y-6">
               <YourStockCard user={user} />
               <InvestorLevelCard />
@@ -782,12 +806,7 @@ export default function PortfolioPage() {
 function PortfolioSkeleton() {
   return (
     <div className="space-y-8">
-      <Skeleton className="h-16 w-full rounded-xl" />
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <Skeleton className="h-28 rounded-2xl" />
-        <Skeleton className="h-28 rounded-2xl" />
-        <Skeleton className="h-28 rounded-2xl" />
-      </div>
+      <Skeleton className="h-64 w-full rounded-2xl" />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
           <Skeleton className="h-80 w-full rounded-2xl" />
