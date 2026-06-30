@@ -86,6 +86,20 @@ const PATH_CONFIGS: Record<string, PathConfig> = {
     },
     gridOpacity: 0.01,
   },
+  // Portfolio page (Vivid Pink/Purple/Rose theme)
+  "/portfolio": {
+    colors: {
+      bg1: "rgba(236, 72, 153, 0.16)", // Vivid Pink
+      bg2: "rgba(147, 51, 234, 0.14)",  // Vivid Purple/Violet
+      bg3: "rgba(244, 63, 94, 0.1)",    // Rose
+    },
+    lightColors: {
+      bg1: "rgba(236, 72, 153, 0.18)",
+      bg2: "rgba(147, 51, 234, 0.16)",
+      bg3: "rgba(244, 63, 94, 0.12)",
+    },
+    gridOpacity: 0.018,
+  },
 };
 
 const gradientMap: Record<string, string> = {
@@ -156,6 +170,8 @@ export function OsuAuroraBackground() {
       colors = ["yellow", "indigo", "white"];
     } else if (pathname === "/about") {
       colors = ["emerald", "cyan", "white"];
+    } else if (pathname === "/portfolio") {
+      colors = ["pink", "indigo", "white"];
     }
 
     const list = Array.from({ length: 65 }).map((_, i) => {

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
 interface Particle {
   id: number;
@@ -12,19 +12,24 @@ interface Particle {
 }
 
 export function AmbientCyberBg() {
+  const shouldReduceMotion = useReducedMotion();
   const [particles, setParticles] = useState<Particle[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    // Generate particles on client mount only to avoid SSR hydration differences
-    const generated: Particle[] = Array.from({ length: 12 }).map((_, i) => ({
-      id: i,
-      x: Math.random() * 100, // percentage width
-      size: Math.random() * 3 + 2, // 2px to 5px
-      duration: Math.random() * 20 + 15, // 15s to 35s
-      delay: Math.random() * -20, // start immediately at random offsets
-    }));
-    setParticles(generated);
-  }, []);
+    setIsMounted(true);
+    // Generate particles on client mount only if not in reduced motion mode to save CPU cycles
+    if (!shouldReduceMotion) {
+      const generated: Particle[] = Array.from({ length: 12 }).map((_, i) => ({
+        id: i,
+        x: Math.random() * 100, // percentage width
+        size: Math.random() * 3 + 2, // 2px to 5px
+        duration: Math.random() * 20 + 15, // 15s to 35s
+        delay: Math.random() * -20, // start immediately at random offsets
+      }));
+      setParticles(generated);
+    }
+  }, [shouldReduceMotion]);
 
   return (
     <div className="absolute inset-0 -z-20 overflow-hidden pointer-events-none select-none">
@@ -42,25 +47,27 @@ export function AmbientCyberBg() {
         }}
       />
 
-      {/* 2. Scanning Laser/Grid Sweep */}
-      <motion.div
-        initial={{ y: "-10%" }}
-        animate={{ y: "110%" }}
-        transition={{
-          duration: 12,
-          repeat: Infinity,
-          ease: "linear",
-        }}
-        className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-pink-500/10 to-transparent opacity-30"
-        style={{
-          boxShadow: "0 0 15px rgba(236, 72, 153, 0.15)",
-        }}
-      />
+      {/* 2. Scanning Laser/Grid Sweep (Disabled on low-end / reduced motion) */}
+      {!shouldReduceMotion && (
+        <motion.div
+          initial={{ y: "-10%" }}
+          animate={{ y: "110%" }}
+          transition={{
+            duration: 12,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+          className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-pink-500/10 to-transparent opacity-30"
+          style={{
+            boxShadow: "0 0 15px rgba(236, 72, 153, 0.15)",
+          }}
+        />
+      )}
 
       {/* 3. Ambient Blurry Orbs */}
       {/* Orb 1: Pink Glimmer */}
       <motion.div
-        animate={{
+        animate={shouldReduceMotion ? undefined : {
           x: [0, 40, -30, 0],
           y: [0, -40, 30, 0],
         }}
@@ -74,7 +81,7 @@ export function AmbientCyberBg() {
 
       {/* Orb 2: Cyan Glimmer */}
       <motion.div
-        animate={{
+        animate={shouldReduceMotion ? undefined : {
           x: [0, -30, 40, 0],
           y: [0, 50, -30, 0],
         }}
@@ -88,7 +95,7 @@ export function AmbientCyberBg() {
 
       {/* Orb 3: Purple Glimmer */}
       <motion.div
-        animate={{
+        animate={shouldReduceMotion ? undefined : {
           x: [0, 25, -20, 0],
           y: [0, 30, 45, 0],
         }}
@@ -100,8 +107,8 @@ export function AmbientCyberBg() {
         className="absolute -bottom-[10%] left-[15%] h-[380px] w-[380px] rounded-full bg-purple-600/[0.05] blur-[100px]"
       />
 
-      {/* 4. Floating Digital Particles */}
-      {particles.map((p) => (
+      {/* 4. Floating Digital Particles (Hidden on reduced motion) */}
+      {!shouldReduceMotion && particles.map((p) => (
         <motion.div
           key={p.id}
           initial={{ opacity: 0, y: "105%", x: `${p.x}%` }}

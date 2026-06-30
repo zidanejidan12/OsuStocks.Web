@@ -65,15 +65,15 @@ function CustomSelect<T extends string>({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between gap-3 bg-zinc-950/60 border border-zinc-800/80 hover:border-zinc-700 px-4 py-2.5 rounded-xl text-sm text-zinc-100 transition-all duration-200 cursor-pointer text-left focus:outline-none"
+        className="w-full flex items-center justify-between gap-3 bg-zinc-950/60 border border-zinc-800/80 hover:border-pink-500/30 px-4 py-2.5 rounded-xl text-xs font-semibold font-sans text-zinc-200 hover:text-zinc-100 transition-all duration-200 cursor-pointer text-left focus:outline-none shadow-sm hover:shadow-[0_0_15px_rgba(236,72,153,0.03)]"
       >
         <span className="flex items-center gap-2 truncate">
           {selectedOpt.icon}
-          <span>{selectedOpt.label}</span>
+          <span className="truncate">{selectedOpt.label}</span>
         </span>
         <CaretDown
-          size={14}
-          className={`text-zinc-500 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+          size={12}
+          className={`text-zinc-400 transition-transform duration-200 ${isOpen ? "rotate-180 text-pink-400" : ""}`}
         />
       </button>
 
@@ -83,8 +83,8 @@ function CustomSelect<T extends string>({
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 5 }}
-            transition={{ duration: 0.15 }}
-            className="absolute right-0 mt-2 min-w-[220px] max-h-60 overflow-y-auto rounded-xl border border-zinc-800 bg-zinc-950/95 backdrop-blur-md shadow-2xl p-1 z-50 focus:outline-none scrollbar-thin"
+            transition={{ duration: 0.12 }}
+            className="absolute right-0 mt-2 min-w-[220px] max-h-60 overflow-y-auto rounded-xl border border-zinc-800 bg-zinc-950/95 backdrop-blur-md shadow-2xl p-1.5 z-50 focus:outline-none scrollbar-thin"
           >
             {options.map((opt) => {
               const isSelected = opt.value === value;
@@ -96,10 +96,10 @@ function CustomSelect<T extends string>({
                     onChange(opt.value);
                     setIsOpen(false);
                   }}
-                  className={`w-full flex items-center gap-2 px-3.5 py-2.5 text-left text-xs rounded-lg transition-colors cursor-pointer ${
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-left text-xs font-semibold font-sans rounded-lg transition-colors cursor-pointer ${
                     isSelected
-                      ? "bg-pink-500/10 text-pink-400 font-bold border border-pink-500/20"
-                      : "text-zinc-400 hover:bg-zinc-900/60 hover:text-zinc-100"
+                      ? "bg-pink-500/10 text-pink-400 border border-pink-500/20"
+                      : "text-zinc-400 hover:bg-zinc-900/60 hover:text-zinc-150"
                   }`}
                 >
                   {opt.icon}
@@ -293,7 +293,7 @@ function StockRow({
       </td>
 
       {/* 3. Country code (Text representation) */}
-      <td className="px-4 py-3.5 text-zinc-400 font-mono text-xs uppercase">
+      <td className="hidden md:table-cell px-4 py-3.5 text-zinc-400 font-mono text-xs uppercase">
         {stock.countryCode ? countryName(stock.countryCode) : "Global"}
       </td>
 
@@ -311,7 +311,7 @@ function StockRow({
       </td>
 
       {/* 6. 7d Change (Derived/Simulated) */}
-      <td className="px-4 py-3.5 text-right">
+      <td className="hidden lg:table-cell px-4 py-3.5 text-right">
         <PriceChange
           value={change7d}
           className="justify-end font-semibold text-xs"
@@ -319,12 +319,12 @@ function StockRow({
       </td>
 
       {/* 7. Volume */}
-      <td className="px-4 py-3.5 text-right font-mono text-xs tabular-nums text-zinc-400">
+      <td className="hidden sm:table-cell px-4 py-3.5 text-right font-mono text-xs tabular-nums text-zinc-400">
         {formatNumber(stock.volume)}
       </td>
 
       {/* 8. Trend Sparkline */}
-      <td className="px-4 py-2 align-middle">
+      <td className="hidden sm:table-cell px-4 py-2 align-middle">
         <div className="flex justify-end pr-2">
           <Sparkline change24h={stock.priceChange24h} id={stock.stockId} />
         </div>
@@ -514,85 +514,92 @@ export function StockList({
       </div>
 
       {/* Professional Trading Terminal Table */}
-      <div className="overflow-x-auto rounded-2xl border border-zinc-800/80 bg-zinc-950/40 backdrop-blur-md shadow-[0_15px_50px_rgba(0,0,0,0.5)]">
-        {loading ? (
-          <table className="w-full min-w-[900px] text-sm select-none">
-            <thead>
-              <tr className="border-b border-zinc-800 text-left text-[10px] uppercase tracking-widest text-zinc-500 bg-zinc-900/25 sticky top-0 backdrop-blur-md z-10">
-                <th className="px-4 py-3 text-center w-12">#</th>
-                <th className="px-2 py-3 w-8"></th>
-                <th className="px-4 py-3">Player</th>
-                <th className="px-4 py-3">Region</th>
-                <th className="px-4 py-3 text-right">Price</th>
-                <th className="px-4 py-3 text-right">24h</th>
-                <th className="px-4 py-3 text-right">7d</th>
-                <th className="px-4 py-3 text-right">Volume</th>
-                <th className="px-4 py-3 text-center w-24">Trend</th>
-                <th className="px-4 py-3 text-right w-20">Trade</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-900/30">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <tr key={i}>
-                  <td className="px-4 py-4"><Skeleton className="mx-auto h-4 w-6 rounded" /></td>
-                  <td className="px-2 py-4"><Skeleton className="mx-auto h-4 w-4 rounded-full" /></td>
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-2.5">
-                      <Skeleton className="h-8 w-8 rounded-full" />
-                      <Skeleton className="h-4 w-32 rounded" />
-                    </div>
-                  </td>
-                  <td className="px-4 py-4"><Skeleton className="h-4 w-16 rounded" /></td>
-                  <td className="px-4 py-4"><Skeleton className="ml-auto h-4 w-16 rounded" /></td>
-                  <td className="px-4 py-4"><Skeleton className="ml-auto h-4 w-14 rounded" /></td>
-                  <td className="px-4 py-4"><Skeleton className="ml-auto h-4 w-14 rounded" /></td>
-                  <td className="px-4 py-4"><Skeleton className="ml-auto h-4 w-16 rounded" /></td>
-                  <td className="px-4 py-4"><Skeleton className="mx-auto h-4 w-12 rounded" /></td>
-                  <td className="px-4 py-4"><Skeleton className="ml-auto h-7 w-12 rounded-lg" /></td>
+      <div className="relative overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-950/40 backdrop-blur-md shadow-[0_15px_50px_rgba(0,0,0,0.5)]">
+        {/* Swipe indicator for mobile devices */}
+        <div className="block sm:hidden text-center py-2.5 bg-pink-500/5 border-b border-zinc-850/50 text-[10px] font-black uppercase tracking-widest text-pink-400/80 animate-pulse">
+          ← Swipe sideways to view full statistics →
+        </div>
+
+        <div className="overflow-x-auto w-full">
+          {loading ? (
+            <table className="w-full text-sm select-none">
+              <thead>
+                <tr className="border-b border-zinc-800 text-left text-[10px] uppercase tracking-widest text-zinc-500 bg-zinc-900/25 sticky top-0 backdrop-blur-md z-10">
+                  <th className="px-4 py-3 text-center w-12">#</th>
+                  <th className="px-2 py-3 w-8"></th>
+                  <th className="px-4 py-3">Player</th>
+                  <th className="hidden md:table-cell px-4 py-3">Region</th>
+                  <th className="px-4 py-3 text-right">Price</th>
+                  <th className="px-4 py-3 text-right">24h</th>
+                  <th className="hidden lg:table-cell px-4 py-3 text-right">7d</th>
+                  <th className="hidden sm:table-cell px-4 py-3 text-right">Volume</th>
+                  <th className="hidden sm:table-cell px-4 py-3 text-center w-24">Trend</th>
+                  <th className="px-4 py-3 text-right w-20">Trade</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : filteredStocks.length === 0 ? (
-          <div className="p-10">
-            <EmptyState
-              title={filterTab === "FAVORITES" ? "Watchlist is empty" : "No players found"}
-              message={filterTab === "FAVORITES" ? "Star players in the market list to add them to your watchlist." : "Try adjusting your search query or filters."}
-              icon={<ChartBar size={24} weight="bold" className="text-zinc-600" />}
-            />
-          </div>
-        ) : (
-          <table className="w-full min-w-[900px] text-sm">
-            <thead>
-              <tr className="border-b border-zinc-800 text-left text-[10px] uppercase tracking-widest text-zinc-500 bg-zinc-900/40 sticky top-0 backdrop-blur-md z-10">
-                <th className="px-4 py-3.5 text-center w-12 font-bold">Rank</th>
-                <th className="px-2 py-3.5 w-8"></th>
-                <th className="px-4 py-3.5 font-bold">Player</th>
-                <th className="px-4 py-3.5 font-bold">Region</th>
-                <th className="px-4 py-3.5 text-right font-bold">Price</th>
-                <th className="px-4 py-3.5 text-right font-bold">24h Change</th>
-                <th className="px-4 py-3.5 text-right font-bold">7d Change</th>
-                <th className="px-4 py-3.5 text-right font-bold">Volume</th>
-                <th className="px-4 py-3.5 text-center w-24 font-bold">Trend</th>
-                <th className="px-4 py-3.5 text-right w-20 font-bold">Trade</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-900/30">
-              {filteredStocks.map((stock, i) => (
-                <StockRow
-                  key={stock.stockId}
-                  stock={stock}
-                  animateRows={animateRows}
-                  index={i}
-                  page={page}
-                  isFavorite={favorites.includes(stock.stockId)}
-                  onToggleFavorite={() => toggleFavorite(stock.stockId)}
-                  onSelect={() => onSelectStock?.(stock.stockId)}
-                />
-              ))}
-            </tbody>
-          </table>
-        )}
+              </thead>
+              <tbody className="divide-y divide-zinc-900/30">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <tr key={i}>
+                    <td className="px-4 py-4"><Skeleton className="mx-auto h-4 w-6 rounded" /></td>
+                    <td className="px-2 py-4"><Skeleton className="mx-auto h-4 w-4 rounded-full" /></td>
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-2.5">
+                        <Skeleton className="h-8 w-8 rounded-full" />
+                        <Skeleton className="h-4 w-32 rounded" />
+                      </div>
+                    </td>
+                    <td className="hidden md:table-cell px-4 py-4"><Skeleton className="h-4 w-16 rounded" /></td>
+                    <td className="px-4 py-4"><Skeleton className="ml-auto h-4 w-16 rounded" /></td>
+                    <td className="px-4 py-4"><Skeleton className="ml-auto h-4 w-14 rounded" /></td>
+                    <td className="hidden lg:table-cell px-4 py-4"><Skeleton className="ml-auto h-4 w-14 rounded" /></td>
+                    <td className="hidden sm:table-cell px-4 py-4"><Skeleton className="ml-auto h-4 w-16 rounded" /></td>
+                    <td className="hidden sm:table-cell px-4 py-4"><Skeleton className="mx-auto h-4 w-12 rounded" /></td>
+                    <td className="px-4 py-4"><Skeleton className="ml-auto h-7 w-12 rounded-lg" /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : filteredStocks.length === 0 ? (
+            <div className="p-10">
+              <EmptyState
+                title={filterTab === "FAVORITES" ? "Watchlist is empty" : "No players found"}
+                message={filterTab === "FAVORITES" ? "Star players in the market list to add them to your watchlist." : "Try adjusting your search query or filters."}
+                icon={<ChartBar size={24} weight="bold" className="text-zinc-600" />}
+              />
+            </div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-zinc-800 text-left text-[10px] uppercase tracking-widest text-zinc-500 bg-zinc-900/40 sticky top-0 backdrop-blur-md z-10">
+                  <th className="px-4 py-3.5 text-center w-12 font-bold">Rank</th>
+                  <th className="px-2 py-3.5 w-8"></th>
+                  <th className="px-4 py-3.5 font-bold">Player</th>
+                  <th className="hidden md:table-cell px-4 py-3.5 font-bold">Region</th>
+                  <th className="px-4 py-3.5 text-right font-bold">Price</th>
+                  <th className="px-4 py-3.5 text-right font-bold">24h Change</th>
+                  <th className="hidden lg:table-cell px-4 py-3.5 text-right font-bold">7d Change</th>
+                  <th className="hidden sm:table-cell px-4 py-3.5 text-right font-bold">Volume</th>
+                  <th className="hidden sm:table-cell px-4 py-3.5 text-center w-24 font-bold">Trend</th>
+                  <th className="px-4 py-3.5 text-right w-20 font-bold">Trade</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-900/30">
+                {filteredStocks.map((stock, i) => (
+                  <StockRow
+                    key={stock.stockId}
+                    stock={stock}
+                    animateRows={animateRows}
+                    index={i}
+                    page={page}
+                    isFavorite={favorites.includes(stock.stockId)}
+                    onToggleFavorite={() => toggleFavorite(stock.stockId)}
+                    onSelect={() => onSelectStock?.(stock.stockId)}
+                  />
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
 
       {/* Pagination component */}

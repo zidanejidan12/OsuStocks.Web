@@ -29,25 +29,13 @@ function PageShell({ children }: { children: React.ReactNode }) {
   return <div className="mx-auto max-w-6xl px-4 py-10 sm:py-14">{children}</div>;
 }
 
-function PageHeader({ summary }: { summary?: AchievementsResponse | null }) {
+function PageHeader() {
   return (
     <Reveal>
-      <header className="mb-8">
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-3xl sm:text-4xl font-black tracking-tight font-display bg-gradient-to-r from-zinc-100 via-pink-100 to-pink-500 bg-clip-text text-transparent animate-gradient-text">
-            Achievements
-          </h1>
-          {summary && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300 ring-1 ring-inset ring-emerald-500/30">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-              {formatNumber(summary.unlockedCount)} / {formatNumber(summary.totalCount)} unlocked
-            </span>
-          )}
-        </div>
-        <p className="mt-2 text-sm text-zinc-400">
-          Milestones you earn as you trade. Each one pays out a credit reward.
-        </p>
-      </header>
+      <div className="mb-8 flex flex-col gap-1">
+        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-pink-500">Milestones & Payouts</span>
+        <h1 className="text-3xl font-extrabold tracking-tight text-zinc-50 font-display uppercase">Achievements</h1>
+      </div>
     </Reveal>
   );
 }
@@ -451,7 +439,7 @@ export default function AchievementsPage() {
 
   return (
     <PageShell>
-      <PageHeader summary={data} />
+      <PageHeader />
 
       {loading && <AchievementsSkeleton />}
 

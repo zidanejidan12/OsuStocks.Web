@@ -112,6 +112,19 @@ export function Nav() {
   const { unreadCount } = useNotifications();
   const [open, setOpen] = useState(false);
   const [showWelcomePopup, setShowWelcomePopup] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [dropdownOpen]);
 
   useEffect(() => {
     if (user && typeof window !== "undefined") {
@@ -134,6 +147,7 @@ export function Nav() {
   useEffect(() => {
     /* eslint-disable-next-line react-hooks/set-state-in-effect */
     setOpen(false);
+    setDropdownOpen(false);
   }, [pathname]);
 
   // While the drawer is open: lock background scroll, close on Escape, mark the
@@ -276,33 +290,110 @@ export function Nav() {
                   {user.role === "Admin" && (
                     <Link
                       href="/admin"
-                      aria-label="Admin"
-                      className={`grid h-9 w-9 place-items-center rounded-lg transition-colors ${
+                      aria-label="Admin Panel"
+                      title="Admin Panel"
+                      className={`grid h-9 w-9 place-items-center rounded-xl transition-all duration-200 cursor-pointer ${
                         pathname.startsWith("/admin")
-                          ? "bg-zinc-800/80 text-pink-300 ring-1 ring-inset ring-pink-500/30"
-                          : "text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-100"
+                          ? "bg-pink-500/10 text-pink-400 border border-pink-500/30 shadow-[0_0_12px_rgba(236,72,153,0.25)]"
+                          : "text-zinc-400 border border-transparent hover:bg-zinc-900/60 hover:border-zinc-800 hover:text-zinc-200"
                       }`}
                     >
-                      <GearSix size={18} weight="bold" />
+                      <GearSix size={18} weight="bold" className={pathname.startsWith("/admin") ? "animate-[spin_10s_linear_infinite]" : ""} />
                     </Link>
                   )}
-                  <Link
-                    href="/portfolio"
-                    aria-label={user.username}
-                    title={user.username}
-                    className="shrink-0 rounded-full ring-2 ring-transparent transition-colors hover:ring-pink-500/40"
-                  >
-                    <Avatar src={user.avatarUrl} name={user.username} size="sm" />
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={logout}
-                    aria-label="Logout"
-                    className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800 hover:border-zinc-700 font-display text-xs font-bold uppercase tracking-wider lg:px-2.5 lg:py-1.5 xl:px-4 xl:py-2 transition-all active:scale-95 text-zinc-300 flex items-center gap-1.5"
-                  >
-                    <SignOut size={14} weight="bold" />
-                    Logout
-                  </button>
+                  <div className="relative" ref={dropdownRef}>
+                    <button
+                      type="button"
+                      aria-label="Toggle user menu"
+                      onClick={() => setDropdownOpen(!dropdownOpen)}
+                      className="shrink-0 rounded-full ring-2 ring-transparent transition-all hover:ring-pink-500/40 focus:outline-none cursor-pointer"
+                    >
+                      <Avatar src={user.avatarUrl} name={user.username} size="sm" />
+                    </button>
+                    
+                    <AnimatePresence>
+                      {dropdownOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                          transition={{ duration: 0.15, ease: "easeOut" }}
+                          className="absolute right-0 mt-2.5 w-52 rounded-2xl border border-zinc-800 bg-zinc-950/95 p-1.5 shadow-[0_10px_35px_rgba(0,0,0,0.6)] backdrop-blur-xl z-50 text-left"
+                        >
+                          <div className="flex items-center gap-2.5 p-2 bg-zinc-900/20 rounded-xl mb-1">
+                            <Avatar src={user.avatarUrl} name={user.username} size="sm" />
+                            <div className="min-w-0 flex-1">
+                              <div className="truncate text-xs font-black text-zinc-100">{user.username}</div>
+                              <div className="truncate text-[8px] font-bold uppercase tracking-wider text-pink-400 font-mono mt-0.5">
+                                {user.equippedTitleCode || user.role}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="h-[1px] bg-zinc-850/60 my-1" />
+                          
+                          <div className="space-y-0.5">
+                            <Link
+                              href="/portfolio"
+                              onClick={() => setDropdownOpen(false)}
+                              className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-400 hover:text-zinc-105 hover:bg-zinc-900/40 transition-colors"
+                            >
+                              <ChartPieSlice size={13} weight="bold" className="text-pink-400/80" />
+                              Trading Portfolio
+                            </Link>
+                            <Link
+                              href="/wallet"
+                              onClick={() => setDropdownOpen(false)}
+                              className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-400 hover:text-zinc-105 hover:bg-zinc-900/40 transition-colors"
+                            >
+                              <Wallet size={13} weight="bold" className="text-pink-400/80" />
+                              Capital Wallet
+                            </Link>
+                            <Link
+                              href="/missions"
+                              onClick={() => setDropdownOpen(false)}
+                              className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-400 hover:text-zinc-105 hover:bg-zinc-900/40 transition-colors"
+                            >
+                              <Target size={13} weight="bold" className="text-pink-400/80" />
+                              Daily Missions
+                            </Link>
+                            <Link
+                              href="/achievements"
+                              onClick={() => setDropdownOpen(false)}
+                              className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-400 hover:text-zinc-105 hover:bg-zinc-900/40 transition-colors"
+                            >
+                              <Medal size={13} weight="bold" className="text-pink-400/80" />
+                              Achievements
+                            </Link>
+                            {user.role === "Admin" && (
+                              <Link
+                                href="/admin"
+                                onClick={() => setDropdownOpen(false)}
+                                className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-400 hover:text-zinc-105 hover:bg-zinc-900/40 transition-colors"
+                              >
+                                <GearSix size={13} weight="bold" className="text-pink-400/80" />
+                                Admin Console
+                              </Link>
+                            )}
+                          </div>
+                          
+                          <div className="h-[1px] bg-zinc-850/60 my-1" />
+                          
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setDropdownOpen(false);
+                              logout();
+                            }}
+                            className="w-full flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-rose-400 hover:text-rose-350 hover:bg-rose-500/5 transition-colors cursor-pointer"
+                          >
+                            <SignOut size={13} weight="bold" />
+                            Sign Out
+                          </button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </>
               ) : (
                 <Link
@@ -433,14 +524,14 @@ export function Nav() {
                         aria-current={
                           pathname.startsWith("/admin") ? "page" : undefined
                         }
-                        className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                        className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold uppercase tracking-wider text-[10px] transition-all border ${
                           pathname.startsWith("/admin")
-                            ? "bg-zinc-800/80 text-pink-300 ring-1 ring-inset ring-pink-500/30"
-                            : "text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100"
+                            ? "bg-pink-500/10 text-pink-400 border-pink-500/25 shadow-[0_0_12px_rgba(236,72,153,0.15)]"
+                            : "text-zinc-400 border-transparent hover:bg-zinc-900 hover:text-zinc-200"
                         }`}
                       >
-                        <GearSix size={18} weight="bold" />
-                        Admin
+                        <GearSix size={16} weight="bold" className={pathname.startsWith("/admin") ? "animate-[spin_10s_linear_infinite] text-pink-400" : "text-zinc-500"} />
+                        Admin Console
                       </Link>
                     </li>
                   )}
