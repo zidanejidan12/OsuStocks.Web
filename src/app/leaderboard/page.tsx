@@ -52,6 +52,8 @@ function rankChip(rank: number): string {
 function PageShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative w-full overflow-hidden min-h-screen">
+      <div className="absolute top-0 right-0 -z-10 h-[350px] w-[350px] rounded-full bg-pink-500/12 dark:bg-pink-500/5 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 -z-10 h-[350px] w-[350px] rounded-full bg-purple-500/12 dark:bg-purple-500/5 blur-[120px] pointer-events-none" />
       <div className="relative z-10 mx-auto max-w-5xl px-4 py-10 sm:py-14">
         {children}
       </div>
@@ -267,10 +269,7 @@ export default function LeaderboardPage() {
     <PageShell>
       <Reveal>
         <header className="mb-6">
-          <p className="text-[10px] font-mono font-bold uppercase tracking-[0.25em] text-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.35)]">
-            GLOBAL LEADERBOARD
-          </p>
-          <h1 className="mt-2 text-4xl sm:text-5xl font-black tracking-tight font-display bg-gradient-to-r from-zinc-100 via-pink-100 to-pink-500 bg-clip-text text-transparent animate-gradient-text">
+          <h1 className="pb-2 text-4xl sm:text-5xl font-black tracking-tight font-display bg-gradient-to-r from-pink-600 via-pink-200 to-pink-700 dark:from-pink-500 dark:via-zinc-100 dark:to-pink-500 bg-clip-text text-transparent animate-gradient-text">
             Rankings
           </h1>
           <p className="mt-2 text-sm text-zinc-300">

@@ -94,7 +94,15 @@ const filterSelectClass =
   "rounded-xl border border-zinc-800/80 bg-zinc-950/40 px-3 py-2 text-sm text-zinc-200 transition-all focus:border-pink-500/50 focus:outline-none focus:ring-1 focus:ring-pink-500/30 cursor-pointer";
 
 function PageShell({ children }: { children: React.ReactNode }) {
-  return <div className="mx-auto max-w-5xl px-4 py-10 sm:py-14">{children}</div>;
+  return (
+    <div className="relative w-full overflow-hidden min-h-screen">
+      <div className="absolute top-0 right-0 -z-10 h-[350px] w-[350px] rounded-full bg-violet-500/12 dark:bg-violet-500/5 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 -z-10 h-[350px] w-[350px] rounded-full bg-fuchsia-500/12 dark:bg-fuchsia-500/5 blur-[120px] pointer-events-none" />
+      <div className="relative z-10 mx-auto max-w-5xl px-4 py-10 sm:py-14">
+        {children}
+      </div>
+    </div>
+  );
 }
 
 function errorMessage(err: unknown, fallback: string): string {
@@ -1059,7 +1067,7 @@ export default function AdminPage() {
             <GearSix size={20} weight="bold" className="animate-[spin_20s_linear_infinite]" />
           </span>
           <div>
-            <h1 className="text-3xl sm:text-4xl font-black tracking-tight font-display bg-gradient-to-r from-zinc-100 via-pink-100 to-pink-500 bg-clip-text text-transparent animate-gradient-text">
+            <h1 className="pb-2 text-3xl sm:text-4xl font-black tracking-tight font-display bg-gradient-to-r from-violet-600 via-violet-200 to-fuchsia-700 dark:from-violet-500 dark:via-zinc-100 dark:to-fuchsia-500 bg-clip-text text-transparent animate-gradient-text">
               Admin Panel
             </h1>
             <p className="mt-1.5 text-xs text-zinc-405 font-mono">

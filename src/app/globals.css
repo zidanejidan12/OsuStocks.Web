@@ -241,21 +241,21 @@
   background: linear-gradient(135deg, #faf7fa 0%, #f5ecf4 35%, #fdfafc 70%, #f4edf3 100%) !important;
 }
 
-:root.light header {
+:root.light header.sticky {
   background-color: rgba(250, 247, 250, 0.8) !important;
   border-bottom-color: rgba(0, 0, 0, 0.06) !important;
 }
 
-:root.light header nav a, 
-:root.light header nav span:not(.text-pink-500):not(.text-pink-400) {
+:root.light header.sticky nav a, 
+:root.light header.sticky nav span:not(.text-pink-500):not(.text-pink-400) {
   color: #1c151c !important;
 }
 
-:root.light header nav button {
+:root.light header.sticky nav button {
   color: #584b57 !important;
 }
 
-:root.light header nav button:hover {
+:root.light header.sticky nav button:hover {
   background-color: rgba(0, 0, 0, 0.04) !important;
   color: #1c151c !important;
 }

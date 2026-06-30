@@ -897,7 +897,7 @@ export default function Home() {
       <Reveal delay={0.02}>
         <div className="flex items-end justify-between gap-3 mb-6">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl font-black font-display tracking-tight bg-gradient-to-r from-zinc-100 via-pink-100 to-pink-500 bg-clip-text text-transparent sm:text-2xl animate-gradient-text">
+            <h2 className="text-xl font-black font-display tracking-tight bg-gradient-to-r from-zinc-100 via-pink-600 to-pink-700 dark:from-zinc-100 dark:via-pink-200 dark:to-pink-500 bg-clip-text text-transparent sm:text-2xl animate-gradient-text">
               Market Dashboard
             </h2>
             <div className="flex items-center gap-1.5 rounded-full bg-cyan-500/10 px-2.5 py-0.5 border border-cyan-500/20">

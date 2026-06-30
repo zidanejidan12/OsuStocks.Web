@@ -160,6 +160,8 @@ export default function TrendingPage() {
 
   return (
     <div className="relative w-full overflow-hidden min-h-screen pb-20">
+      <div className="absolute top-0 right-0 -z-10 h-[350px] w-[350px] rounded-full bg-orange-500/12 dark:bg-orange-500/5 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 -z-10 h-[350px] w-[350px] rounded-full bg-rose-500/12 dark:bg-rose-500/5 blur-[120px] pointer-events-none" />
       {/* Visualizer CSS style override */}
       <style>{`
         @keyframes soundwave-bounce {
@@ -215,7 +217,7 @@ export default function TrendingPage() {
             <div className="lg:col-span-5 flex flex-col gap-6">
               <Reveal>
                 <header className="mb-2">
-                  <h1 className="text-4xl sm:text-5xl font-black tracking-tight font-display bg-gradient-to-r from-zinc-100 via-pink-100 to-pink-500 bg-clip-text text-transparent animate-gradient-text">
+                  <h1 className="pb-2 text-4xl sm:text-5xl font-black tracking-tight font-display bg-gradient-to-r from-orange-600 via-orange-200 to-rose-700 dark:from-orange-500 dark:via-zinc-100 dark:to-rose-500 bg-clip-text text-transparent animate-gradient-text">
                     Market Trends
                   </h1>
                   <p className="mt-3 text-sm text-zinc-400 max-w-[60ch] leading-relaxed">

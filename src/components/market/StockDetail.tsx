@@ -43,6 +43,7 @@ import {
   sell,
   ApiError,
 } from "@/lib/api/client";
+import { getWalletStanding } from "@/lib/wallet-tiers";
 import { useAuth } from "@/lib/auth/auth-context";
 import { useToast } from "@/components/ui/Toast";
 import * as analytics from "@/lib/analytics";
@@ -497,6 +498,7 @@ function TradePanel({
   // Accurate, fee-inclusive buy estimate from the server (debounced). Computed with the
   // same engine as a real trade, so the shown total matches what the wallet is charged.
   const [quote, setQuote] = useState<TradeQuote | null>(null);
+  const standing = balance !== null ? getWalletStanding(balance) : null;
 
   useEffect(() => {
     if (!user || !(quantity > 0) || !(currentPrice > 0)) return;
@@ -818,6 +820,21 @@ function TradePanel({
             >
               &asymp; <Money value={estTotal} />
             </span>
+          </div>
+        )}
+
+        {quantity > 0 && currentPrice > 0 && standing && (
+          <div className="flex flex-col gap-1 rounded-xl border border-zinc-800/80 bg-zinc-950/40 p-2.5">
+            <div className="flex items-center justify-between text-[9px] font-mono">
+              <span className="text-zinc-500">Tier Benefits:</span>
+              <span className={`px-1.5 py-0.5 rounded border font-bold uppercase text-[8px] ${standing.currentTier.color.split(' ')[0]} ${standing.currentTier.color.split(' ')[1]} ${standing.currentTier.color.split(' ')[2]}`}>
+                {standing.currentTier.name}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-[9px] font-mono border-t border-zinc-900 pt-1 mt-1 text-zinc-400">
+              <span>Card Fee Rate:</span>
+              <span className="font-bold text-white">{standing.formattedFee}</span>
+            </div>
           </div>
         )}
 

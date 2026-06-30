@@ -1,6 +1,7 @@
 // HTTP layer for the OsuStocks API.
 
 import { getAccessToken } from "@/lib/auth/token";
+import { getWalletStanding } from "@/lib/wallet-tiers";
 import type {
   AchievementsResponse,
   AdminTrade,
@@ -205,7 +206,8 @@ function getMockResponse(path: string, init?: RequestInit): any {
       const qty = Number(searchParams.get("quantity") ?? 1);
       const isSell = searchParams.get("side") === "sell";
       const gross = qty * stock.currentPrice;
-      const fee = gross * 0.01;
+      const feeRate = getWalletStanding(25420.5).currentTier.feeRate;
+      const fee = gross * feeRate;
       return {
         quantity: qty,
         unitPrice: stock.currentPrice,
@@ -284,7 +286,8 @@ function getMockResponse(path: string, init?: RequestInit): any {
 
     const stock = mockStocks.find(s => s.stockId === stockId) || mockStocks[0];
     const total = qty * stock.currentPrice;
-    const fee = total * 0.01;
+    const feeRate = getWalletStanding(25420.5).currentTier.feeRate;
+    const fee = total * feeRate;
 
     return {
       tradeId: "tr_" + Math.random().toString(36).substring(2, 9),

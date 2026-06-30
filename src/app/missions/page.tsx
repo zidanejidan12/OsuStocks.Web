@@ -31,16 +31,28 @@ import { fadeUp, staggerContainer } from "@/lib/motion";
 import { useAuth } from "@/lib/auth/auth-context";
 
 function PageShell({ children }: { children: React.ReactNode }) {
-  return <div className="mx-auto max-w-5xl px-4 py-10 sm:py-14">{children}</div>;
+  return (
+    <div className="relative w-full overflow-hidden min-h-screen">
+      <div className="absolute top-0 right-0 -z-10 h-[350px] w-[350px] rounded-full bg-cyan-500/12 dark:bg-cyan-500/5 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 -z-10 h-[350px] w-[350px] rounded-full bg-emerald-500/12 dark:bg-emerald-500/5 blur-[120px] pointer-events-none" />
+      <div className="relative z-10 mx-auto max-w-5xl px-4 py-10 sm:py-14">
+        {children}
+      </div>
+    </div>
+  );
 }
 
 function PageHeader() {
   return (
     <Reveal>
-      <div className="mb-8 flex flex-col gap-1">
-        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-pink-500">Recurring Objectives</span>
-        <h1 className="text-3xl font-extrabold tracking-tight text-zinc-50 font-display uppercase">Missions</h1>
-      </div>
+      <header className="mb-6">
+        <h1 className="pb-2 text-4xl sm:text-5xl font-black tracking-tight font-display bg-gradient-to-r from-cyan-600 via-cyan-200 to-emerald-600 dark:from-cyan-500 dark:via-zinc-100 dark:to-emerald-400 bg-clip-text text-transparent animate-gradient-text">
+          Missions
+        </h1>
+        <p className="mt-2 text-sm text-zinc-300">
+          Complete daily goals, claim bounties, and climb the platform ranks.
+        </p>
+      </header>
     </Reveal>
   );
 }
@@ -131,7 +143,7 @@ function MissionsSummary({ missions }: { missions: Mission[] }) {
             <div>
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-pink-400 drop-shadow-[0_0_8px_rgba(236,72,153,0.15)]">Operation Progress</span>
               <h2 className="text-3xl font-black font-display text-zinc-100 mt-2 flex items-baseline gap-2">
-                <span className="bg-gradient-to-r from-zinc-100 via-pink-100 to-pink-400 bg-clip-text text-transparent animate-gradient-text drop-shadow-[0_0_10px_rgba(236,72,153,0.3)]">{completionRate}%</span>
+                <span className="bg-gradient-to-r from-zinc-100 via-pink-600 to-pink-700 dark:from-zinc-100 dark:via-pink-200 dark:to-pink-500 bg-clip-text text-transparent animate-gradient-text drop-shadow-[0_0_10px_rgba(236,72,153,0.3)]">{completionRate}%</span>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Completed</span>
               </h2>
             </div>

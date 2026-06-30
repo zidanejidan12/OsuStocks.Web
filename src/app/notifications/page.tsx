@@ -34,7 +34,15 @@ const TYPE_ICONS: Record<NotificationType, { Icon: PhosphorIcon; tone: string }>
 };
 
 function PageShell({ children }: { children: React.ReactNode }) {
-  return <div className="mx-auto max-w-3xl px-4 py-10 sm:py-14">{children}</div>;
+  return (
+    <div className="relative w-full overflow-hidden min-h-screen">
+      <div className="absolute top-0 right-0 -z-10 h-[350px] w-[350px] rounded-full bg-blue-500/12 dark:bg-blue-500/5 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 -z-10 h-[350px] w-[350px] rounded-full bg-indigo-500/12 dark:bg-indigo-500/5 blur-[120px] pointer-events-none" />
+      <div className="relative z-10 mx-auto max-w-3xl px-4 py-10 sm:py-14">
+        {children}
+      </div>
+    </div>
+  );
 }
 
 function PleaseLogIn() {
@@ -170,7 +178,7 @@ export default function NotificationsPage() {
       <Reveal>
         <header className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-zinc-800/80 pb-6">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-black tracking-tight font-display bg-gradient-to-r from-zinc-100 via-pink-100 to-pink-500 bg-clip-text text-transparent animate-gradient-text">
+            <h1 className="pb-2 text-3xl sm:text-4xl font-black tracking-tight font-display bg-gradient-to-r from-blue-600 via-blue-200 to-indigo-700 dark:from-blue-500 dark:via-zinc-100 dark:to-indigo-500 bg-clip-text text-transparent animate-gradient-text">
               Notifications
             </h1>
             <p className="mt-2 text-sm text-zinc-400 font-mono">
