@@ -150,29 +150,43 @@ function AchievementsSummary({ data }: { data: AchievementsResponse }) {
   const potentialCredits = data.items.filter(a => !a.unlocked).reduce((acc, a) => acc + a.rewardCredits, 0);
 
   return (
-    <Card className="relative overflow-hidden mb-8 border-pink-500/20 bg-gradient-to-r from-zinc-950 via-zinc-900/40 to-zinc-950">
-      {/* Decorative gradient glowing orb */}
-      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-64 h-64 bg-pink-500/10 rounded-full blur-3xl pointer-events-none" />
+    <Card className="relative overflow-hidden mb-8 border-pink-500/30 bg-gradient-to-r from-zinc-950 via-zinc-900/30 to-zinc-950 p-6 sm:p-8 shadow-[0_0_30px_rgba(236,72,153,0.05)]">
+      {/* Grid Pattern Background */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808003_1px,transparent_1px),linear-gradient(to_bottom,#80808003_1px,transparent_1px)] bg-[size:10px_10px] pointer-events-none rounded-3xl" />
 
-      <div className="grid gap-6 md:grid-cols-3 items-center">
-        {/* Progress ring / Circular progress visual */}
-        <div className="flex items-center gap-4">
+      {/* Decorative gradient glowing orbs */}
+      <div className="absolute -left-12 -top-12 w-48 h-48 bg-pink-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -right-12 -bottom-12 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="relative grid gap-6 md:grid-cols-3 items-center z-10">
+        {/* Completion Rate Circle visual */}
+        <div className="flex items-center gap-5">
           <div className="relative w-20 h-20 shrink-0">
-            {/* SVG Progress Circle */}
+            {/* Background Circle */}
             <svg className="w-full h-full transform -rotate-90">
               <circle
                 cx="40"
                 cy="40"
                 r="34"
-                className="stroke-zinc-800"
+                className="stroke-zinc-900"
                 strokeWidth="6"
                 fill="transparent"
               />
+              {/* Glowing Outer Track */}
               <circle
                 cx="40"
                 cy="40"
                 r="34"
-                className="stroke-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.5)] transition-all duration-1000"
+                className="stroke-pink-500/20"
+                strokeWidth="10"
+                fill="transparent"
+              />
+              {/* Active Progress Circle */}
+              <circle
+                cx="40"
+                cy="40"
+                r="34"
+                className="stroke-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.6)] transition-all duration-1000"
                 strokeWidth="6"
                 fill="transparent"
                 strokeDasharray={2 * Math.PI * 34}
@@ -185,33 +199,47 @@ function AchievementsSummary({ data }: { data: AchievementsResponse }) {
             </div>
           </div>
           <div>
-            <h3 className="text-sm font-bold text-zinc-200">Completion Rate</h3>
-            <p className="text-xs text-zinc-400 mt-0.5">
-              Unlock milestones to boost your status.
+            <h3 className="text-sm font-black font-display tracking-wide text-zinc-100 uppercase">
+              Completion Rate
+            </h3>
+            <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
+              Unlock milestones to boost your platform status.
             </p>
           </div>
         </div>
 
-        {/* Stats 1 */}
-        <div className="border-t border-zinc-800/60 pt-4 md:border-t-0 md:pt-0 md:border-l md:pl-6 flex flex-col justify-center">
-          <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-500">Milestones Unlocked</span>
-          <span className="text-2xl font-black font-display text-zinc-100 mt-1">
-            {unlocked} <span className="text-zinc-500 text-sm font-medium">/ {total}</span>
+        {/* Milestones Unlocked Column */}
+        <div className="border-t border-zinc-900 pt-4 md:border-t-0 md:pt-0 md:border-l md:border-zinc-900 md:pl-8 flex flex-col justify-center">
+          <span className="text-[10px] font-sans font-extrabold uppercase tracking-widest text-zinc-550">
+            Milestones Unlocked
           </span>
+          <div className="flex items-baseline mt-2">
+            <span className="text-4xl font-black font-display text-zinc-100 leading-none">
+              {unlocked}
+            </span>
+            <span className="text-zinc-600 font-sans font-bold text-sm ml-1.5">
+              / {total} Completed
+            </span>
+          </div>
         </div>
 
-        {/* Stats 2 */}
-        <div className="border-t border-zinc-800/60 pt-4 md:border-t-0 md:pt-0 md:border-l md:pl-6 flex flex-col justify-center">
-          <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-500">Credits Earned</span>
-          <span className="text-2xl font-black font-display text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.15)] mt-1 flex items-center gap-1.5">
-            <Coin />
-            {earnedCredits.toLocaleString()}
+        {/* Credits Earned Column */}
+        <div className="border-t border-zinc-900 pt-4 md:border-t-0 md:pt-0 md:border-l md:border-zinc-900 md:pl-8 flex flex-col justify-center">
+          <span className="text-[10px] font-sans font-extrabold uppercase tracking-widest text-zinc-550">
+            Credits Earned
+          </span>
+          <div className="flex flex-col mt-1">
+            <span className="text-3xl font-black font-display text-emerald-400 drop-shadow-[0_0_12px_rgba(52,211,153,0.2)] flex items-center gap-2">
+              <Coin />
+              {earnedCredits.toLocaleString()}
+            </span>
             {potentialCredits > 0 && (
-              <span className="text-[10px] text-zinc-500 font-sans font-medium">
-                (+{potentialCredits.toLocaleString()} locked)
+              <span className="inline-flex items-center gap-1 text-[10px] text-zinc-550 font-sans font-semibold mt-1">
+                <Lock size={10} className="text-zinc-650" />
+                <span>(+{potentialCredits.toLocaleString()} locked credits)</span>
               </span>
             )}
-          </span>
+          </div>
         </div>
       </div>
     </Card>
