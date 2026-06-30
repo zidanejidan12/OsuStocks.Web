@@ -168,7 +168,7 @@ function ProfileHeaderCard({
                 className={buttonClasses({
                   variant: "secondary",
                   size: "sm",
-                  className: "gap-1.5 text-xs font-semibold text-zinc-350 border border-zinc-800/80 bg-zinc-955/30 hover:bg-zinc-900/60",
+                  className: "gap-1.5 text-xs font-semibold text-zinc-355 border border-zinc-800/80 bg-zinc-955/30 hover:bg-zinc-900/60",
                 })}
               >
                 Verify osu! Profile
@@ -226,72 +226,142 @@ function ProfileHeaderCard({
 function HoldingsTable({ holdings, totalValuation }: { holdings: Holding[]; totalValuation: number }) {
   const reduceMotion = useReducedMotion();
   return (
-    <div className="overflow-x-auto rounded-2xl border border-zinc-800/80 bg-zinc-950/10 shadow-sm backdrop-blur-md">
+    <div className="overflow-x-auto rounded-2xl border border-zinc-800/80 bg-zinc-950/10 shadow-lg backdrop-blur-md">
       <table className="w-full text-sm">
         <caption className="sr-only">
           Investment holdings ledger: player, positions, average cost, current price, net value, and returns.
         </caption>
         <thead>
-          <tr className="border-b border-zinc-800/80 text-[10px] font-bold uppercase tracking-wider text-zinc-500 bg-zinc-900/35">
-            <th className="px-5 py-3.5 text-left">Asset</th>
-            <th className="px-5 py-3.5 text-right">Holdings Size</th>
-            <th className="hidden px-5 py-3.5 text-right sm:table-cell">Avg Cost</th>
-            <th className="hidden px-5 py-3.5 text-right sm:table-cell">Market Price</th>
-            <th className="px-5 py-3.5 text-right">Current Value</th>
-            <th className="hidden px-5 py-3.5 text-right md:table-cell">Allocation</th>
-            <th className="px-5 py-3.5 text-right">Yield Return</th>
+          <tr className="border-b border-zinc-800/80 text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-500 bg-zinc-950/40">
+            <th className="px-5 py-4 text-left">Asset</th>
+            <th className="px-5 py-4 text-right">Holdings Size</th>
+            <th className="hidden px-5 py-4 text-right sm:table-cell">Avg Cost</th>
+            <th className="hidden px-5 py-4 text-right sm:table-cell">Market Price</th>
+            <th className="px-5 py-4 text-right">Current Value</th>
+            <th className="hidden px-5 py-4 text-right md:table-cell">Allocation</th>
+            <th className="px-5 py-4 text-right">Yield Return</th>
           </tr>
         </thead>
         <motion.tbody
-          className="divide-y divide-zinc-850/60"
+          className="divide-y divide-zinc-850/50"
           variants={staggerContainer}
           initial="hidden"
           animate="show"
         >
           {holdings.map((h) => {
             const allocation = totalValuation > 0 ? (h.currentValue / totalValuation) * 100 : 0;
+            const pctChange = h.averagePrice > 0 ? (h.profitLoss / (h.averagePrice * h.quantity)) * 100 : 0;
+            const isPositive = h.profitLoss > 0;
+            const isNegative = h.profitLoss < 0;
+
             return (
               <motion.tr
                 key={h.holdingId}
                 variants={fadeUp}
-                whileHover={reduceMotion ? undefined : { backgroundColor: "rgba(24, 24, 27, 0.35)" }}
+                whileHover={reduceMotion ? undefined : { backgroundColor: "rgba(236, 72, 153, 0.02)" }}
                 transition={spring}
-                className="group transition-colors"
+                className="group transition-colors duration-300"
               >
+                {/* Asset name, avatar, and ticker ID */}
                 <td className="px-5 py-4">
                   <Link
                     href={`/stocks/${h.stockId}`}
-                    className="inline-flex items-center gap-2.5 font-semibold text-zinc-100 hover:text-pink-400 transition-colors"
+                    className="inline-flex items-center gap-3 font-semibold text-zinc-100 hover:text-pink-400 transition-colors"
                   >
-                    <div className="rounded-full overflow-hidden ring-1 ring-zinc-800 group-hover:ring-pink-500/20 transition-all duration-300">
+                    <div className="relative rounded-full overflow-hidden ring-2 ring-zinc-800 group-hover:ring-pink-500/40 transition-all duration-300 shadow-md">
                       <Avatar src={h.avatarUrl} name={h.playerName} size="sm" />
                     </div>
-                    <span className="inline-flex items-center gap-1">
-                      {h.playerName}
-                      <CaretRight
-                        size={12}
-                        className="text-zinc-650 opacity-0 group-hover:opacity-100 transition-all duration-200 group-hover:translate-x-0.5"
-                      />
-                    </span>
+                    <div className="flex flex-col items-start">
+                      <span className="inline-flex items-center gap-0.5 text-sm font-semibold tracking-tight text-zinc-150 group-hover:text-pink-400 transition-colors">
+                        {h.playerName}
+                        <CaretRight
+                          size={11}
+                          className="text-pink-400 opacity-0 group-hover:opacity-100 transition-all duration-200 group-hover:translate-x-0.5"
+                        />
+                      </span>
+                      <span className="text-[9px] font-mono text-zinc-550 group-hover:text-pink-400/50 transition-colors">
+                        ID: {h.stockId.substring(0, 8)}
+                      </span>
+                    </div>
                   </Link>
                 </td>
-                <td className="px-5 py-4 text-right font-mono text-xs tabular-nums text-zinc-300">
-                  {formatShares(h.quantity)}
-                </td>
-                <td className="hidden px-5 py-4 text-right font-mono text-xs tabular-nums text-zinc-400 sm:table-cell">
-                  <Money value={h.averagePrice} />
-                </td>
-                <td className="hidden px-5 py-4 text-right font-mono text-xs tabular-nums text-zinc-300 sm:table-cell">
-                  <Money value={h.currentPrice} />
-                </td>
-                <td className="px-5 py-4 text-right font-mono text-xs font-bold tabular-nums text-zinc-100">
-                  <Money value={h.currentValue} />
-                </td>
-                <td className="hidden px-5 py-4 text-right font-mono text-xs text-zinc-400 md:table-cell">
-                  {allocation.toFixed(1)}%
-                </td>
+
+                {/* Holdings size (quantity) */}
                 <td className="px-5 py-4 text-right">
-                  <PriceChange value={h.profitLoss} className="justify-end text-xs font-semibold" />
+                  <div className="inline-flex flex-col items-end">
+                    <span className="font-mono text-xs font-semibold tabular-nums text-zinc-200">
+                      {formatShares(h.quantity)}
+                    </span>
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-550 font-mono">
+                      Units
+                    </span>
+                  </div>
+                </td>
+
+                {/* Average Purchase Cost */}
+                <td className="hidden px-5 py-4 text-right sm:table-cell">
+                  <div className="inline-flex flex-col items-end">
+                    <span className="font-mono text-xs font-medium tabular-nums text-zinc-400">
+                      <Money value={h.averagePrice} />
+                    </span>
+                    <span className="text-[9px] font-medium text-zinc-600 font-mono">
+                      Per Share
+                    </span>
+                  </div>
+                </td>
+
+                {/* Market Price */}
+                <td className="hidden px-5 py-4 text-right sm:table-cell">
+                  <div className="inline-flex flex-col items-end">
+                    <span className="font-mono text-xs font-semibold tabular-nums text-zinc-300">
+                      <Money value={h.currentPrice} />
+                    </span>
+                    <span className="text-[9px] font-medium text-zinc-550 font-mono">
+                      Live Bid
+                    </span>
+                  </div>
+                </td>
+
+                {/* Current Net Value */}
+                <td className="px-5 py-4 text-right">
+                  <div className="inline-flex flex-col items-end">
+                    <span className="font-mono text-xs font-bold tabular-nums text-pink-400">
+                      <Money value={h.currentValue} />
+                    </span>
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-pink-500/60 font-mono">
+                      Total
+                    </span>
+                  </div>
+                </td>
+
+                {/* Allocation percentage with visual micro progress bar */}
+                <td className="hidden px-5 py-4 text-right md:table-cell">
+                  <div className="inline-flex flex-col items-end gap-1.5">
+                    <span className="font-mono text-xs font-semibold text-zinc-350">{allocation.toFixed(1)}%</span>
+                    <div className="h-1 w-12 rounded-full bg-zinc-800/80 overflow-hidden">
+                      <div className="h-full rounded-full bg-pink-500" style={{ width: `${allocation}%` }} />
+                    </div>
+                  </div>
+                </td>
+
+                {/* Yield Return (P&L absolute and percentage badge) */}
+                <td className="px-5 py-4 text-right">
+                  <div className="inline-flex flex-col items-end gap-1">
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold border ${
+                      isPositive 
+                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" 
+                        : isNegative 
+                          ? "bg-rose-500/10 text-rose-455 border-rose-500/20" 
+                          : "bg-zinc-800/40 text-zinc-400 border-zinc-700/30"
+                    }`}>
+                      {isPositive ? "▲" : isNegative ? "▼" : "•"}{isPositive ? "+" : ""}<Money value={h.profitLoss} />
+                    </span>
+                    <span className={`text-[10px] font-mono font-semibold ${
+                      isPositive ? "text-emerald-500" : isNegative ? "text-rose-500" : "text-zinc-555"
+                    }`}>
+                      {isPositive ? "+" : ""}{pctChange.toFixed(2)}%
+                    </span>
+                  </div>
                 </td>
               </motion.tr>
             );
@@ -338,7 +408,7 @@ function InvestorLevelCard() {
   const pct = atMax ? 100 : Math.min(100, Math.max(0, level.progressToNext * 100));
 
   return (
-    <Card className="border border-zinc-850 bg-zinc-900/10 p-5">
+    <Card className="border border-zinc-855 bg-zinc-900/10 p-5">
       <div className="flex items-center gap-3">
         <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-pink-500/5 text-pink-400 border border-pink-500/15">
           <Medal size={20} weight="bold" />
@@ -444,7 +514,7 @@ function ShowcaseCard({ user }: { user: Me }) {
   };
 
   return (
-    <Card className="border border-zinc-850 bg-zinc-900/10 p-5">
+    <Card className="border border-zinc-855 bg-zinc-900/10 p-5">
       <div className="mb-4 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <Trophy size={18} className="text-pink-400" />
@@ -562,7 +632,7 @@ function MissionsSummary() {
   const done = daily.filter((m) => m.completed).length;
 
   return (
-    <Card className="border border-zinc-850 bg-zinc-900/10 p-5">
+    <Card className="border border-zinc-855 bg-zinc-900/10 p-5">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Lightning size={16} className="text-pink-400" />
