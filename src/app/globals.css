@@ -17,13 +17,22 @@
   --color-zinc-100: #f4edf3;
   --color-zinc-200: #e8e0e7;
   --color-zinc-300: #d1c4d0;
+  --color-zinc-350: #beafbc;
   --color-zinc-400: #ac9fa9;
   --color-zinc-500: #867985;
+  --color-zinc-550: #766a75;
   --color-zinc-600: #665b65;
   --color-zinc-700: #4a3e49;
+  --color-zinc-805: #2d232c;
   --color-zinc-800: #30262f;
+  --color-zinc-850: #281f27;
   --color-zinc-900: #211920;
   --color-zinc-950: #120e13;
+  --color-zinc-955: #0a080a;
+  --color-orange-405: #f97316;
+  --color-orange-955: #431407;
+  --color-rose-455: #e11d48;
+  --color-amber-955: #451a03;
 }
 
 @layer base {
@@ -210,13 +219,22 @@
   --color-zinc-100: #2b212b;
   --color-zinc-200: #3f333f;
   --color-zinc-300: #584b57;
+  --color-zinc-350: #675a66;
   --color-zinc-400: #766975;
+  --color-zinc-550: #a99ca9;
   --color-zinc-500: #988a97;
   --color-zinc-600: #bbadbb;
   --color-zinc-700: #d6cbd7;
+  --color-zinc-805: #ede1ed;
   --color-zinc-800: #ebddeb;
+  --color-zinc-850: #f0e6f0;
   --color-zinc-900: #f6edf5;
   --color-zinc-950: #fdfafc;
+  --color-zinc-955: #ffffff;
+  --color-orange-405: #ea580c;
+  --color-orange-955: #fff7ed;
+  --color-rose-455: #be123c;
+  --color-amber-955: #fef3c7;
 }
 
 :root.light body {

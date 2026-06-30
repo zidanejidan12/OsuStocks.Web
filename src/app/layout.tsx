@@ -9,6 +9,7 @@ import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { Backdrop } from "@/components/Backdrop";
 import { MarketTicker } from "@/components/MarketTicker";
+import { DailyMissionsWidget } from "@/components/DailyMissionsWidget";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -146,6 +147,7 @@ export default function RootLayout({
             <AuthProvider>
               <NotificationsProvider>
                 <Nav />
+                <DailyMissionsWidget />
                 <main id="main" tabIndex={-1} className="relative flex-1 focus-visible:outline-none">
                   {children}
                 </main>
