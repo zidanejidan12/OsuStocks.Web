@@ -86,7 +86,7 @@ function ProfileBanner({
   const [failed, setFailed] = useState(false);
   const show = Boolean(coverUrl) && !failed;
   return (
-    <div className="relative h-32 sm:h-44 w-full">
+    <div className="relative h-28 sm:h-36 w-full">
       {show ? (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -98,15 +98,15 @@ function ProfileBanner({
             onError={() => setFailed(true)}
             className="absolute inset-0 h-full w-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/50 to-zinc-950/10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-zinc-955 via-zinc-950/40 to-zinc-950/10" />
         </>
       ) : (
         <>
-          <div className="absolute inset-0 bg-gradient-to-br from-pink-600/30 via-pink-500/5 to-zinc-950" />
-          <div className="absolute inset-0 bg-[radial-gradient(120%_150%_at_12%_-30%,rgba(236,72,153,0.25),transparent_55%)]" />
+          <div className="absolute inset-0 bg-gradient-to-br from-pink-600/25 via-pink-500/5 to-zinc-950" />
+          <div className="absolute inset-0 bg-[radial-gradient(120%_150%_at_12%_-30%,rgba(236,72,153,0.2),transparent_55%)]" />
         </>
       )}
-      <div className="grain pointer-events-none absolute inset-0 opacity-[0.08]" />
+      <div className="grain pointer-events-none absolute inset-0 opacity-[0.06]" />
       {children}
     </div>
   );
@@ -121,23 +121,22 @@ function ProfileHeaderCard({
 }) {
   return (
     <Reveal>
-      <div className="overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/20 shadow-[0_8px_32px_rgba(0,0,0,0.4)] mb-8">
-        {/* Cover Banner */}
+      <div className="overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/20 shadow-[0_8px_32px_rgba(0,0,0,0.35)] mb-8">
+        {/* Cover Banner at the top */}
         <ProfileBanner coverUrl={user.coverUrl}>
           <span className="absolute left-4 top-4 rounded-md bg-zinc-950/60 border border-zinc-800/50 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-pink-400 backdrop-blur">
             Active Investor
           </span>
         </ProfileBanner>
 
-        <div className="px-5 pb-6 sm:px-7 relative">
-          {/* Avatar overlap and alignment row */}
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-            <div className="flex flex-col sm:flex-row sm:items-end gap-4">
-              {/* Added relative z-10 and ring/shadow highlights to prevent banner overlap and cutoffs */}
-              <div className="relative z-10 inline-block rounded-full ring-4 ring-zinc-900 shadow-[0_4px_20px_rgba(0,0,0,0.5)] overflow-hidden shrink-0 bg-zinc-950 -mt-12 sm:-mt-16">
+        <div className="px-5 py-6 sm:px-7">
+          {/* Avatar and user details row - Clean separation, no negative margins */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="rounded-full ring-2 ring-pink-500/25 overflow-hidden shrink-0 bg-zinc-950 shadow-md">
                 <Avatar src={user.avatarUrl} name={user.username} size="xl" />
               </div>
-              <div className="mb-2 relative z-10">
+              <div>
                 <div className="flex items-center gap-2.5">
                   <h2 className="text-2xl font-bold tracking-tight text-zinc-100">{user.username}</h2>
                   {user.countryCode && (
@@ -146,7 +145,7 @@ function ProfileHeaderCard({
                     </span>
                   )}
                 </div>
-                <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                <div className="mt-2 flex flex-wrap items-center gap-2">
                   {user.equippedTitle && (
                     <span className="text-xs font-semibold text-pink-400 bg-pink-500/5 border border-pink-500/10 px-2.5 py-0.5 rounded">
                       {user.equippedTitle}
@@ -161,7 +160,7 @@ function ProfileHeaderCard({
               </div>
             </div>
 
-            <div className="mb-2 relative z-10">
+            <div>
               <a
                 href={`https://osu.ppy.sh/users/${user.osuUserId}`}
                 target="_blank"
@@ -179,7 +178,7 @@ function ProfileHeaderCard({
           </div>
 
           {/* 4 Symmetrical stats cards */}
-          <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
             {/* Current Value */}
             <div className="p-4 rounded-xl border border-zinc-850/60 bg-zinc-950/20 hover:border-pink-500/20 transition-all duration-350">
               <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500 block">Current Value</span>
@@ -450,7 +449,7 @@ function ShowcaseCard({ user }: { user: Me }) {
         <div className="flex items-center gap-2">
           <Trophy size={18} className="text-pink-400" />
           <h2 className="text-sm font-bold text-zinc-200">Showcase</h2>
-          <span className="text-[10px] font-bold text-zinc-500 font-mono">
+          <span className="text-[10px] font-bold text-zinc-550 font-mono">
             ({unlocked.length} unlocked)
           </span>
         </div>
@@ -513,7 +512,7 @@ function ShowcaseCard({ user }: { user: Me }) {
                       type="button"
                       onClick={() => toggleShowcase(a.code)}
                       className={`rounded px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider transition-colors ${
-                        picked ? "bg-emerald-500/20 text-emerald-200 border border-emerald-500/30" : "text-zinc-550 hover:text-zinc-305"
+                        picked ? "bg-emerald-500/20 text-emerald-200 border border-emerald-500/30" : "text-zinc-555 hover:text-zinc-305"
                       }`}
                     >
                       Pin
@@ -584,7 +583,7 @@ function MissionsSummary() {
               </div>
               <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-950">
                 <div
-                  className={`h-full rounded-full transition-all duration-350 ${m.completed ? "bg-emerald-500" : "bg-pink-500"}`}
+                  className={`h-full rounded-full transition-all duration-355 ${m.completed ? "bg-emerald-500" : "bg-pink-500"}`}
                   style={{ width: `${pct}%` }}
                 />
               </div>
