@@ -83,7 +83,7 @@ function PageShell({ children }: { children: React.ReactNode }) {
 
 function VirtualCreditCard({ balance, username }: { balance: number; username: string }) {
   return (
-    <Card className="relative overflow-hidden aspect-[1.586/1] w-full max-w-md p-6 flex flex-col justify-between border-0 bg-gradient-to-br from-pink-600 via-purple-650 to-indigo-700 shadow-[0_12px_40px_rgba(219,39,119,0.25)] text-white">
+    <Card className="relative overflow-hidden aspect-[1.586/1] w-full max-w-md p-6 flex flex-col justify-between border-0 bg-gradient-to-br from-pink-650 via-purple-650 to-indigo-700 shadow-[0_12px_40px_rgba(219,39,119,0.25)] text-white">
       {/* Decorative background grid and circles */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:20px_20px] opacity-20 pointer-events-none" />
       <div className="absolute -right-16 -top-16 w-48 h-48 bg-pink-500/30 rounded-full blur-3xl pointer-events-none" />
@@ -93,7 +93,7 @@ function VirtualCreditCard({ balance, username }: { balance: number; username: s
       <div className="flex justify-between items-start z-10">
         <div>
           <span className="text-[9px] font-black uppercase tracking-[0.25em] text-pink-200">OsuStocks Terminal</span>
-          <div className="text-[8px] font-bold text-zinc-300/80 mt-0.5">PLATINUM INVESTOR CARD</div>
+          <div className="text-[8px] font-bold text-zinc-350/80 mt-0.5">PLATINUM INVESTOR CARD</div>
         </div>
         <div className="flex items-center gap-1 bg-white/10 px-2 py-0.5 rounded-lg border border-white/20 backdrop-blur-sm">
           <Sparkle size={10} weight="fill" className="text-amber-300 animate-pulse" />
@@ -210,6 +210,7 @@ export default function WalletPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [unauthorized, setUnauthorized] = useState(false);
+  const [filterType, setFilterType] = useState<"all" | "trades" | "rewards" | "fees">("all");
   const reduceMotion = useReducedMotion();
 
   useEffect(() => {
@@ -266,6 +267,27 @@ export default function WalletPage() {
     );
   }
 
+  // Filter transactions dynamically based on active filterType tab
+  const filteredTransactions = transactions.filter((tx) => {
+    if (filterType === "all") return true;
+    if (filterType === "trades") {
+      return tx.transactionType === "BuyStock" || tx.transactionType === "SellStock";
+    }
+    if (filterType === "rewards") {
+      return (
+        tx.transactionType === "DailyReward" ||
+        tx.transactionType === "MissionReward" ||
+        tx.transactionType === "AchievementReward" ||
+        tx.transactionType === "AdminGrant" ||
+        tx.transactionType === "InitialGrant"
+      );
+    }
+    if (filterType === "fees") {
+      return tx.transactionType === "TradeFee" || tx.transactionType === "AdminDeduction";
+    }
+    return true;
+  });
+
   return (
     <PageShell>
       <Reveal>
@@ -317,18 +339,39 @@ export default function WalletPage() {
 
           {/* Transactions section */}
           <div className="pt-4">
-            <Reveal delay={0.1}>
-              <h2 className="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-pink-400 drop-shadow-[0_0_8px_rgba(236,72,153,0.15)]">
-                Transaction Register
-              </h2>
-            </Reveal>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+              <Reveal delay={0.1}>
+                <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-pink-400 drop-shadow-[0_0_8px_rgba(236,72,153,0.15)]">
+                  Transaction Register
+                </h2>
+              </Reveal>
 
-            {transactions.length === 0 ? (
+              {/* Transaction Filters */}
+              <Reveal delay={0.12}>
+                <div className="flex flex-wrap gap-1.5">
+                  {(["all", "trades", "rewards", "fees"] as const).map((type) => (
+                    <button
+                      key={type}
+                      onClick={() => setFilterType(type)}
+                      className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border ${
+                        filterType === type
+                          ? "bg-pink-500/10 text-pink-400 border-pink-500/25"
+                          : "bg-zinc-950/20 text-zinc-500 border-zinc-800/80 hover:text-zinc-300"
+                      }`}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
+              </Reveal>
+            </div>
+
+            {filteredTransactions.length === 0 ? (
               <Reveal>
                 <EmptyState
                   icon={<WalletIcon size={20} weight="bold" />}
-                  title="No transactions yet"
-                  message="Your wallet activity will appear here."
+                  title="No matched transactions"
+                  message="No records found in this category."
                 />
               </Reveal>
             ) : (
@@ -355,7 +398,7 @@ export default function WalletPage() {
                       initial="hidden"
                       animate="show"
                     >
-                      {transactions.map((tx) => {
+                      {filteredTransactions.map((tx) => {
                         const isCredit = CREDIT_TYPES.has(tx.transactionType);
                         const TypeIcon: PhosphorIcon = isCredit
                           ? ArrowDownLeft
@@ -383,7 +426,7 @@ export default function WalletPage() {
                             </td>
                             <td
                               className={`px-4 py-3.5 text-right font-mono text-xs font-black tabular-nums ${
-                                isCredit ? "text-emerald-400" : "text-rose-400"
+                                isCredit ? "text-emerald-400" : "text-rose-450"
                               }`}
                             >
                               <span className="inline-flex items-center gap-1">

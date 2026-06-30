@@ -16,8 +16,6 @@ import {
   PencilSimple,
   X,
   ChartLineUp,
-  User,
-  ShieldCheck,
   Briefcase,
 } from "@phosphor-icons/react";
 import {
@@ -137,6 +135,11 @@ function PortfolioCockpit({ portfolio }: { portfolio: Portfolio | null }) {
 
   const profitPct = portfolio.costBasis > 0 ? (portfolio.profitLoss / portfolio.costBasis) * 100 : 0;
   const isProfit = portfolio.profitLoss >= 0;
+  
+  // Calculate percentage of holdings that represent cash value ratio
+  const ratio = portfolio.currentValue > 0 
+    ? Math.min(100, Math.max(0, (portfolio.costBasis / portfolio.currentValue) * 100)) 
+    : 0;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
@@ -148,9 +151,19 @@ function PortfolioCockpit({ portfolio }: { portfolio: Portfolio | null }) {
             <Money value={portfolio.currentValue} />
           </div>
         </div>
-        <div className="mt-4 pt-3 border-t border-zinc-850 flex items-center justify-between text-xs text-zinc-500">
-          <span>Active Asset Listings</span>
-          <span className="font-mono font-bold text-zinc-300">{portfolio.holdings.length} Positions</span>
+        
+        {/* Cushion indicator bar */}
+        <div className="mt-4 pt-3 border-t border-zinc-850">
+          <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-zinc-500 font-bold mb-1">
+            <span>Capital Leverage Ratio</span>
+            <span className="font-mono">{ratio.toFixed(0)}% basis</span>
+          </div>
+          <div className="h-1 w-full bg-zinc-950 rounded-full overflow-hidden">
+            <div 
+              className={`h-full rounded-full transition-all duration-500 ${isProfit ? "bg-emerald-500" : "bg-pink-500"}`} 
+              style={{ width: `${ratio}%` }} 
+            />
+          </div>
         </div>
       </div>
 
@@ -163,8 +176,8 @@ function PortfolioCockpit({ portfolio }: { portfolio: Portfolio | null }) {
           </div>
         </div>
         <div className="mt-4 pt-3 border-t border-zinc-850 flex items-center justify-between text-xs text-zinc-500">
-          <span>Capital Basis</span>
-          <span className="font-mono font-bold text-zinc-300">Base weight</span>
+          <span>Capital Basis Weight</span>
+          <span className="font-mono font-bold text-zinc-300">Base Cost</span>
         </div>
       </div>
 
@@ -177,7 +190,7 @@ function PortfolioCockpit({ portfolio }: { portfolio: Portfolio | null }) {
           </div>
         </div>
         <div className="mt-4 pt-3 border-t border-zinc-850 flex items-center justify-between text-xs text-zinc-500">
-          <span>Rate of Return</span>
+          <span>Unrealized Rate of Return</span>
           <span className={`font-mono font-extrabold ${isProfit ? "text-emerald-400" : "text-rose-450"}`}>
             {isProfit ? "+" : ""}{profitPct.toFixed(2)}%
           </span>
@@ -187,7 +200,7 @@ function PortfolioCockpit({ portfolio }: { portfolio: Portfolio | null }) {
   );
 }
 
-function HoldingsTable({ holdings }: { holdings: Holding[] }) {
+function HoldingsTable({ holdings, totalValuation }: { holdings: Holding[]; totalValuation: number }) {
   const reduceMotion = useReducedMotion();
   return (
     <div className="overflow-x-auto rounded-2xl border border-zinc-800/80 bg-zinc-950/10 shadow-sm backdrop-blur-md">
@@ -202,6 +215,7 @@ function HoldingsTable({ holdings }: { holdings: Holding[] }) {
             <th className="hidden px-5 py-3.5 text-right sm:table-cell">Avg Cost</th>
             <th className="hidden px-5 py-3.5 text-right sm:table-cell">Market Price</th>
             <th className="px-5 py-3.5 text-right">Current Value</th>
+            <th className="hidden px-5 py-3.5 text-right md:table-cell">Allocation</th>
             <th className="px-5 py-3.5 text-right">Yield Return</th>
           </tr>
         </thead>
@@ -212,7 +226,7 @@ function HoldingsTable({ holdings }: { holdings: Holding[] }) {
           animate="show"
         >
           {holdings.map((h) => {
-            const isGain = h.profitLoss >= 0;
+            const allocation = totalValuation > 0 ? (h.currentValue / totalValuation) * 100 : 0;
             return (
               <motion.tr
                 key={h.holdingId}
@@ -249,6 +263,9 @@ function HoldingsTable({ holdings }: { holdings: Holding[] }) {
                 </td>
                 <td className="px-5 py-4 text-right font-mono text-xs font-bold tabular-nums text-zinc-100">
                   <Money value={h.currentValue} />
+                </td>
+                <td className="hidden px-5 py-4 text-right font-mono text-xs text-zinc-400 md:table-cell">
+                  {allocation.toFixed(1)}%
                 </td>
                 <td className="px-5 py-4 text-right">
                   <PriceChange value={h.profitLoss} className="justify-end text-xs font-semibold" />
@@ -429,7 +446,7 @@ function ShowcaseCard({ user }: { user: Me }) {
           {unlocked.length === 0 ? (
             <p className="text-xs text-zinc-500">No achievements unlocked yet.</p>
           ) : showcased.length === 0 ? (
-            <p className="text-xs text-zinc-500">No achievements selected for showcase. Click Edit to showcase achievements.</p>
+            <p className="text-xs text-zinc-505 font-medium text-zinc-500">No achievements showcased yet. Click Edit to showcase achievements.</p>
           ) : (
             <div className="flex flex-wrap gap-2">
               {showcased.map((a) => (
@@ -449,7 +466,7 @@ function ShowcaseCard({ user }: { user: Me }) {
 
       {editing && (
         <div className="space-y-3">
-          <ul className="divide-y divide-zinc-850/60 overflow-hidden rounded-xl border border-zinc-800/80 bg-zinc-950/20 max-h-56 overflow-y-auto">
+          <ul className="divide-y divide-zinc-855/60 overflow-hidden rounded-xl border border-zinc-800/80 bg-zinc-950/20 max-h-56 overflow-y-auto">
             {unlocked.map((a) => {
               const picked = draftShowcase.includes(a.code);
               const isTitle = draftTitle === a.code;
@@ -482,6 +499,9 @@ function ShowcaseCard({ user }: { user: Me }) {
               );
             })}
           </ul>
+          {error && (
+            <p className="text-xs text-rose-350">{error}</p>
+          )}
           <button
             type="button"
             onClick={save}
@@ -580,7 +600,7 @@ function YourStockCard({ user }: { user: Me }) {
   if (!stock) return null;
 
   return (
-    <Card className="border border-zinc-850 bg-zinc-900/10 p-5">
+    <Card className="border border-zinc-855 bg-zinc-900/10 p-5">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <ChartLineUp size={18} className="text-pink-400" />
@@ -593,7 +613,7 @@ function YourStockCard({ user }: { user: Me }) {
 
       <Link
         href={`/stocks/${stock.stockId}`}
-        className="group flex flex-col gap-3 rounded-xl border border-zinc-800/80 bg-zinc-950/40 p-4 transition-all duration-350 hover:bg-zinc-950/80 hover:border-pink-500/25 sm:flex-row sm:items-center sm:justify-between"
+        className="group flex flex-col gap-3 rounded-xl border border-zinc-805/80 bg-zinc-950/40 p-4 transition-all duration-350 hover:bg-zinc-950/80 hover:border-pink-500/25 sm:flex-row sm:items-center sm:justify-between"
       >
         <div className="flex items-center gap-3">
           <div className="rounded-full overflow-hidden ring-1 ring-zinc-800 group-hover:ring-pink-500/20 transition-all duration-300">
@@ -741,7 +761,7 @@ export default function PortfolioPage() {
               {portfolio.holdings.length === 0 ? (
                 <HoldingsEmpty />
               ) : (
-                <HoldingsTable holdings={portfolio.holdings} />
+                <HoldingsTable holdings={portfolio.holdings} totalValuation={portfolio.currentValue} />
               )}
             </div>
 
