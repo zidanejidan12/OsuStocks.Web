@@ -22,12 +22,6 @@ const TEAM = [
     stats: { response: "4ms", uptime: "99.9%", mod: "DoubleTime" }
   },
   { 
-    id: 9999999, 
-    name: "JeiiiTzy", 
-    role: "Frontend",
-    stats: { response: "3ms", uptime: "99.9%", mod: "DoubleTime" }
-  },
-  { 
     id: 6560131, 
     name: "Nishino Flower", 
     role: "BUM",
@@ -44,13 +38,6 @@ const MEMBER_THEMES: Record<string, { border: string; bg: string; text: string; 
     banner: "from-purple-500 to-indigo-500",
   },
   "Verxina": {
-    border: "border-zinc-200 dark:border-zinc-805 hover:border-cyan-500/40 dark:hover:border-cyan-500/30",
-    bg: "bg-cyan-950/5 dark:bg-cyan-950/10",
-    text: "text-cyan-600 dark:text-cyan-400",
-    glow: "hover:shadow-[0_15px_30px_-10px_rgba(6,182,212,0.15)]",
-    banner: "from-cyan-500 to-teal-500",
-  },
-  "JeiiiTzy": {
     border: "border-zinc-200 dark:border-zinc-805 hover:border-cyan-500/40 dark:hover:border-cyan-500/30",
     bg: "bg-cyan-950/5 dark:bg-cyan-950/10",
     text: "text-cyan-600 dark:text-cyan-400",
