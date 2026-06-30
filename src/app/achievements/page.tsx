@@ -258,12 +258,12 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
             <h2 className="text-sm sm:text-base font-black font-display tracking-tight text-zinc-100 flex items-center gap-1.5">
               {name}
             </h2>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <span className={`text-[8px] font-mono font-bold uppercase tracking-widest ${tier.color}`}>
+            <div className="flex items-center gap-2 mt-1">
+              <span className={`text-[10px] font-sans font-black uppercase tracking-wider ${tier.color}`}>
                 {tier.name}
               </span>
-              <span className="text-zinc-600 font-mono text-[9px]">•</span>
-              <span className={`text-[8px] font-mono font-extrabold px-1.5 py-0.2 rounded border bg-gradient-to-r ${rarity.color}`}>
+              <span className="text-zinc-700 text-xs font-light">•</span>
+              <span className={`text-[10px] font-sans font-medium px-2 py-0.5 rounded-md border bg-zinc-900/50 border-zinc-800/80 text-zinc-350`}>
                 {rarity.pct} of players
               </span>
             </div>
@@ -590,12 +590,12 @@ export default function AchievementsPage() {
                             <div className="flex items-center gap-2">
                               <Badge tone={unlocked ? "accent" : "neutral"}>{achievement.category}</Badge>
                               {unlocked && (
-                                <span className={`text-[10px] font-mono font-bold uppercase tracking-widest ${tier.color}`}>
+                                <span className={`text-[10px] font-sans font-black uppercase tracking-wider ${tier.color}`}>
                                   {tier.name} Edition
                                 </span>
                               )}
                             </div>
-                            <span className={`text-[10px] font-mono font-extrabold px-2 py-0.5 rounded-full border bg-gradient-to-r ${rarity.color}`}>
+                            <span className={`text-[10px] font-sans font-medium px-2.5 py-0.5 rounded-md border bg-zinc-900/50 border-zinc-800/80 text-zinc-350`}>
                               {rarity.label} • {rarity.pct} Unlocked
                             </span>
                           </div>
