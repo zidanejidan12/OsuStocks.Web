@@ -86,7 +86,7 @@ function ProfileBanner({
   const [failed, setFailed] = useState(false);
   const show = Boolean(coverUrl) && !failed;
   return (
-    <div className="relative h-32 sm:h-44">
+    <div className="relative h-32 sm:h-44 w-full">
       {show ? (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -98,12 +98,12 @@ function ProfileBanner({
             onError={() => setFailed(true)}
             className="absolute inset-0 h-full w-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/65 to-zinc-950/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/50 to-zinc-950/10" />
         </>
       ) : (
         <>
-          <div className="absolute inset-0 bg-gradient-to-br from-pink-600/40 via-pink-500/10 to-zinc-950" />
-          <div className="absolute inset-0 bg-[radial-gradient(120%_150%_at_12%_-30%,rgba(236,72,153,0.35),transparent_55%)]" />
+          <div className="absolute inset-0 bg-gradient-to-br from-pink-600/30 via-pink-500/5 to-zinc-950" />
+          <div className="absolute inset-0 bg-[radial-gradient(120%_150%_at_12%_-30%,rgba(236,72,153,0.25),transparent_55%)]" />
         </>
       )}
       <div className="grain pointer-events-none absolute inset-0 opacity-[0.08]" />
@@ -119,12 +119,9 @@ function ProfileHeaderCard({
   user: Me;
   portfolio: Portfolio | null;
 }) {
-  const profitPct = portfolio && portfolio.costBasis > 0 ? (portfolio.profitLoss / portfolio.costBasis) * 100 : 0;
-  const isProfit = portfolio ? portfolio.profitLoss >= 0 : true;
-
   return (
     <Reveal>
-      <div className="overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/10 shadow-[0_8px_32px_rgba(0,0,0,0.35)] mb-8">
+      <div className="overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/20 shadow-[0_8px_32px_rgba(0,0,0,0.4)] mb-8">
         {/* Cover Banner */}
         <ProfileBanner coverUrl={user.coverUrl}>
           <span className="absolute left-4 top-4 rounded-md bg-zinc-950/60 border border-zinc-800/50 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-pink-400 backdrop-blur">
@@ -132,14 +129,15 @@ function ProfileHeaderCard({
           </span>
         </ProfileBanner>
 
-        <div className="px-5 pb-6 sm:px-7">
+        <div className="px-5 pb-6 sm:px-7 relative">
           {/* Avatar overlap and alignment row */}
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-10 sm:-mt-14">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div className="flex flex-col sm:flex-row sm:items-end gap-4">
-              <div className="inline-block rounded-full ring-4 ring-zinc-950 shadow-xl overflow-hidden shrink-0 bg-zinc-950">
+              {/* Added relative z-10 and ring/shadow highlights to prevent banner overlap and cutoffs */}
+              <div className="relative z-10 inline-block rounded-full ring-4 ring-zinc-900 shadow-[0_4px_20px_rgba(0,0,0,0.5)] overflow-hidden shrink-0 bg-zinc-950 -mt-12 sm:-mt-16">
                 <Avatar src={user.avatarUrl} name={user.username} size="xl" />
               </div>
-              <div className="mb-2">
+              <div className="mb-2 relative z-10">
                 <div className="flex items-center gap-2.5">
                   <h2 className="text-2xl font-bold tracking-tight text-zinc-100">{user.username}</h2>
                   {user.countryCode && (
@@ -163,7 +161,7 @@ function ProfileHeaderCard({
               </div>
             </div>
 
-            <div className="mb-2">
+            <div className="mb-2 relative z-10">
               <a
                 href={`https://osu.ppy.sh/users/${user.osuUserId}`}
                 target="_blank"
@@ -478,10 +476,10 @@ function ShowcaseCard({ user }: { user: Me }) {
               {showcased.map((a) => (
                 <span
                   key={a.code}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-950/40 px-2.5 py-1.5 text-xs text-zinc-350 font-medium"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-950/40 px-2.5 py-1.5 text-xs text-zinc-355 font-medium"
                   title={a.description}
                 >
-                  <Trophy size={12} className="text-zinc-500" />
+                  <Trophy size={12} className="text-zinc-555" />
                   {a.name}
                 </span>
               ))}
@@ -581,7 +579,7 @@ function MissionsSummary() {
           return (
             <div key={m.code} className="space-y-1.5">
               <div className="flex items-center justify-between text-xs">
-                <span className={`text-[11px] font-semibold ${m.completed ? "text-emerald-450" : "text-zinc-300"}`}>{m.name}</span>
+                <span className={`text-[11px] font-semibold ${m.completed ? "text-emerald-455" : "text-zinc-300"}`}>{m.name}</span>
                 <span className="text-[10px] text-zinc-500 font-mono">{formatNumber(Math.min(m.currentValue, m.target))}/{formatNumber(m.target)}</span>
               </div>
               <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-950">
@@ -639,7 +637,7 @@ function YourStockCard({ user }: { user: Me }) {
 
       <Link
         href={`/stocks/${stock.stockId}`}
-        className="group flex flex-col gap-3 rounded-xl border border-zinc-805/80 bg-zinc-950/40 p-4 transition-all duration-350 hover:bg-zinc-950/80 hover:border-pink-500/25 sm:flex-row sm:items-center sm:justify-between"
+        className="group flex flex-col gap-3 rounded-xl border border-zinc-805/80 bg-zinc-950/40 p-4 transition-all duration-355 hover:bg-zinc-950/80 hover:border-pink-500/25 sm:flex-row sm:items-center sm:justify-between"
       >
         <div className="flex items-center gap-3">
           <div className="rounded-full overflow-hidden ring-1 ring-zinc-800 group-hover:ring-pink-500/20 transition-all duration-300">
@@ -765,8 +763,8 @@ export default function PortfolioPage() {
       {loading && <PortfolioSkeleton />}
 
       {!loading && error && (
-        <div className="mt-6 flex items-start gap-3 rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-350">
-          <WarningCircle size={18} className="mt-0.5 shrink-0 text-rose-450" />
+        <div className="mt-6 flex items-start gap-3 rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-355">
+          <WarningCircle size={18} className="mt-0.5 shrink-0 text-rose-455" />
           <span>{error}</span>
         </div>
       )}
