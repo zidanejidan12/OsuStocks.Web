@@ -10,6 +10,8 @@ import {
   ArrowUpRight,
   Lock,
   WarningCircle,
+  Cpu,
+  Sparkle,
   type Icon as PhosphorIcon,
 } from "@phosphor-icons/react";
 import {
@@ -31,8 +33,6 @@ import { spring, scaleIn, fadeUp, staggerContainer } from "@/lib/motion";
 import { useAuth } from "@/lib/auth/auth-context";
 import * as analytics from "@/lib/analytics";
 
-// Credits flow money in; debits flow money out. Used for the Type column's
-// icon + tone. (The Amount column is colored strictly by sign — see below.)
 const CREDIT_TYPES: ReadonlySet<WalletTransactionType> = new Set([
   "InitialGrant",
   "SellStock",
@@ -81,10 +81,114 @@ function PageShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+function VirtualCreditCard({ balance, username }: { balance: number; username: string }) {
+  return (
+    <Card className="relative overflow-hidden aspect-[1.586/1] w-full max-w-md p-6 flex flex-col justify-between border-0 bg-gradient-to-br from-pink-600 via-purple-650 to-indigo-700 shadow-[0_12px_40px_rgba(219,39,119,0.25)] text-white">
+      {/* Decorative background grid and circles */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:20px_20px] opacity-20 pointer-events-none" />
+      <div className="absolute -right-16 -top-16 w-48 h-48 bg-pink-500/30 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -left-16 -bottom-16 w-48 h-48 bg-indigo-500/30 rounded-full blur-3xl pointer-events-none" />
+
+      {/* Card Header */}
+      <div className="flex justify-between items-start z-10">
+        <div>
+          <span className="text-[9px] font-black uppercase tracking-[0.25em] text-pink-200">OsuStocks Terminal</span>
+          <div className="text-[8px] font-bold text-zinc-300/80 mt-0.5">PLATINUM INVESTOR CARD</div>
+        </div>
+        <div className="flex items-center gap-1 bg-white/10 px-2 py-0.5 rounded-lg border border-white/20 backdrop-blur-sm">
+          <Sparkle size={10} weight="fill" className="text-amber-300 animate-pulse" />
+          <span className="text-[8px] font-black tracking-widest text-zinc-200">NFC PAY</span>
+        </div>
+      </div>
+
+      {/* Chip Icon & Card Logo */}
+      <div className="flex justify-between items-end my-4 z-10">
+        {/* Chip visual representation */}
+        <div className="w-10 h-7 rounded-lg bg-gradient-to-r from-amber-400 to-yellow-500 border border-amber-300 shadow-inner flex flex-col justify-between p-1.5">
+          <div className="flex justify-between"><div className="w-2 h-0.5 bg-amber-900/40"></div><div className="w-2 h-0.5 bg-amber-900/40"></div></div>
+          <div className="w-full h-[1px] bg-amber-900/30 my-0.5"></div>
+          <div className="flex justify-between"><div className="w-2 h-0.5 bg-amber-900/40"></div><div className="w-2 h-0.5 bg-amber-900/40"></div></div>
+        </div>
+        <Coins size={28} weight="fill" className="text-pink-200/80" />
+      </div>
+
+      {/* Card Balance */}
+      <div className="z-10">
+        <span className="text-[9px] font-black uppercase tracking-widest text-pink-200 block mb-1">Available Funds</span>
+        <div className="font-mono text-3xl font-black tabular-nums tracking-wider text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
+          <Money value={balance} />
+        </div>
+      </div>
+
+      {/* Card Footer */}
+      <div className="flex justify-between items-end z-10 pt-2 border-t border-white/10 text-[9px] text-zinc-200/80">
+        <div className="font-bold tracking-wide uppercase">{username}</div>
+        <div className="font-mono tracking-widest text-[8px] font-bold">SECURE NODE</div>
+      </div>
+    </Card>
+  );
+}
+
+function WalletAnalytics({ transactions, balance }: { transactions: WalletTransaction[]; balance: number }) {
+  const feeTransactions = transactions.filter(t => t.transactionType === "TradeFee");
+  const totalFees = feeTransactions.reduce((acc, t) => acc + Math.abs(t.amount), 0);
+
+  const inflowTransactions = transactions.filter(t => CREDIT_TYPES.has(t.transactionType));
+  const totalInflow = inflowTransactions.reduce((acc, t) => acc + Math.abs(t.amount), 0);
+
+  const outflowTransactions = transactions.filter(t => !CREDIT_TYPES.has(t.transactionType));
+  const totalOutflow = outflowTransactions.reduce((acc, t) => acc + Math.abs(t.amount), 0);
+
+  const tradeCount = transactions.filter(t => t.transactionType === "BuyStock" || t.transactionType === "SellStock").length;
+
+  const standing = balance >= 10000 
+    ? { title: "Platinum Class", color: "text-cyan-400 border-cyan-500/30 bg-cyan-500/5 shadow-[0_0_12px_rgba(6,182,212,0.15)]" }
+    : balance >= 5000
+    ? { title: "Gold Class", color: "text-amber-400 border-amber-500/30 bg-amber-500/5 shadow-[0_0_12px_rgba(245,158,11,0.15)]" }
+    : balance >= 1000
+    ? { title: "Silver Class", color: "text-zinc-300 border-zinc-500/30 bg-zinc-500/5 shadow-[0_0_12px_rgba(212,212,216,0.1)]" }
+    : { title: "Bronze Class", color: "text-orange-400 border-orange-500/30 bg-orange-500/5 shadow-[0_0_12px_rgba(249,115,22,0.1)]" };
+
+  return (
+    <Card className="relative overflow-hidden border border-zinc-855 bg-zinc-900/10">
+      <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-transparent" />
+      <div className="mb-4 flex items-center gap-2">
+        <Cpu size={18} className="text-pink-400" />
+        <h2 className="text-sm font-bold text-zinc-100">Account Standing</h2>
+      </div>
+
+      <div className="flex flex-col gap-4">
+        <div className={`flex items-center justify-between rounded-xl border p-3.5 ${standing.color}`}>
+          <span className="text-[10px] font-black uppercase tracking-wider">Standing Level</span>
+          <span className="text-xs font-black uppercase tracking-widest">{standing.title}</span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-xl border border-zinc-850/60 bg-zinc-950/40 p-3">
+            <span className="text-[9px] font-black uppercase tracking-wider text-zinc-500 block">Total Inflow</span>
+            <span className="font-mono text-sm font-bold text-emerald-400 mt-1 block">+{totalInflow.toLocaleString()} Cr</span>
+          </div>
+          <div className="rounded-xl border border-zinc-850/60 bg-zinc-950/40 p-3">
+            <span className="text-[9px] font-black uppercase tracking-wider text-zinc-500 block">Total Outflow</span>
+            <span className="font-mono text-sm font-bold text-rose-400 mt-1 block">-{totalOutflow.toLocaleString()} Cr</span>
+          </div>
+          <div className="rounded-xl border border-zinc-850/60 bg-zinc-950/40 p-3">
+            <span className="text-[9px] font-black uppercase tracking-wider text-zinc-500 block">Fees Paid</span>
+            <span className="font-mono text-sm font-bold text-zinc-300 mt-1 block">{totalFees.toLocaleString()} Cr</span>
+          </div>
+          <div className="rounded-xl border border-zinc-850/60 bg-zinc-950/40 p-3">
+            <span className="text-[9px] font-black uppercase tracking-wider text-zinc-500 block">Market Trades</span>
+            <span className="font-mono text-sm font-bold text-indigo-400 mt-1 block">{tradeCount} ops</span>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 function WalletSkeleton() {
   return (
     <div className="space-y-10">
-      {/* Balance hero placeholder */}
       <Card className="p-7">
         <div className="flex items-center gap-5">
           <Skeleton className="h-16 w-16 rounded-2xl" />
@@ -94,28 +198,7 @@ function WalletSkeleton() {
           </div>
         </div>
       </Card>
-
-      {/* Table placeholder */}
-      <div className="space-y-4">
-        <Skeleton className="h-4 w-32" />
-        <div className="overflow-hidden rounded-2xl border border-zinc-800/80">
-          <div className="border-b border-zinc-800 px-4 py-3">
-            <Skeleton className="h-3 w-full max-w-md" />
-          </div>
-          <div className="divide-y divide-zinc-800/60">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between gap-4 px-4 py-4"
-              >
-                <Skeleton className="h-6 w-28 rounded-full" />
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="h-4 w-32" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      <div className="h-48 rounded-2xl border border-zinc-800 skeleton" />
     </div>
   );
 }
@@ -133,9 +216,6 @@ export default function WalletPage() {
     if (authLoading || !user) return;
 
     let cancelled = false;
-    // Resetting fetch state synchronously is intentional: it shows the loading
-    // skeleton while we (re)fetch — the documented exception to
-    // react-hooks/set-state-in-effect (this is not the derive-state anti-pattern).
     /* eslint-disable react-hooks/set-state-in-effect */
     setLoading(true);
     setError(null);
@@ -215,40 +295,31 @@ export default function WalletPage() {
       )}
 
       {!loading && !error && wallet && (
-        <div className="space-y-10">
-          {/* Balance hero */}
-          <Reveal>
-            <motion.div variants={scaleIn} initial="hidden" animate="show">
-              <Card className="overflow-hidden p-7">
-                <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-center gap-5">
-                    <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl border border-pink-500/30 bg-pink-500/15 text-pink-300">
-                      <Coins size={28} weight="bold" />
-                    </div>
-                    <div>
-                      <div className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-500">
-                        Balance
-                      </div>
-                      <div className="mt-1 font-mono text-4xl font-semibold tabular-nums tracking-tight text-zinc-50 md:text-5xl">
-                        <Money value={wallet.balance} />
-                      </div>
-                    </div>
-                  </div>
+        <div className="space-y-8">
+          {/* Main split grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+            {/* Left Balance card */}
+            <div className="md:col-span-2">
+              <Reveal>
+                <motion.div variants={scaleIn} initial="hidden" animate="show">
+                  <VirtualCreditCard balance={wallet.balance} username={user.username} />
+                </motion.div>
+              </Reveal>
+            </div>
 
-                  <div className="flex items-center gap-2 text-sm text-zinc-400 sm:flex-col sm:items-end sm:text-right">
-                    <WalletIcon size={16} weight="bold" className="text-zinc-400" />
-                    <span>Available to trade</span>
-                  </div>
-                </div>
-              </Card>
-            </motion.div>
-          </Reveal>
+            {/* Right Account Standing card */}
+            <div className="md:col-span-1">
+              <Reveal delay={0.05}>
+                <WalletAnalytics transactions={transactions} balance={wallet.balance} />
+              </Reveal>
+            </div>
+          </div>
 
-          {/* Transactions */}
-          <div>
-            <Reveal>
-              <h2 className="mb-4 text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-500">
-                Transactions
+          {/* Transactions section */}
+          <div className="pt-4">
+            <Reveal delay={0.1}>
+              <h2 className="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-pink-400 drop-shadow-[0_0_8px_rgba(236,72,153,0.15)]">
+                Transaction Register
               </h2>
             </Reveal>
 
@@ -261,25 +332,25 @@ export default function WalletPage() {
                 />
               </Reveal>
             ) : (
-              <Reveal>
-                <div className="overflow-x-auto rounded-2xl border border-zinc-800/80">
+              <Reveal delay={0.15}>
+                <div className="overflow-x-auto rounded-2xl border border-zinc-800/80 bg-zinc-950/20 shadow-[0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-md">
                   <table className="w-full min-w-[32rem] text-sm">
                     <caption className="sr-only">
                       Wallet transactions: type, amount, and date.
                     </caption>
                     <thead>
-                      <tr className="border-b border-zinc-800 text-left text-[11px] uppercase tracking-wider text-zinc-500">
-                        <th className="px-4 py-3 font-medium">Type</th>
-                        <th className="px-4 py-3 text-right font-medium">
+                      <tr className="border-b border-zinc-800/80 text-left text-[10px] uppercase tracking-wider text-zinc-500 bg-zinc-900/40">
+                        <th className="px-4 py-3 font-semibold">Type</th>
+                        <th className="px-4 py-3 text-right font-semibold">
                           Amount
                         </th>
-                        <th className="px-4 py-3 text-right font-medium">
+                        <th className="px-4 py-3 text-right font-semibold">
                           Date
                         </th>
                       </tr>
                     </thead>
                     <motion.tbody
-                      className="divide-y divide-zinc-800/60"
+                      className="divide-y divide-zinc-850/60"
                       variants={staggerContainer}
                       initial="hidden"
                       animate="show"
@@ -289,9 +360,6 @@ export default function WalletPage() {
                         const TypeIcon: PhosphorIcon = isCredit
                           ? ArrowDownLeft
                           : ArrowUpRight;
-                        // Amounts are stored as positive magnitudes; the sign is
-                        // relative to the wallet — debits (Buy, Fee, Deduction)
-                        // are money out, so render them negative + red.
                         const signedAmount =
                           (isCredit ? 1 : -1) * Math.abs(tx.amount);
 
@@ -302,25 +370,28 @@ export default function WalletPage() {
                             whileHover={
                               reduceMotion
                                 ? undefined
-                                : { backgroundColor: "rgba(24,24,27,0.5)" }
+                                : { backgroundColor: "rgba(24,24,27,0.4)" }
                             }
                             transition={spring}
-                            className="transition-colors"
+                            className="transition-colors border-l-2 border-l-transparent hover:border-l-pink-500"
                           >
                             <td className="px-4 py-3.5">
-                              <Badge tone={isCredit ? "success" : "danger"}>
-                                <TypeIcon size={14} weight="bold" />
+                              <Badge tone={isCredit ? "success" : "danger"} className="font-bold text-[10px] uppercase tracking-wider py-1 px-2.5">
+                                <TypeIcon size={12} weight="bold" className="mr-1" />
                                 {humanizeType(tx.transactionType)}
                               </Badge>
                             </td>
                             <td
-                              className={`px-4 py-3.5 text-right font-mono tabular-nums ${
+                              className={`px-4 py-3.5 text-right font-mono text-xs font-black tabular-nums ${
                                 isCredit ? "text-emerald-400" : "text-rose-400"
                               }`}
                             >
-                              {<><Coin />{formatChange(signedAmount)}</>}
+                              <span className="inline-flex items-center gap-1">
+                                <Coin size="h-3 w-3" className={isCredit ? "text-emerald-400" : "text-rose-450"} />
+                                {formatChange(signedAmount)}
+                              </span>
                             </td>
-                            <td className="px-4 py-3.5 text-right font-mono tabular-nums text-zinc-500">
+                            <td className="px-4 py-3.5 text-right font-mono text-xs tabular-nums text-zinc-500">
                               {formatDateTime(tx.createdAt)}
                             </td>
                           </motion.tr>
