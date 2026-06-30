@@ -380,8 +380,12 @@ function getMockResponse(path: string, init?: RequestInit): any {
   if (cleanPath === "/missions") {
     return {
       items: [
-        { code: "m_1", name: "Daily Trade", description: "Execute any trade today", period: "Daily", periodKey: "2026-06-28", metric: "trades", target: 1, currentValue: 1, rewardCredits: 50, completed: true, completedAt: new Date().toISOString(), resetsAt: new Date(Date.now() + 3600000 * 8).toISOString() },
-        { code: "m_2", name: "Weekly Volume", description: "Trade 50 shares this week", period: "Weekly", periodKey: "2026-w26", metric: "volume", target: 50, currentValue: 15, rewardCredits: 300, completed: false, completedAt: null, resetsAt: new Date(Date.now() + 3600000 * 24 * 3).toISOString() }
+        { code: "m_1", name: "Daily Trade", description: "Execute any trade today.", period: "Daily", periodKey: "2026-06-28", metric: "trades", target: 1, currentValue: 1, rewardCredits: 100, completed: true, completedAt: new Date(Date.now() - 3600000 * 2).toISOString(), resetsAt: new Date(Date.now() + 3600000 * 14).toISOString() },
+        { code: "m_2", name: "Daily Grind", description: "Execute 3 separate trades today.", period: "Daily", periodKey: "2026-06-28", metric: "trades", target: 3, currentValue: 1, rewardCredits: 1000, completed: false, completedAt: null, resetsAt: new Date(Date.now() + 3600000 * 14).toISOString() },
+        { code: "m_3", name: "Daily Volume", description: "Trade 50,000 credits of volume today.", period: "Daily", periodKey: "2026-06-28", metric: "volume_credits", target: 50000, currentValue: 12500, rewardCredits: 1500, completed: false, completedAt: null, resetsAt: new Date(Date.now() + 3600000 * 14).toISOString() },
+        { code: "m_4", name: "Weekly Warrior", description: "Execute 25 trades this week.", period: "Weekly", periodKey: "2026-w26", metric: "trades", target: 25, currentValue: 8, rewardCredits: 5000, completed: false, completedAt: null, resetsAt: new Date(Date.now() + 3600000 * 24 * 5).toISOString() },
+        { code: "m_5", name: "Weekly Variety", description: "Trade 5 different stocks this week.", period: "Weekly", periodKey: "2026-w26", metric: "unique_stocks", target: 5, currentValue: 3, rewardCredits: 4000, completed: false, completedAt: null, resetsAt: new Date(Date.now() + 3600000 * 24 * 5).toISOString() },
+        { code: "m_6", name: "Weekly Fortune", description: "Gain 10,000 credits in profit from sales this week.", period: "Weekly", periodKey: "2026-w26", metric: "profit", target: 10000, currentValue: 4500, rewardCredits: 3000, completed: false, completedAt: null, resetsAt: new Date(Date.now() + 3600000 * 24 * 5).toISOString() }
       ]
     };
   }

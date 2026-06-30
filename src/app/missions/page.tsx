@@ -10,6 +10,12 @@ import {
   CalendarCheck,
   Lock,
   WarningCircle,
+  ChartLineUp,
+  Flame,
+  TrendUp,
+  Coins,
+  Clock,
+  Sparkle,
 } from "@phosphor-icons/react";
 import { getMissions, ApiError } from "@/lib/api/client";
 import type { Mission } from "@/lib/api/types";
@@ -25,7 +31,7 @@ import { fadeUp, staggerContainer } from "@/lib/motion";
 import { useAuth } from "@/lib/auth/auth-context";
 
 function PageShell({ children }: { children: React.ReactNode }) {
-  return <div className="mx-auto max-w-4xl px-4 py-10 sm:py-14">{children}</div>;
+  return <div className="mx-auto max-w-5xl px-4 py-10 sm:py-14">{children}</div>;
 }
 
 function PageHeader() {
@@ -75,32 +81,122 @@ function formatResetsIn(iso: string): string {
   return `${days}d`;
 }
 
-function ProgressBar({
-  value,
-  total,
-  completed,
-  label,
-}: {
-  value: number;
-  total: number;
-  completed: boolean;
-  label: string;
-}) {
-  const pct = total > 0 ? Math.min(100, (value / total) * 100) : completed ? 100 : 0;
+function getMissionIcon(metric: string) {
+  switch (metric) {
+    case "trades":
+      return <Lightning className="text-pink-400 shrink-0" size={20} weight="duotone" />;
+    case "volume":
+    case "volume_credits":
+      return <ChartLineUp className="text-indigo-400 shrink-0" size={20} weight="duotone" />;
+    case "unique_stocks":
+      return <Flame className="text-amber-400 shrink-0" size={20} weight="duotone" />;
+    case "profit":
+      return <TrendUp className="text-emerald-400 shrink-0" size={20} weight="duotone" />;
+    default:
+      return <Target className="text-pink-400 shrink-0" size={20} weight="duotone" />;
+  }
+}
+
+function MissionsSummary({ missions }: { missions: Mission[] }) {
+  const total = missions.length;
+  const completed = missions.filter((m) => m.completed).length;
+  const totalRewards = missions.reduce((acc, m) => acc + m.rewardCredits, 0);
+  const claimedRewards = missions.reduce((acc, m) => acc + (m.completed ? m.rewardCredits : 0), 0);
+  const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+  // Find next reset time (minimum resetsAt from incomplete missions)
+  const incompleteMissions = missions.filter((m) => !m.completed);
+  const nextResetIso = incompleteMissions.length > 0 
+    ? incompleteMissions.sort((a, b) => new Date(a.resetsAt).getTime() - new Date(b.resetsAt).getTime())[0].resetsAt 
+    : missions[0]?.resetsAt;
+
+  const [resetLabel, setResetLabel] = useState(() => formatResetsIn(nextResetIso));
+  useEffect(() => {
+    if (!nextResetIso) return;
+    setResetLabel(formatResetsIn(nextResetIso));
+    const interval = setInterval(() => {
+      setResetLabel(formatResetsIn(nextResetIso));
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [nextResetIso]);
+
   return (
-    <div
-      role="progressbar"
-      aria-label={`${label} progress`}
-      aria-valuenow={Math.round(pct)}
-      aria-valuemin={0}
-      aria-valuemax={100}
-      className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-800"
-    >
-      <div
-        className={`h-full rounded-full ${completed ? "bg-emerald-400" : "bg-pink-500"}`}
-        style={{ width: `${pct}%` }}
-      />
-    </div>
+    <Reveal>
+      <div className="relative overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/20 p-6 md:p-8 mb-8 backdrop-blur-md">
+        {/* Subtle grid pattern overlay */}
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,#1f293708_1px,transparent_1px),linear-gradient(to_bottom,#1f293708_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-30" />
+        {/* Glowing background blobs */}
+        <div className="absolute -left-12 -top-12 -z-10 h-40 w-40 rounded-full bg-pink-500/10 blur-3xl" />
+        <div className="absolute -right-12 -bottom-12 -z-10 h-40 w-40 rounded-full bg-indigo-500/10 blur-3xl" />
+
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          {/* Progress Section */}
+          <div className="flex flex-col justify-between">
+            <div>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Operation Progress</span>
+              <h2 className="text-2xl font-black font-display text-zinc-100 mt-1 flex items-baseline gap-2">
+                {completionRate}% <span className="text-xs font-normal text-zinc-400">Completed</span>
+              </h2>
+            </div>
+            <div className="mt-4">
+              <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-800">
+                <div 
+                  className="h-full rounded-full bg-gradient-to-r from-pink-500 to-indigo-500 transition-all duration-500" 
+                  style={{ width: `${completionRate}%` }} 
+                />
+              </div>
+              <div className="flex justify-between text-xs text-zinc-500 mt-2 font-mono">
+                <span>{completed}/{total} Missions Clear</span>
+                <span>+{claimedRewards} / {totalRewards} Credits</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Claimed Rewards Card */}
+          <div className="flex flex-col justify-between p-4 rounded-xl border border-zinc-800/60 bg-zinc-950/40">
+            <div>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Total Available Bounty</span>
+              <div className="flex items-center gap-2 mt-2">
+                <div className="p-2 rounded-lg bg-pink-500/10 text-pink-400 border border-pink-500/20">
+                  <Coins size={20} weight="fill" />
+                </div>
+                <div>
+                  <div className="text-lg font-bold font-mono text-zinc-100">{formatNumber(totalRewards)}</div>
+                  <div className="text-[10px] text-zinc-400">Credits up for grabs</div>
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 flex items-center justify-between text-xs text-zinc-500 pt-2 border-t border-zinc-900">
+              <span>Earned Today:</span>
+              <span className="font-mono text-emerald-400 font-bold">+{formatNumber(claimedRewards)} Cr</span>
+            </div>
+          </div>
+
+          {/* Reset Countdown Card */}
+          <div className="flex flex-col justify-between p-4 rounded-xl border border-zinc-800/60 bg-zinc-950/40">
+            <div>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">System Refresh Clock</span>
+              <div className="flex items-center gap-2 mt-2">
+                <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                  <Clock size={20} weight="fill" />
+                </div>
+                <div>
+                  <div className="text-lg font-bold font-mono text-zinc-100">{resetLabel}</div>
+                  <div className="text-[10px] text-zinc-400">Until next objective rotation</div>
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 flex items-center justify-between text-xs text-zinc-500 pt-2 border-t border-zinc-900">
+              <span>Status:</span>
+              <span className="text-indigo-400 flex items-center gap-1">
+                <Sparkle size={12} weight="fill" className="animate-pulse" />
+                Online & Tracking
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Reveal>
   );
 }
 
@@ -113,62 +209,111 @@ function MissionRow({ mission }: { mission: Mission }) {
   const [resetsLabel, setResetsLabel] = useState(() => formatResetsIn(resetsAt));
   useEffect(() => {
     if (completed) return;
-    /* eslint-disable-next-line react-hooks/set-state-in-effect */
     setResetsLabel(formatResetsIn(resetsAt));
     const id = setInterval(() => {
       setResetsLabel(formatResetsIn(resetsAt));
-    }, 30_000);
+    }, 30000);
     return () => clearInterval(id);
   }, [resetsAt, completed]);
 
+  const progressPct = target > 0 ? Math.min(100, (currentValue / target) * 100) : completed ? 100 : 0;
+
   return (
     <Card
-      className={`${
-        completed ? "ring-1 ring-inset ring-emerald-500/30 bg-emerald-500/[0.04]" : ""
+      className={`group relative overflow-hidden transition-all duration-300 hover:-translate-y-0.5 ${
+        completed 
+          ? "border-emerald-500/20 bg-emerald-950/5 shadow-[0_0_15px_rgba(16,185,129,0.03)]" 
+          : "border-zinc-800/80 hover:border-zinc-700/80 hover:shadow-[0_4px_25px_rgba(236,72,153,0.06)]"
       }`}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h3 className="text-sm font-semibold text-zinc-100">{name}</h3>
-          <p className="mt-0.5 text-sm text-zinc-400">{description}</p>
+      {/* Visual background elements */}
+      {completed && (
+        <div className="absolute right-0 top-0 -z-10 h-24 w-24 rounded-full bg-emerald-500/5 blur-2xl" />
+      )}
+      
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {/* Left column: Icon & Text Info */}
+        <div className="flex items-start gap-3.5 min-w-0">
+          <div className={`p-2.5 rounded-xl border shrink-0 mt-0.5 transition-colors ${
+            completed 
+              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" 
+              : "bg-zinc-950/60 border-zinc-800/80 text-zinc-400 group-hover:border-zinc-700"
+          }`}>
+            {getMissionIcon(mission.metric)}
+          </div>
+          <div className="min-w-0 space-y-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="text-sm font-bold tracking-tight text-zinc-100 group-hover:text-white transition-colors">
+                {name}
+              </h3>
+              {mission.period && (
+                <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${
+                  mission.period === "Daily"
+                    ? "bg-pink-500/10 text-pink-400 border border-pink-500/20"
+                    : "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"
+                }`}>
+                  {mission.period}
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-zinc-400 leading-relaxed max-w-xl">
+              {description}
+            </p>
+          </div>
         </div>
-        {completed ? (
-          <Badge tone="success">
-            <CheckCircle size={12} weight="fill" />
-            Completed
-          </Badge>
-        ) : (
-          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-zinc-800/70 px-2.5 py-0.5 text-xs font-medium text-zinc-400 ring-1 ring-inset ring-zinc-700/50">
-            resets in {resetsLabel}
-          </span>
-        )}
+
+        {/* Right column: Status badge or reset time */}
+        <div className="flex items-center gap-2 shrink-0 md:self-start">
+          {completed ? (
+            <Badge tone="success" className="animate-fade-in">
+              <CheckCircle size={12} weight="fill" />
+              Completed
+            </Badge>
+          ) : (
+            <span className="inline-flex items-center gap-1 rounded-full bg-zinc-900/60 px-2 py-0.5 text-[10px] font-medium text-zinc-500 ring-1 ring-inset ring-zinc-800/60">
+              <Clock size={10} />
+              resets in {resetsLabel}
+            </span>
+          )}
+        </div>
       </div>
 
-      <div className="mt-4 space-y-1.5">
-        <div className="flex items-center justify-between text-xs tabular-nums text-zinc-500">
-          <span>Progress</span>
-          <span className="font-mono text-zinc-400">
-            {formatNumber(Math.min(currentValue, target))} / {formatNumber(target)}
-          </span>
+      {/* Progress & Reward Container */}
+      <div className="mt-5 grid grid-cols-1 md:grid-cols-[1fr_auto] items-center gap-4 pt-4 border-t border-zinc-800/40">
+        {/* Progress Bar with numeric progress */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-xs tabular-nums text-zinc-500">
+            <span className="font-semibold text-[10px] uppercase tracking-wider">Mission Progress</span>
+            <span className={`font-mono font-bold ${completed ? "text-emerald-400" : "text-zinc-400"}`}>
+              {formatNumber(Math.min(currentValue, target))} / {formatNumber(target)}
+            </span>
+          </div>
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-900">
+            <div
+              className={`h-full rounded-full transition-all duration-500 ${
+                completed ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.3)]" : "bg-pink-500 shadow-[0_0_8px_rgba(236,72,153,0.3)]"
+              }`}
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
         </div>
-        <ProgressBar
-          value={currentValue}
-          total={target}
-          completed={completed}
-          label={name}
-        />
-      </div>
 
-      <div className="mt-4 flex items-center justify-between border-t border-zinc-800/60 pt-3">
-        <span className="inline-flex items-center gap-1.5 text-sm text-zinc-300">
-          <Coin />
-          <span className="font-mono tabular-nums">{formatNumber(rewardCredits)}</span>
-        </span>
-        {completed && completedAt && (
-          <span className="text-[11px] text-zinc-500">
-            {formatRelativeTime(completedAt)}
-          </span>
-        )}
+        {/* Reward details */}
+        <div className="flex items-center justify-between md:justify-end gap-4">
+          {completed && completedAt && (
+            <span className="text-[10px] text-zinc-500 font-mono">
+              Cleared {formatRelativeTime(completedAt)}
+            </span>
+          )}
+          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-colors ${
+            completed 
+              ? "bg-emerald-500/5 border-emerald-500/10 text-emerald-400" 
+              : "bg-zinc-950/60 border-zinc-800/80 text-zinc-300 group-hover:border-zinc-700/80"
+          }`}>
+            <Coin size="h-3.5 w-3.5" className={completed ? "text-emerald-400" : "text-amber-400"} />
+            <span className="font-mono text-xs font-bold tabular-nums">+{formatNumber(rewardCredits)}</span>
+          </div>
+        </div>
       </div>
     </Card>
   );
@@ -348,18 +493,22 @@ export default function MissionsPage() {
         missions.length > 0 &&
         (daily.length > 0 || weekly.length > 0) && (
           <div className="space-y-8">
-            <MissionSection
-              title="Daily"
-              icon={<Lightning size={13} weight="fill" className="text-pink-400" />}
-              missions={daily}
-            />
-            <MissionSection
-              title="Weekly"
-              icon={
-                <CalendarCheck size={13} weight="fill" className="text-pink-400" />
-              }
-              missions={weekly}
-            />
+            <MissionsSummary missions={missions} />
+
+            <div className="space-y-8">
+              <MissionSection
+                title="Daily Objectives"
+                icon={<Lightning size={13} weight="fill" className="text-pink-400 animate-pulse" />}
+                missions={daily}
+              />
+              <MissionSection
+                title="Weekly Campaign"
+                icon={
+                  <CalendarCheck size={13} weight="fill" className="text-indigo-400" />
+                }
+                missions={weekly}
+              />
+            </div>
           </div>
         )}
     </PageShell>
