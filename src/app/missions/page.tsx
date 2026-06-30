@@ -122,74 +122,78 @@ function MissionsSummary({ missions }: { missions: Mission[] }) {
 
   return (
     <Reveal>
-      <div className="relative overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/20 p-6 md:p-8 mb-8 backdrop-blur-md">
+      <div className="relative overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/30 p-6 md:p-8 mb-8 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
         {/* Subtle grid pattern overlay */}
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,#1f293708_1px,transparent_1px),linear-gradient(to_bottom,#1f293708_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-30" />
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,#1f293708_1px,transparent_1px),linear-gradient(to_bottom,#1f293708_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-30 pointer-events-none" />
         {/* Glowing background blobs */}
-        <div className="absolute -left-12 -top-12 -z-10 h-40 w-40 rounded-full bg-pink-500/10 blur-3xl" />
-        <div className="absolute -right-12 -bottom-12 -z-10 h-40 w-40 rounded-full bg-indigo-500/10 blur-3xl" />
+        <div className="absolute -left-12 -top-12 -z-10 h-48 w-48 rounded-full bg-pink-500/10 blur-3xl pointer-events-none" />
+        <div className="absolute -right-12 -bottom-12 -z-10 h-48 w-48 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none" />
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {/* Progress Section */}
-          <div className="flex flex-col justify-between">
+          <div className="flex flex-col justify-between p-5 rounded-2xl border border-zinc-850/60 bg-zinc-950/30">
             <div>
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Operation Progress</span>
-              <h2 className="text-2xl font-black font-display text-zinc-100 mt-1 flex items-baseline gap-2">
-                {completionRate}% <span className="text-xs font-normal text-zinc-400">Completed</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-pink-400 drop-shadow-[0_0_8px_rgba(236,72,153,0.15)]">Operation Progress</span>
+              <h2 className="text-3xl font-black font-display text-zinc-100 mt-2 flex items-baseline gap-2">
+                <span className="bg-gradient-to-r from-zinc-100 via-pink-100 to-pink-400 bg-clip-text text-transparent animate-gradient-text drop-shadow-[0_0_10px_rgba(236,72,153,0.3)]">{completionRate}%</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Completed</span>
               </h2>
             </div>
             <div className="mt-4">
-              <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-800">
+              <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-900 border border-zinc-800/40">
                 <div 
-                  className="h-full rounded-full bg-gradient-to-r from-pink-500 to-indigo-500 transition-all duration-500" 
+                  className="h-full rounded-full bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 transition-all duration-500 shadow-[0_0_12px_rgba(236,72,153,0.5)]" 
                   style={{ width: `${completionRate}%` }} 
                 />
               </div>
-              <div className="flex justify-between text-xs text-zinc-500 mt-2 font-mono">
-                <span>{completed}/{total} Missions Clear</span>
-                <span>+{claimedRewards} / {totalRewards} Credits</span>
+              <div className="flex justify-between items-center text-[10px] text-zinc-500 mt-3 font-mono">
+                <span className="flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-pink-500 animate-pulse shrink-0" />
+                  {completed}/{total} Missions Clear
+                </span>
+                <span className="text-zinc-400">+{claimedRewards} / {totalRewards} Credits</span>
               </div>
             </div>
           </div>
 
           {/* Claimed Rewards Card */}
-          <div className="flex flex-col justify-between p-4 rounded-xl border border-zinc-800/60 bg-zinc-950/40">
+          <div className="group/bounty flex flex-col justify-between p-5 rounded-2xl border border-zinc-850/60 bg-gradient-to-br from-zinc-900/60 to-zinc-950/80 hover:border-pink-500/20 hover:shadow-[0_0_20px_rgba(236,72,153,0.05)] transition-all duration-300">
             <div>
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Total Available Bounty</span>
-              <div className="flex items-center gap-2 mt-2">
-                <div className="p-2 rounded-lg bg-pink-500/10 text-pink-400 border border-pink-500/20">
-                  <Coins size={20} weight="fill" />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-pink-400 drop-shadow-[0_0_8px_rgba(236,72,153,0.15)]">Total Available Bounty</span>
+              <div className="flex items-center gap-3.5 mt-3.5">
+                <div className="p-2.5 rounded-xl bg-pink-500/10 text-pink-400 border border-pink-500/20 shadow-[0_0_10px_rgba(236,72,153,0.1)] group-hover/bounty:scale-105 group-hover/bounty:shadow-[0_0_15px_rgba(236,72,153,0.25)] transition-all duration-300">
+                  <Coins size={22} weight="fill" />
                 </div>
                 <div>
-                  <div className="text-lg font-bold font-mono text-zinc-100">{formatNumber(totalRewards)}</div>
-                  <div className="text-[10px] text-zinc-400">Credits up for grabs</div>
+                  <div className="text-2xl font-black font-mono text-zinc-100 leading-none tracking-tight">{formatNumber(totalRewards)}</div>
+                  <div className="text-[10px] text-zinc-500 mt-1 font-semibold">Credits up for grabs</div>
                 </div>
               </div>
             </div>
-            <div className="mt-4 flex items-center justify-between text-xs text-zinc-500 pt-2 border-t border-zinc-900">
-              <span>Earned Today:</span>
-              <span className="font-mono text-emerald-400 font-bold">+{formatNumber(claimedRewards)} Cr</span>
+            <div className="mt-4 flex items-center justify-between text-[10px] text-zinc-500 pt-2.5 border-t border-zinc-800/40">
+              <span className="font-semibold uppercase tracking-wider">Earned Today:</span>
+              <span className="font-mono text-emerald-400 font-bold bg-emerald-500/5 px-2 py-0.5 rounded-md border border-emerald-500/10">+{formatNumber(claimedRewards)} Cr</span>
             </div>
           </div>
 
           {/* Reset Countdown Card */}
-          <div className="flex flex-col justify-between p-4 rounded-xl border border-zinc-800/60 bg-zinc-950/40">
+          <div className="group/clock flex flex-col justify-between p-5 rounded-2xl border border-zinc-850/60 bg-gradient-to-br from-zinc-900/60 to-zinc-950/80 hover:border-indigo-500/20 hover:shadow-[0_0_20px_rgba(99,102,241,0.05)] transition-all duration-300">
             <div>
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">System Refresh Clock</span>
-              <div className="flex items-center gap-2 mt-2">
-                <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                  <Clock size={20} weight="fill" />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 drop-shadow-[0_0_8px_rgba(99,102,241,0.15)]">System Refresh Clock</span>
+              <div className="flex items-center gap-3.5 mt-3.5">
+                <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-[0_0_10px_rgba(99,102,241,0.1)] group-hover/clock:scale-105 group-hover/clock:shadow-[0_0_15px_rgba(99,102,241,0.25)] transition-all duration-300">
+                  <Clock size={22} weight="fill" />
                 </div>
                 <div>
-                  <div className="text-lg font-bold font-mono text-zinc-100">{resetLabel}</div>
-                  <div className="text-[10px] text-zinc-400">Until next objective rotation</div>
+                  <div className="text-2xl font-black font-mono text-zinc-100 leading-none tracking-tight">{resetLabel}</div>
+                  <div className="text-[10px] text-zinc-500 mt-1 font-semibold">Until objective rotation</div>
                 </div>
               </div>
             </div>
-            <div className="mt-4 flex items-center justify-between text-xs text-zinc-500 pt-2 border-t border-zinc-900">
-              <span>Status:</span>
-              <span className="text-indigo-400 flex items-center gap-1">
-                <Sparkle size={12} weight="fill" className="animate-pulse" />
+            <div className="mt-4 flex items-center justify-between text-[10px] text-zinc-500 pt-2.5 border-t border-zinc-800/40">
+              <span className="font-semibold uppercase tracking-wider">Status:</span>
+              <span className="text-indigo-400 flex items-center gap-1 font-bold">
+                <Sparkle size={10} weight="fill" className="animate-pulse" />
                 Online & Tracking
               </span>
             </div>
@@ -279,7 +283,7 @@ function MissionRow({ mission }: { mission: Mission }) {
         {/* Right column: Status badge or reset time */}
         <div className="flex items-center gap-2 shrink-0 md:self-start">
           {completed ? (
-            <Badge tone="success" className="animate-fade-in py-1 px-2.5 font-bold shadow-[0_0_12px_rgba(16,185,129,0.1)]">
+            <Badge tone="success" className="animate-fade-in py-1 px-2.5 font-bold shadow-[0_0_12px_rgba(16,185,129,0.15)]">
               <CheckCircle size={13} weight="fill" className="mr-0.5" />
               Completed
             </Badge>
