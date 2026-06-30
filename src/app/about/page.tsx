@@ -105,11 +105,7 @@ export default function AboutPage() {
                 className="inline-flex items-center gap-2 rounded-xl bg-pink-500/15 border border-pink-500/30 px-5 py-2.5 text-xs font-bold text-pink-600 dark:text-pink-300 transition-all duration-300 hover:bg-pink-500 hover:text-white hover:border-pink-500 hover:shadow-[0_0_20px_rgba(236,72,153,0.3)]"
               >
                 Visit Champion Profile
-                <span className="text-[9px]">&#8599;</span>
               </a>
-              <span className="text-[10px] font-mono font-bold text-zinc-500 dark:text-zinc-400 border border-zinc-200/80 dark:border-zinc-800/80 rounded px-2.5 py-1.5 bg-zinc-100/60 dark:bg-zinc-950/80 shadow-inner">
-                VERIFIED PARTNER KEY: {SPONSOR.code}
-              </span>
             </div>
           </div>
 
