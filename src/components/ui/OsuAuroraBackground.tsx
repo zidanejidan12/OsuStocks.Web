@@ -158,7 +158,7 @@ export function OsuAuroraBackground() {
       colors = ["emerald", "cyan", "white"];
     }
 
-    const list = Array.from({ length: 45 }).map((_, i) => {
+    const list = Array.from({ length: 65 }).map((_, i) => {
       const type = Math.random() > 0.4 ? "diamond" : "orb";
       const colorRand = Math.random();
       const color = colorRand > 0.6 ? colors[0] : colorRand > 0.3 ? colors[1] : colors[2];
@@ -166,9 +166,9 @@ export function OsuAuroraBackground() {
         id: i,
         left: Math.random() * 100,
         top: Math.random() * 100,
-        size: type === "diamond" ? Math.random() * 3 + 2.5 : Math.random() * 25 + 15,
-        delay: Math.random() * -10,
-        duration: type === "diamond" ? Math.random() * 8 + 6 : Math.random() * 20 + 12,
+        size: type === "diamond" ? Math.random() * 4 + 2 : Math.random() * 25 + 15,
+        delay: Math.random() * -15,
+        duration: type === "diamond" ? Math.random() * 12 + 6 : Math.random() * 20 + 12,
         type,
         color
       };
