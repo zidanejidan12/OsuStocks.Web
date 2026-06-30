@@ -270,7 +270,7 @@ export default function LeaderboardPage() {
           <p className="text-[10px] font-mono font-bold uppercase tracking-[0.25em] text-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.35)]">
             GLOBAL LEADERBOARD
           </p>
-          <h1 className="mt-2 text-4xl sm:text-5xl font-black tracking-tight text-zinc-50 drop-shadow-sm dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+          <h1 className="mt-2 text-4xl sm:text-5xl font-black tracking-tight font-display bg-gradient-to-r from-zinc-100 via-pink-100 to-pink-500 bg-clip-text text-transparent animate-gradient-text">
             Rankings
           </h1>
           <p className="mt-2 text-sm text-zinc-300">
@@ -522,33 +522,118 @@ export default function LeaderboardPage() {
               </div>
             </div>
 
-            {versusA && versusB && (
-              <div className="mt-4 pt-3.5 border-t border-zinc-900 text-[10px] space-y-2 text-zinc-500">
-                <div className="flex justify-between">
-                  <span>Net Worth Variance:</span>
-                  <span className="text-zinc-300 font-bold">
-                    <Money value={Math.abs(versusA.portfolioValue - versusB.portfolioValue)} />
-                  </span>
-                </div>
-                {/* Comparative Ratio Bar */}
-                <div className="mt-3.5 pt-2 border-t border-zinc-900/60">
-                  <div className="relative w-full h-2 rounded-full overflow-hidden bg-zinc-900 border border-zinc-850 flex">
-                    <div 
-                      className="h-full bg-gradient-to-r from-pink-500 to-pink-400 transition-all duration-500" 
-                      style={{ width: `${(versusA.portfolioValue / (versusA.portfolioValue + versusB.portfolioValue)) * 100}%` }}
-                    />
-                    <div 
-                      className="h-full bg-gradient-to-r from-cyan-400 to-cyan-550 transition-all duration-500" 
-                      style={{ width: `${(versusB.portfolioValue / (versusA.portfolioValue + versusB.portfolioValue)) * 100}%` }}
-                    />
+            {versusA && versusB && (() => {
+              const totalVal = versusA.portfolioValue + versusB.portfolioValue;
+              const pctA = totalVal > 0 ? (versusA.portfolioValue / totalVal) * 100 : 50;
+              const pctB = totalVal > 0 ? (versusB.portfolioValue / totalVal) * 100 : 50;
+              const rankDiff = Math.abs(versusA.rank - versusB.rank);
+              const rankLeader = versusA.rank < versusB.rank ? versusA.username : versusB.username;
+              return (
+                <div className="mt-4 pt-3.5 border-t border-zinc-900 text-[10px] space-y-3">
+                  {/* Grid header (usernames) */}
+                  <div className="grid grid-cols-7 text-center font-bold text-[9px] uppercase tracking-wider text-zinc-500 border-b border-zinc-900 pb-1.5">
+                    <span className="col-span-2 text-left">Metric</span>
+                    <span className="col-span-2 text-pink-400 truncate">{versusA.username}</span>
+                    <span className="col-span-1 text-zinc-700">vs</span>
+                    <span className="col-span-2 text-cyan-400 truncate">{versusB.username}</span>
                   </div>
-                  <div className="flex justify-between text-[8px] text-zinc-500 mt-1.5 font-mono">
-                    <span>{((versusA.portfolioValue / (versusA.portfolioValue + versusB.portfolioValue)) * 100).toFixed(0)}% ({versusA.username})</span>
-                    <span>{((versusB.portfolioValue / (versusA.portfolioValue + versusB.portfolioValue)) * 100).toFixed(0)}% ({versusB.username})</span>
+
+                  {/* Net Worth Row */}
+                  <div className="grid grid-cols-7 text-center items-center font-mono">
+                    <span className="col-span-2 text-left font-sans text-zinc-400 font-medium">Net Worth</span>
+                    <span className="col-span-2 text-zinc-200"><Money value={versusA.portfolioValue} /></span>
+                    <span className="col-span-1 text-zinc-700">|</span>
+                    <span className="col-span-2 text-zinc-200"><Money value={versusB.portfolioValue} /></span>
+                  </div>
+
+                  {/* Global Rank Row */}
+                  <div className="grid grid-cols-7 text-center items-center font-mono">
+                    <span className="col-span-2 text-left font-sans text-zinc-400 font-medium">Rank</span>
+                    <span className="col-span-2 text-zinc-200">#{versusA.rank}</span>
+                    <span className="col-span-1 text-zinc-700">|</span>
+                    <span className="col-span-2 text-zinc-200">#{versusB.rank}</span>
+                  </div>
+
+                  {/* Performance Row */}
+                  <div className="grid grid-cols-7 text-center items-center font-mono">
+                    <span className="col-span-2 text-left font-sans text-zinc-400 font-medium">Profit/Loss</span>
+                    <span className="col-span-2">
+                      {typeof versusA.profitLoss === "number" ? (
+                        <span className={versusA.profitLoss > 0 ? "text-emerald-400" : versusA.profitLoss < 0 ? "text-rose-400" : "text-zinc-400"}>
+                          {versusA.profitLoss > 0 ? "+" : ""}{versusA.profitLoss.toFixed(2)}%
+                        </span>
+                      ) : (
+                        <span className="text-zinc-500">N/A</span>
+                      )}
+                    </span>
+                    <span className="col-span-1 text-zinc-700">|</span>
+                    <span className="col-span-2">
+                      {typeof versusB.profitLoss === "number" ? (
+                        <span className={versusB.profitLoss > 0 ? "text-emerald-400" : versusB.profitLoss < 0 ? "text-rose-400" : "text-zinc-400"}>
+                          {versusB.profitLoss > 0 ? "+" : ""}{versusB.profitLoss.toFixed(2)}%
+                        </span>
+                      ) : (
+                        <span className="text-zinc-500">N/A</span>
+                      )}
+                    </span>
+                  </div>
+
+                  {/* Summary / Variance Section */}
+                  <div className="mt-2 pt-2.5 border-t border-zinc-900/60 space-y-1.5 bg-zinc-900/10 p-2.5 rounded-lg border border-zinc-900/30 text-zinc-500">
+                    <div className="flex justify-between">
+                      <span>Net Worth Diff:</span>
+                      <span className="text-pink-400 font-bold font-mono">
+                        <Money value={Math.abs(versusA.portfolioValue - versusB.portfolioValue)} />
+                        <span className="text-zinc-400 font-sans font-medium text-[9px] ml-1">
+                          ({versusA.portfolioValue > versusB.portfolioValue ? versusA.username : versusB.username} leads)
+                        </span>
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span>Rank Spread:</span>
+                      <span className="text-zinc-300 font-bold">
+                        {rankDiff === 0 ? "Tied" : `${rankDiff} ranks (${rankLeader} leading)`}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span>Performance Delta:</span>
+                      <span className="font-bold font-mono">
+                        {typeof versusA.profitLoss === "number" && typeof versusB.profitLoss === "number" ? (
+                          (() => {
+                            const delta = versusA.profitLoss - versusB.profitLoss;
+                            const sign = delta > 0 ? "+" : "";
+                            const color = delta > 0 ? "text-emerald-400" : delta < 0 ? "text-rose-400" : "text-zinc-400";
+                            return <span className={color}>{sign}{delta.toFixed(2)}%</span>;
+                          })()
+                        ) : (
+                          <span className="text-zinc-500">N/A</span>
+                        )}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Comparative Ratio Bar */}
+                  <div className="mt-3.5 pt-2 border-t border-zinc-900/60">
+                    <div className="relative w-full h-2 rounded-full overflow-hidden bg-zinc-900 border border-zinc-850 flex">
+                      <div 
+                        className="h-full bg-gradient-to-r from-pink-500 to-pink-400 transition-all duration-500" 
+                        style={{ width: `${pctA}%` }}
+                      />
+                      <div 
+                        className="h-full bg-gradient-to-r from-cyan-400 to-cyan-550 transition-all duration-500" 
+                        style={{ width: `${pctB}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-[8px] text-zinc-500 mt-1.5 font-mono">
+                      <span>{pctA.toFixed(0)}% ({versusA.username})</span>
+                      <span>{pctB.toFixed(0)}% ({versusB.username})</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </motion.div>
         )}
       </AnimatePresence>

@@ -111,6 +111,17 @@ export function Nav() {
   const { user, loading, logout } = useAuth();
   const { unreadCount } = useNotifications();
   const [open, setOpen] = useState(false);
+  const [showWelcomePopup, setShowWelcomePopup] = useState(false);
+
+  useEffect(() => {
+    if (user && typeof window !== "undefined") {
+      const shouldShow = window.localStorage.getItem("show_welcome_toast");
+      if (shouldShow === "true") {
+        setShowWelcomePopup(true);
+        window.localStorage.removeItem("show_welcome_toast");
+      }
+    }
+  }, [user]);
 
   // The hamburger that opened the drawer — focus returns here on close so
   // keyboard users aren't dumped at the top of the document.
@@ -480,6 +491,77 @@ export function Nav() {
               </div>
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Welcome Popup Modal */}
+      <AnimatePresence>
+        {showWelcomePopup && user && (
+          <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+            {/* Backdrop overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowWelcomePopup(false)}
+              className="absolute inset-0 bg-black/75 backdrop-blur-sm"
+            />
+
+            {/* Modal Card */}
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 350 }}
+              className="relative w-full max-w-sm overflow-hidden rounded-[2.5rem] border border-pink-500/35 bg-zinc-950/90 p-8 shadow-[0_0_50px_rgba(236,72,153,0.3)] backdrop-blur-xl text-center z-10"
+            >
+              {/* Corner decorative light path */}
+              <div className="absolute -left-16 -top-16 w-36 h-36 bg-pink-500/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -right-16 -bottom-16 w-36 h-36 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+
+              {/* Close button */}
+              <button
+                type="button"
+                onClick={() => setShowWelcomePopup(false)}
+                className="absolute top-4 right-4 p-2 rounded-xl text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50 transition-colors"
+                aria-label="Close welcome message"
+              >
+                <X size={16} weight="bold" />
+              </button>
+
+              {/* Glowing Avatar Frame */}
+              <div className="relative mx-auto w-24 h-24 mb-5 flex items-center justify-center">
+                {/* Rotating accent aura */}
+                <div className="absolute inset-0 rounded-full border-2 border-dashed border-pink-500/40 animate-spin-slow" />
+                <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-pink-500 to-cyan-400 opacity-20 blur-md" />
+                <div className="relative rounded-full ring-4 ring-zinc-900 shadow-2xl">
+                  <Avatar src={user.avatarUrl} name={user.username} size="lg" />
+                </div>
+              </div>
+
+              {/* Text */}
+              <span className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.35)]">
+                Welcome back
+              </span>
+              <h2 className="mt-2 text-2xl font-black tracking-tight font-display text-zinc-50 leading-tight">
+                Hi, <span className="bg-gradient-to-r from-zinc-100 via-pink-100 to-pink-500 bg-clip-text text-transparent animate-gradient-text drop-shadow-[0_0_15px_rgba(236,72,153,0.35)]">{user.username}</span>!
+              </h2>
+
+              <p className="mt-4 text-xs sm:text-sm leading-relaxed text-zinc-400">
+                You are successfully logged into OsuStocks. Start tracking performance, buying shares, and dominating the leaderboard!
+              </p>
+
+              {/* Action Button */}
+              <button
+                type="button"
+                onClick={() => setShowWelcomePopup(false)}
+                className="mt-6 w-full relative inline-flex items-center justify-center h-11 overflow-hidden rounded-xl bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-500 font-display text-xs font-black uppercase tracking-widest text-white shadow-[0_0_15px_rgba(236,72,153,0.35)] transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_25px_rgba(6,182,212,0.5)] hover:brightness-110 active:scale-95 group/btn"
+              >
+                <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover/btn:animate-[shimmer_1.5s_infinite]" />
+                Start Trading
+              </button>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </>

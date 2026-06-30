@@ -509,3 +509,20 @@
     transform: translateX(100%);
   }
 }
+
+@keyframes gradient-text-move {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient-text {
+  background-size: 200% auto;
+  animation: gradient-text-move 6s ease infinite;
+}

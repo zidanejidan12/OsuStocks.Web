@@ -45,14 +45,14 @@ export default function TermsPage() {
 
         {/* Page Header */}
         <div className="border-b border-zinc-900 pb-8 mb-10">
-          <span className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-pink-500/80">
+          <span className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.35)]">
             Legal Agreement
           </span>
-          <h1 className="mt-2 text-3xl sm:text-4xl font-black tracking-tight font-display text-zinc-50 dark:text-zinc-100">
-            Terms of Use
+          <h1 className="mt-2 text-3xl sm:text-4xl font-black tracking-tight font-display text-zinc-50">
+            Terms of <span className="text-pink-500 drop-shadow-[0_0_15px_rgba(236,72,153,0.3)]">Use</span>
           </h1>
-          <p className="mt-2.5 text-xs text-zinc-500 font-medium">
-            Last updated: <span className="text-zinc-400">{LAST_UPDATED}</span>
+          <p className="mt-2.5 text-xs text-zinc-500 font-mono uppercase tracking-wider">
+            Last updated: <span className="text-zinc-400 font-bold">{LAST_UPDATED}</span>
           </p>
         </div>
 
@@ -85,7 +85,7 @@ export default function TermsPage() {
                 and have <strong className="text-zinc-150 font-bold">no real-world monetary
                 value</strong>. You cannot buy, sell, deposit, withdraw, or redeem
                 them for money or anything of value. OsuStocks is not investing,
-                trading, financial advice, or gambling &mdash; it is entertainment.
+                trading, financial advice, or gambling - it is entertainment.
               </p>
             </div>
           </div>
@@ -113,8 +113,8 @@ export default function TermsPage() {
 
             <LegalSection title="3. No real money and no financial product">
               <p>
-                Every in-game item &mdash; coins, balances, prices, shares, holdings,
-                and profit or loss &mdash; is virtual and fictional. These items have
+                Every in-game item - coins, balances, prices, shares, holdings,
+                and profit or loss - is virtual and fictional. These items have
                 no monetary or real-world value and cannot be purchased, cashed out,
                 transferred, traded for goods or services, or redeemed for anything.
               </p>

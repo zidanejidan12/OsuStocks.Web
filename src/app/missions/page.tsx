@@ -32,7 +32,7 @@ function PageHeader() {
   return (
     <Reveal>
       <header className="mb-8">
-        <h1 className="text-3xl font-semibold tracking-tighter text-zinc-100 sm:text-4xl">
+        <h1 className="text-3xl sm:text-4xl font-black tracking-tight font-display bg-gradient-to-r from-zinc-100 via-pink-100 to-pink-500 bg-clip-text text-transparent animate-gradient-text">
           Missions
         </h1>
         <p className="mt-2 text-sm text-zinc-400">

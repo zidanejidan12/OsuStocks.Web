@@ -93,6 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     if (typeof window !== "undefined") {
       window.localStorage.setItem("osustocks.auth", JSON.stringify(mockAuth));
+      window.localStorage.setItem("show_welcome_toast", "true");
       window.location.href = returnTo ?? "/";
     }
   }, []);

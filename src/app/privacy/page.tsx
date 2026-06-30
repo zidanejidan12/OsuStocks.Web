@@ -45,14 +45,14 @@ export default function PrivacyPage() {
 
         {/* Page Header */}
         <div className="border-b border-zinc-900 pb-8 mb-10">
-          <span className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-pink-500/80">
+          <span className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.35)]">
             Legal Agreement
           </span>
-          <h1 className="mt-2 text-3xl sm:text-4xl font-black tracking-tight font-display text-zinc-50 dark:text-zinc-100">
-            Privacy Policy
+          <h1 className="mt-2 text-3xl sm:text-4xl font-black tracking-tight font-display text-zinc-50">
+            Privacy <span className="text-pink-500 drop-shadow-[0_0_15px_rgba(236,72,153,0.3)]">Policy</span>
           </h1>
-          <p className="mt-2.5 text-xs text-zinc-500 font-medium">
-            Last updated: <span className="text-zinc-400">{LAST_UPDATED}</span>
+          <p className="mt-2.5 text-xs text-zinc-500 font-mono uppercase tracking-wider">
+            Last updated: <span className="text-zinc-400 font-bold">{LAST_UPDATED}</span>
           </p>
         </div>
 
@@ -71,7 +71,7 @@ export default function PrivacyPage() {
             <LegalSection title="1. Information we handle">
               <p>
                 <strong>osu! account info (via OAuth).</strong> When you sign in, osu!
-                shares a limited set of details so we can identify your account &mdash;
+                shares a limited set of details so we can identify your account -
                 your osu! user ID and username (and your role within the game). We do
                 not receive your osu! password.
               </p>
@@ -92,7 +92,7 @@ export default function PrivacyPage() {
               <ul className="list-disc pl-5 space-y-1">
                 <li>to sign you in and keep your session active;</li>
                 <li>
-                  to run the game &mdash; show the market, your portfolio and wallet,
+                  to run the game - show the market, your portfolio and wallet,
                   and process virtual trades;
                 </li>
                 <li>
@@ -106,7 +106,7 @@ export default function PrivacyPage() {
               <ul className="list-disc pl-5 space-y-1">
                 <li>
                   We do not collect or process real payment or financial information
-                  &mdash; there are none.
+                  - there are none.
                 </li>
                 <li>We do not sell or rent your information.</li>
                 <li>
@@ -121,7 +121,7 @@ export default function PrivacyPage() {
               <p>
                 The deploying operator may enable <strong>PostHog</strong>, a
                 product-analytics provider, to collect privacy-respecting usage events
-                &mdash; such as page views and which features are used &mdash; to
+                - such as page views and which features are used - to
                 understand and improve the game. Analytics is{" "}
                 <strong>off unless the operator configures it</strong>, is never used
                 for advertising, and when enabled, PostHog processes this data on the

@@ -215,8 +215,8 @@ export default function TrendingPage() {
             <div className="lg:col-span-5 flex flex-col gap-6">
               <Reveal>
                 <header className="mb-2">
-                  <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-zinc-50">
-                    Market <span className="text-pink-500 drop-shadow-[0_0_15px_rgba(244,63,94,0.3)]">Trends</span>
+                  <h1 className="text-4xl sm:text-5xl font-black tracking-tight font-display bg-gradient-to-r from-zinc-100 via-pink-100 to-pink-500 bg-clip-text text-transparent animate-gradient-text">
+                    Market Trends
                   </h1>
                   <p className="mt-3 text-sm text-zinc-400 max-w-[60ch] leading-relaxed">
                     Track hyper-active stocks, rising candidates, and volume surges directly synced with player leaderboard dynamics.

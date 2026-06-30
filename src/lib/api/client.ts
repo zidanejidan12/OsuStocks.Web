@@ -361,12 +361,18 @@ function getMockResponse(path: string, init?: RequestInit): any {
 
   if (cleanPath === "/achievements") {
     return {
-      unlockedCount: 2,
-      totalCount: 5,
+      unlockedCount: 1,
+      totalCount: 9,
       items: [
-        { code: "ach_1", name: "First Steps", description: "Buy your first share", category: "Trading", metric: "shares_bought", threshold: 1, currentValue: 1, rewardCredits: 100, unlocked: true, unlockedAt: new Date(Date.now() - 86400000 * 5).toISOString() },
-        { code: "ach_2", name: "Diamond Hands", description: "Hold a stock for 7 days", category: "Holding", metric: "hold_days", threshold: 7, currentValue: 7, rewardCredits: 500, unlocked: true, unlockedAt: new Date(Date.now() - 86400000).toISOString() },
-        { code: "ach_3", name: "Whale Status", description: "Reach a net worth of 100k", category: "Economy", metric: "net_worth", threshold: 100000, currentValue: 70420, rewardCredits: 2000, unlocked: false, unlockedAt: null }
+        { code: "ach_1", name: "First Steps", description: "Execute your first trade.", category: "Trading", metric: "trades_count", threshold: 1, currentValue: 1, rewardCredits: 300, unlocked: true, unlockedAt: new Date(Date.now() - 86400000).toISOString() },
+        { code: "ach_2", name: "Getting Active", description: "Execute 10 trades.", category: "Trading", metric: "trades_count", threshold: 10, currentValue: 1, rewardCredits: 800, unlocked: false, unlockedAt: null },
+        { code: "ach_3", name: "Seasoned Trader", description: "Execute 100 trades.", category: "Trading", metric: "trades_count", threshold: 100, currentValue: 1, rewardCredits: 3000, unlocked: false, unlockedAt: null },
+        { code: "ach_4", name: "Big Spender", description: "Trade 100,000 credits of volume.", category: "Trading", metric: "volume_traded", threshold: 100000, currentValue: 51, rewardCredits: 1500, unlocked: false, unlockedAt: null },
+        { code: "ach_5", name: "High Roller", description: "Trade 1,000,000 credits of volume.", category: "Trading", metric: "volume_traded", threshold: 1000000, currentValue: 51, rewardCredits: 8000, unlocked: false, unlockedAt: null },
+        { code: "ach_6", name: "Diversified", description: "Buy 5 different stocks.", category: "Portfolio", metric: "unique_stocks", threshold: 5, currentValue: 1, rewardCredits: 1500, unlocked: false, unlockedAt: null },
+        { code: "ach_7", name: "Portfolio Mogul", description: "Buy 20 different stocks.", category: "Portfolio", metric: "unique_stocks", threshold: 20, currentValue: 1, rewardCredits: 5000, unlocked: false, unlockedAt: null },
+        { code: "ach_8", name: "Rising Investor", description: "Reach investor level 10.", category: "Progression", metric: "level", threshold: 10, currentValue: 1, rewardCredits: 3000, unlocked: false, unlockedAt: null },
+        { code: "ach_9", name: "Market Veteran", description: "Reach investor level 25.", category: "Progression", metric: "level", threshold: 25, currentValue: 1, rewardCredits: 10000, unlocked: false, unlockedAt: null }
       ]
     };
   }
