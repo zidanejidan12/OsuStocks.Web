@@ -249,28 +249,29 @@ export default function TrendingPage() {
                           transition={{ type: "spring", stiffness: 380, damping: 30 }}
                         />
                       )}
-                      {/* Return text to straight alignment inside skewed container */}
                       <div className="flex items-center gap-3.5 skew-x-[4deg]">
-                        <span className={`p-2 rounded-xl bg-zinc-950/60 border border-zinc-900 ${
+                        <span className={`p-2.5 rounded-xl bg-zinc-950/60 border border-zinc-900 ${
                           isSelected ? "text-pink-400 border-pink-500/25" : "text-zinc-500"
                         }`}>
-                          <Icon size={18} weight="bold" />
+                          <Icon size={20} weight="bold" />
                         </span>
                         <div>
-                          <span className={`text-sm font-black tracking-tight block ${
+                          <span className={`text-base font-black tracking-tight block ${
                             isSelected ? "text-zinc-50" : "text-zinc-400 group-hover:text-zinc-200"
                           }`}>{b.title}</span>
-                          <span className="text-[9px] font-mono font-bold text-zinc-550 block mt-0.5 tracking-wider">
+                          <span className={`text-[10px] font-sans font-black block mt-0.5 tracking-wider uppercase ${
+                            isSelected ? "text-pink-400" : "text-zinc-550 group-hover:text-zinc-400"
+                          }`}>
                             {b.subtitle}
                           </span>
                         </div>
                       </div>
                       <div className="skew-x-[4deg] shrink-0">
                         <ArrowRight 
-                          size={14} 
+                          size={16} 
                           weight="bold" 
                           className={`transition-transform duration-300 ${
-                            isSelected ? "text-pink-400 translate-x-1" : "text-zinc-600 group-hover:text-zinc-400"
+                            isSelected ? "text-pink-400 translate-x-1" : "text-zinc-650 group-hover:text-zinc-400"
                           }`} 
                         />
                       </div>
