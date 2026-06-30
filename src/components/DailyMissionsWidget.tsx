@@ -68,7 +68,7 @@ export function DailyMissionsWidget() {
         aria-label="Toggle Objectives Panel"
       >
         <div className="flex flex-col items-center gap-2">
-          {/* Pulsing state indicator dot */}
+          {/* State indicator dot */}
           <span className="relative flex h-1.5 w-1.5">
             {hasIncompleteDaily ? (
               <>
@@ -76,7 +76,7 @@ export function DailyMissionsWidget() {
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-pink-500"></span>
               </>
             ) : (
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-zinc-700"></span>
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.4)]"></span>
             )}
           </span>
           <span 
@@ -84,7 +84,7 @@ export function DailyMissionsWidget() {
           >
             DAILY
           </span>
-          <span className="text-[8px] font-mono font-bold text-zinc-500">
+          <span className={`text-[8px] font-mono font-bold ${hasIncompleteDaily ? "text-zinc-550" : "text-emerald-500"}`}>
             {completedDailyCount}/{totalDailyCount}
           </span>
         </div>
