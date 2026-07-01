@@ -1,10 +1,11 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-background: #141015;
-  --color-foreground: #f3eef2;
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: #120e13;
+  --color-foreground: #f6f0f5;
+  --font-sans: var(--font-geist-sans), sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
+  --font-display: var(--font-outfit), sans-serif;
   --color-accent: #ec4899;
 }
 
@@ -12,17 +13,26 @@
    purplish-dark so every existing zinc-* utility inherits the osu! profile look.
    The pink accent stays as Tailwind's pink (#ec4899) — our magenta twist. */
 @theme {
-  --color-zinc-50: #f9f6f8;
-  --color-zinc-100: #f3eef2;
-  --color-zinc-200: #e7e0e6;
-  --color-zinc-300: #cfc5ce;
-  --color-zinc-400: #aa9fa9;
-  --color-zinc-500: #847a83;
-  --color-zinc-600: #645b63;
-  --color-zinc-700: #483f47;
-  --color-zinc-800: #2e2630;
-  --color-zinc-900: #1f1a1e;
-  --color-zinc-950: #141015;
+  --color-zinc-50: #faf7fb;
+  --color-zinc-100: #f4edf3;
+  --color-zinc-200: #e8e0e7;
+  --color-zinc-300: #d1c4d0;
+  --color-zinc-350: #beafbc;
+  --color-zinc-400: #ac9fa9;
+  --color-zinc-500: #867985;
+  --color-zinc-550: #766a75;
+  --color-zinc-600: #665b65;
+  --color-zinc-700: #4a3e49;
+  --color-zinc-805: #2d232c;
+  --color-zinc-800: #30262f;
+  --color-zinc-850: #281f27;
+  --color-zinc-900: #211920;
+  --color-zinc-950: #120e13;
+  --color-zinc-955: #0a080a;
+  --color-orange-405: #f97316;
+  --color-orange-955: #431407;
+  --color-rose-455: #e11d48;
+  --color-amber-955: #451a03;
 }
 
 @layer base {
@@ -34,52 +44,131 @@
     color: var(--color-foreground);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    overflow-x: hidden;
   }
   ::selection {
-    background: color-mix(in oklab, var(--color-accent) 40%, transparent);
+    background: color-mix(in oklab, var(--color-accent) 45%, transparent);
     color: #fff;
   }
   :focus-visible {
     outline: 2px solid color-mix(in oklab, var(--color-accent) 70%, transparent);
     outline-offset: 2px;
-    border-radius: 6px;
+    border-radius: 8px;
   }
+  
+  /* Customized Premium Scrollbars */
   * {
     scrollbar-width: thin;
-    scrollbar-color: #2e2630 transparent;
+    scrollbar-color: #30262f transparent;
   }
   *::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
   }
   *::-webkit-scrollbar-thumb {
-    background: #2e2630;
+    background: #30262f;
     border-radius: 9999px;
+    border: 1.5px solid var(--color-background);
   }
   *::-webkit-scrollbar-thumb:hover {
-    background: #483f47;
+    background: #4a3e49;
   }
 }
 
 @layer components {
   /* Shimmer skeleton surface */
   .skeleton {
-    background: linear-gradient(90deg, #1f1a1e 25%, #2e2630 37%, #1f1a1e 63%);
+    background: linear-gradient(95deg, #211920 25%, #30262f 37%, #211920 63%);
     background-size: 200% 100%;
-    animation: skeleton-shimmer 1.6s linear infinite;
+    animation: skeleton-shimmer 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
-  /* Frosted glass with inner refraction edge */
+
+  /* Frosted glass with inner refraction edge and subtle colored reflection */
   .glass {
-    background: color-mix(in oklab, #1f1a1e 72%, transparent);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    background: color-mix(in oklab, #191318 78%, transparent);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 
+      inset 0 1px 0 rgba(255, 255, 255, 0.04),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.2),
+      0 4px 30px rgba(0, 0, 0, 0.3);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
   }
+
+  .glass:hover {
+    border-color: rgba(236, 72, 153, 0.15);
+    box-shadow: 
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 10px 40px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Premium High-Contrast Neon-Glow Panel */
+  .glow-card {
+    background: color-mix(in oklab, #120e13 85%, transparent);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(236, 72, 153, 0.12);
+    box-shadow: 
+      0 0 35px rgba(236, 72, 153, 0.04),
+      inset 0 1px 1px rgba(255, 255, 255, 0.06);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .glow-card:hover {
+    border-color: rgba(236, 72, 153, 0.25);
+    box-shadow: 
+      0 0 45px rgba(236, 72, 153, 0.08),
+      0 12px 40px rgba(0, 0, 0, 0.5),
+      inset 0 1px 1px rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+  }
+
+  /* Premium card shine sweep animation */
+  @keyframes shine-sweep {
+    0% {
+      left: -150%;
+    }
+    45% {
+      left: 150%;
+    }
+    100% {
+      left: 150%;
+    }
+  }
+  
+  .shine-sweep {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .shine-sweep::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -150%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(236, 72, 153, 0.08),
+      rgba(255, 255, 255, 0.05),
+      transparent
+    );
+    transform: skewX(-25deg);
+    animation: shine-sweep 6s infinite ease-in-out;
+    pointer-events: none;
+  }
+
   /* Fine film grain — only ever on a fixed, pointer-events-none layer */
   .grain {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
+  
   /* Suppress the native number-input spinners — we render our own −/+ stepper. */
   .no-spinner {
     -moz-appearance: textfield;
@@ -101,9 +190,7 @@
   }
 }
 
-/* Market ticker marquee — the track holds two copies of the movers, so a -50%
-   shift loops seamlessly. Only applied when motion is allowed (the component
-   renders a static strip under prefers-reduced-motion). */
+/* Market ticker marquee */
 @keyframes ticker-marquee {
   from {
     transform: translateX(0);
@@ -122,4 +209,338 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* --- Theme Config for LIGHT mode --- */
+:root.light {
+  --color-background: #eee6ee;
+  --color-foreground: #1c151c;
+  --color-zinc-50: #1c151c;
+  --color-zinc-100: #312731;
+  --color-zinc-200: #453845;
+  --color-zinc-300: #5f4d5f;
+  --color-zinc-350: #6f5b6f;
+  --color-zinc-400: #7e697e;
+  --color-zinc-550: #a289a2;
+  --color-zinc-500: #987f98;
+  --color-zinc-600: #b398b3;
+  --color-zinc-700: #c5abc5;
+  --color-zinc-805: #d4b8d4;
+  --color-zinc-800: #d6bbd6;
+  --color-zinc-850: #e0cce0;
+  --color-zinc-900: #e9dae9;
+  --color-zinc-950: #f2e6f1;
+  --color-zinc-955: #f9f2f8;
+  --color-orange-405: #ea580c;
+  --color-orange-955: #fff7ed;
+  --color-rose-455: #be123c;
+  --color-amber-955: #fef3c7;
+}
+
+:root.light body {
+  background: linear-gradient(135deg, #eee6ee 0%, #e2d7e1 45%, #ebddeb 80%, #ded0de 100%) !important;
+}
+
+:root.light header.sticky {
+  background-color: rgba(238, 230, 238, 0.8) !important;
+  border-bottom-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+:root.light header.sticky nav a, 
+:root.light header.sticky nav span:not(.text-pink-500):not(.text-pink-400) {
+  color: #1c151c !important;
+}
+
+:root.light header.sticky nav button {
+  color: #584b57 !important;
+}
+
+:root.light header.sticky nav button:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+  color: #1c151c !important;
+}
+
+:root.light .glass {
+  background: rgba(248, 239, 247, 0.72);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 4px 20px rgba(0, 0, 0, 0.03);
+}
+
+:root.light .glow-card {
+  background: rgba(249, 242, 248, 0.8);
+  border: 1px solid rgba(236, 72, 153, 0.15);
+  box-shadow: 
+    0 0 25px rgba(236, 72, 153, 0.03),
+    0 4px 20px rgba(0, 0, 0, 0.02);
+}
+
+:root.light footer {
+  background-color: rgba(238, 230, 238, 0.8) !important;
+  border-top-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+:root.light footer a {
+  color: #584b57 !important;
+}
+
+:root.light footer a:hover {
+  color: #db2777 !important;
+}
+
+:root.light footer p,
+:root.light footer span:not(.text-pink-500):not(.text-pink-400) {
+  color: #766975 !important;
+}
+
+/* --- Light Mode Contrast & Readability Enhancements --- */
+:root.light .text-pink-400 {
+  color: #db2777 !important; /* Rich pink for readable contrast */
+}
+
+:root.light .text-pink-500 {
+  color: #db2777 !important;
+}
+
+:root.light .text-cyan-400 {
+  color: #0891b2 !important; /* Rich cyan */
+}
+
+:root.light .text-amber-400 {
+  color: #d97706 !important; /* Rich amber */
+}
+
+:root.light .text-emerald-400 {
+  color: #059669 !important; /* Rich emerald green */
+}
+
+:root.light .text-rose-400 {
+  color: #dc2626 !important; /* Rich rose red */
+}
+
+/* Sponsor Card & Custom Cards in Light Mode */
+:root.light .shine-sweep {
+  background: rgba(253, 250, 252, 0.9) !important;
+  border-color: rgba(236, 72, 153, 0.25) !important;
+}
+
+:root.light .shine-sweep h3 {
+  color: #1c151c !important;
+}
+
+:root.light .shine-sweep:hover h3 {
+  color: #db2777 !important;
+}
+
+:root.light .shine-sweep p {
+  color: #584b57 !important;
+}
+
+/* Light mode adjustments for OsuAuroraBackground and Buttons */
+:root.light .btn-secondary {
+  border-color: rgba(28, 21, 28, 0.15) !important;
+  background-color: rgba(28, 21, 28, 0.03) !important;
+  color: #1c151c !important;
+}
+
+:root.light .btn-secondary:hover {
+  border-color: rgba(28, 21, 28, 0.25) !important;
+  background-color: rgba(28, 21, 28, 0.06) !important;
+}
+
+:root.light .btn-secondary:disabled {
+  opacity: 0.45 !important;
+  border-color: rgba(28, 21, 28, 0.08) !important;
+  color: #766975 !important;
+}
+
+/* --- Premium Background & Particle Animations --- */
+
+/* Wind-drifting snowflake path */
+@keyframes fall-wobble {
+  0% {
+    transform: translateY(-20px) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.95;
+  }
+  30% {
+    transform: translateY(30vh) translateX(25px) rotate(120deg);
+  }
+  60% {
+    transform: translateY(65vh) translateX(-20px) rotate(240deg);
+  }
+  90% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translateY(105vh) translateX(15px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.animate-fall-wobble {
+  animation-name: fall-wobble;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-12px) scale(1.02);
+  }
+}
+
+.animate-float {
+  animation: float 5s ease-in-out infinite;
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 16s linear infinite;
+}
+
+/* Aurora Fluid Motion Mesh Gradients */
+@keyframes aurora-morph-1 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(60px, -90px) scale(1.25);
+  }
+  66% {
+    transform: translate(-50px, 50px) scale(0.8);
+  }
+}
+
+@keyframes aurora-morph-2 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1.15);
+  }
+  50% {
+    transform: translate(-80px, 70px) scale(0.85);
+  }
+}
+
+@keyframes aurora-morph-3 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(0.9);
+  }
+  40% {
+    transform: translate(70px, 60px) scale(1.2);
+  }
+}
+
+@keyframes approach-circle {
+  0% {
+    transform: translate(-50%, -50%) scale(2.2);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.18;
+  }
+  85% {
+    opacity: 0.18;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 0;
+  }
+}
+
+@keyframes particle-drift {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.4;
+  }
+  90% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translate(80px, -110px) rotate(45deg);
+    opacity: 0;
+  }
+}
+
+.animate-aurora-1 {
+  animation: aurora-morph-1 25s ease-in-out infinite;
+}
+
+.animate-aurora-2 {
+  animation: aurora-morph-2 30s ease-in-out infinite;
+}
+
+.animate-aurora-3 {
+  animation: aurora-morph-3 22s ease-in-out infinite;
+}
+
+.animate-approach-1 {
+  animation: approach-circle 10s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.animate-approach-2 {
+  animation: approach-circle 10s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  animation-delay: 3.3s;
+}
+
+.animate-approach-3 {
+  animation: approach-circle 10s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  animation-delay: 6.6s;
+}
+
+.animate-particle-drift {
+  animation: particle-drift 15s linear infinite;
+}
+
+@keyframes hue-shift {
+  0% {
+    filter: hue-rotate(0deg);
+  }
+  50% {
+    filter: hue-rotate(60deg);
+  }
+  100% {
+    filter: hue-rotate(0deg);
+  }
+}
+
+.animate-hue-shift {
+  animation: hue-shift 36s infinite ease-in-out;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes gradient-text-move {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient-text {
+  background-size: 200% auto;
+  animation: gradient-text-move 6s ease infinite;
 }

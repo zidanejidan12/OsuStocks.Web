@@ -43,7 +43,8 @@ type Props = {
 
 export function Avatar({ src, name, size = "md", className = "" }: Props) {
   const [failed, setFailed] = useState(false);
-  const base = `${SIZES[size]} shrink-0 overflow-hidden rounded-full ring-1 ring-zinc-700/60 ${className}`;
+  const hasRounded = className.includes("rounded-");
+  const base = `${SIZES[size]} shrink-0 overflow-hidden ${hasRounded ? "" : "rounded-full"} ring-1 ring-zinc-700/60 ${className}`;
 
   if (src && !failed) {
     return (

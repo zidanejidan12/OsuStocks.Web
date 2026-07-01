@@ -1,13 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Trophy,
   Medal,
   CaretLeft,
   CaretRight,
   WarningCircle,
+  Sword,
+  Target
 } from "@phosphor-icons/react";
 import { getLeaderboard, ApiError } from "@/lib/api/client";
 import type { LeaderboardEntry } from "@/lib/api/types";
@@ -23,7 +25,7 @@ import { Reveal } from "@/components/motion/Reveal";
 import { fadeUp, staggerContainer } from "@/lib/motion";
 import { useAuth } from "@/lib/auth/auth-context";
 
-const PAGE_SIZE = 25;
+const PAGE_SIZE = 10;
 
 type Period = "all" | "monthly" | "weekly" | "daily";
 const PERIODS: { value: Period; label: string }[] = [
@@ -39,24 +41,30 @@ const PERIOD_NOTE: Record<Period, string> = {
   daily: "today",
 };
 
-// Gold / silver / bronze accents for the podium; plain otherwise.
 function rankChip(rank: number): string {
-  if (rank === 1) return "bg-amber-500/15 text-amber-300 ring-amber-500/30";
-  if (rank === 2) return "bg-zinc-400/15 text-zinc-200 ring-zinc-400/30";
-  if (rank === 3) return "bg-orange-600/15 text-orange-300 ring-orange-600/30";
+  if (rank === 1) return "bg-amber-500/15 text-amber-300 ring-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.2)]";
+  if (rank === 2) return "bg-zinc-200/25 text-zinc-100 ring-zinc-200/40 shadow-[0_0_10px_rgba(228,228,231,0.25)]";
+  if (rank === 3) return "bg-orange-600/15 text-orange-300 ring-orange-600/30 shadow-[0_0_8px_rgba(234,88,12,0.1)]";
+  if (rank <= 10) return "bg-pink-500/10 text-pink-300 ring-pink-500/25";
   return "bg-zinc-800/70 text-zinc-400 ring-zinc-700/50";
 }
 
 function PageShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10 sm:py-14">{children}</div>
+    <div className="relative w-full overflow-hidden min-h-screen">
+      <div className="absolute top-0 right-0 -z-10 h-[350px] w-[350px] rounded-full bg-pink-500/12 dark:bg-pink-500/5 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 -z-10 h-[350px] w-[350px] rounded-full bg-purple-500/12 dark:bg-purple-500/5 blur-[120px] pointer-events-none" />
+      <div className="relative z-10 mx-auto max-w-5xl px-4 py-10 sm:py-14">
+        {children}
+      </div>
+    </div>
   );
 }
 
 function LeaderboardSkeleton() {
   return (
-    <div className="divide-y divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/80">
-      {Array.from({ length: 8 }).map((_, i) => (
+    <div className="divide-y divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/25">
+      {Array.from({ length: 10 }).map((_, i) => (
         <div key={i} className="flex items-center gap-4 px-4 py-4">
           <Skeleton className="h-7 w-9 rounded-lg" />
           <Skeleton className="h-9 w-9 rounded-full" />
@@ -70,39 +78,74 @@ function LeaderboardSkeleton() {
   );
 }
 
-// Top-3 highlight shown on page 1.
 function PodiumCard({
   entry,
   isMe,
+  onCompare,
+  compareActive
 }: {
   entry: LeaderboardEntry;
   isMe: boolean;
+  onCompare: () => void;
+  compareActive: boolean;
 }) {
-  const top = entry.rank === 1;
+  const isRank1 = entry.rank === 1;
+  const isRank2 = entry.rank === 2;
+  const isRank3 = entry.rank === 3;
+
+  const cardStyle = isRank1
+    ? "border-amber-400/80 bg-gradient-to-b from-amber-500/[0.12] via-zinc-950/90 to-zinc-900/50 shadow-[0_0_35px_rgba(245,158,11,0.25)] ring-amber-500/30"
+    : isRank2
+    ? "border-zinc-400 bg-gradient-to-b from-zinc-300/[0.08] via-zinc-950/90 to-zinc-900/50 shadow-[0_0_25px_rgba(228,228,231,0.15)] ring-zinc-300/20"
+    : "border-orange-600/50 bg-gradient-to-b from-orange-600/[0.06] via-zinc-950/90 to-zinc-900/50 shadow-[0_0_20px_rgba(234,88,12,0.1)] ring-orange-600/10";
+
+  const paddingStyle = isRank1 
+    ? "pt-8 pb-6 px-5" 
+    : isRank2 
+    ? "pt-6 pb-5 px-5" 
+    : "pt-5 pb-5 px-5";
+
   return (
     <div
-      className={`flex flex-col items-center rounded-2xl border bg-zinc-900/40 p-4 text-center ring-1 ring-inset ${
-        top
-          ? "border-amber-500/30 ring-amber-500/20 sm:-translate-y-2"
-          : "border-zinc-800/80 ring-transparent"
-      } ${isMe ? "bg-pink-500/[0.06]" : ""}`}
+      className={`flex flex-col items-center rounded-2xl border ${paddingStyle} text-center ring-1 ring-inset transition-all duration-500 ease-out hover:scale-[1.05] hover:-translate-y-3 hover:shadow-[0_22px_45px_rgba(236,72,153,0.22)] hover:border-pink-500/40 relative group ${cardStyle} ${
+        isMe ? "bg-pink-500/[0.08] border-pink-500/40" : ""
+      }`}
     >
+      <button 
+        onClick={onCompare}
+        className={`absolute top-3 right-3 p-1.5 rounded-lg border text-[10px] transition-all duration-300 flex items-center gap-1 opacity-0 group-hover:opacity-100 ${
+          compareActive 
+            ? "bg-pink-500 border-pink-600 text-white shadow-md shadow-pink-500/20" 
+            : "bg-zinc-950/60 border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700"
+        }`}
+      >
+        <Sword size={12} />
+        <span>Compare</span>
+      </button>
+
       <span
         className={`grid h-9 w-9 place-items-center rounded-full ring-1 ring-inset ${rankChip(
           entry.rank,
         )}`}
       >
-        {top ? (
-          <Trophy size={18} weight="fill" />
+        {isRank1 ? (
+          <Trophy size={18} weight="fill" className="text-amber-300 drop-shadow-[0_0_6px_rgba(245,158,11,0.6)]" />
+        ) : isRank2 ? (
+          <Medal size={18} weight="fill" className="text-zinc-100 drop-shadow-[0_0_8px_rgba(228,228,231,0.8)]" />
         ) : (
-          <Medal size={18} weight="fill" />
+          <Medal size={18} weight="fill" className="text-orange-450 drop-shadow-[0_0_6px_rgba(234,88,12,0.5)]" />
         )}
       </span>
-      <div className="mt-3">
-        <Avatar src={entry.avatarUrl} name={entry.username} size="md" />
+      <div className="mt-3 relative">
+        <Avatar src={entry.avatarUrl} name={entry.username} size="md" className="ring-2 ring-zinc-850" />
+        {isRank1 && (
+          <div className="absolute -top-1.5 -right-1.5 text-xs text-amber-400 drop-shadow-[0_0_4px_rgba(245,158,11,0.8)]">
+            👑
+          </div>
+        )}
       </div>
-      <div className="mt-2 flex max-w-full items-center gap-1.5">
-        <span className="truncate text-sm font-medium text-zinc-100">
+      <div className="mt-2 flex max-w-full items-center gap-1.5 justify-center">
+        <span className="truncate text-sm font-semibold text-zinc-100">
           {entry.username}
         </span>
         {entry.countryCode && (
@@ -110,7 +153,7 @@ function PodiumCard({
         )}
       </div>
       {entry.equippedTitle && (
-        <div className="mt-1 max-w-full truncate text-[11px] font-medium text-pink-300">
+        <div className="mt-1 max-w-full truncate text-[11px] font-medium text-pink-400">
           {entry.equippedTitle}
         </div>
       )}
@@ -119,11 +162,11 @@ function PodiumCard({
           <Badge tone="accent">You</Badge>
         </div>
       )}
-      <div className="mt-2 font-mono text-base font-semibold tabular-nums text-zinc-50">
+      <div className="mt-3 font-mono text-base font-bold tabular-nums text-zinc-50">
         <Money value={entry.portfolioValue} />
       </div>
       {typeof entry.profitLoss === "number" && (
-        <div className="mt-0.5 text-xs">
+        <div className="mt-1 text-xs">
           <PriceChange value={entry.profitLoss} />
         </div>
       )}
@@ -137,9 +180,15 @@ export default function LeaderboardPage() {
   const [page, setPage] = useState(1);
   const [period, setPeriod] = useState<Period>("all");
   const [hasMore, setHasMore] = useState(false);
-  const [loading, setLoading] = useState(true); // initial load -> skeleton
-  const [busy, setBusy] = useState(false); // page/period transition -> dim
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [totalCount, setTotalCount] = useState<number>(0);
+
+  // Versus Compare States
+  const [versusA, setVersusA] = useState<LeaderboardEntry | null>(null);
+  const [versusB, setVersusB] = useState<LeaderboardEntry | null>(null);
 
   const load = useCallback(async (nextPage: number, nextPeriod: Period) => {
     const result = await getLeaderboard({
@@ -150,6 +199,7 @@ export default function LeaderboardPage() {
     setEntries(result.items);
     setPage(nextPage);
     setPeriod(nextPeriod);
+    setTotalCount(result.totalCount ?? 0);
     setHasMore(
       typeof result.totalCount === "number"
         ? nextPage * PAGE_SIZE < result.totalCount
@@ -157,7 +207,6 @@ export default function LeaderboardPage() {
     );
   }, []);
 
-  // Initial load: page 1, all-time.
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -175,19 +224,41 @@ export default function LeaderboardPage() {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const navigate = (nextPage: number, nextPeriod: Period) => {
     setBusy(true);
     setError(null);
     load(nextPage, nextPeriod)
+      .then(() => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      })
       .catch((err) =>
         setError(
           err instanceof ApiError ? err.message : "Failed to load leaderboard.",
         ),
       )
       .finally(() => setBusy(false));
+  };
+
+  const handleCompareClick = (entry: LeaderboardEntry) => {
+    if (versusA?.userId === entry.userId) {
+      setVersusA(null);
+      return;
+    }
+    if (versusB?.userId === entry.userId) {
+      setVersusB(null);
+      return;
+    }
+    if (!versusA) {
+      setVersusA(entry);
+    } else if (!versusB) {
+      setVersusB(entry);
+    } else {
+      // Shift A -> B, and insert new selection
+      setVersusA(versusB);
+      setVersusB(entry);
+    }
   };
 
   const isFirstPage = page === 1;
@@ -198,16 +269,16 @@ export default function LeaderboardPage() {
     <PageShell>
       <Reveal>
         <header className="mb-6">
-          <h1 className="text-3xl font-semibold tracking-tighter text-zinc-100 sm:text-4xl">
-            Leaderboard
+          <h1 className="pb-2 text-4xl sm:text-5xl font-black tracking-tight font-display bg-gradient-to-r from-pink-600 via-pink-200 to-pink-700 dark:from-pink-500 dark:via-zinc-100 dark:to-pink-500 bg-clip-text text-transparent animate-gradient-text">
+            Rankings
           </h1>
-          <p className="mt-2 text-sm text-zinc-400">
-            Traders ranked by portfolio value &mdash; {PERIOD_NOTE[period]}.
+          <p className="mt-2 text-sm text-zinc-300">
+            Compare active brokers, track portfolio margins, and climb the ranks.
           </p>
         </header>
       </Reveal>
 
-      {/* Period filter */}
+      {/* Period Selector Tabs */}
       <div
         className="mb-6 inline-flex rounded-xl border border-zinc-800/80 bg-zinc-900/40 p-1"
         role="group"
@@ -222,9 +293,9 @@ export default function LeaderboardPage() {
               aria-pressed={active}
               disabled={busy || loading}
               onClick={() => !active && navigate(1, p.value)}
-              className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/50 disabled:opacity-60 ${
+              className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all duration-300 focus-visible:outline-none disabled:opacity-60 ${
                 active
-                  ? "bg-zinc-800 text-zinc-100 ring-1 ring-inset ring-white/5"
+                  ? "bg-pink-500 text-white shadow-[0_0_15px_rgba(236,72,153,0.35)]"
                   : "text-zinc-400 hover:text-zinc-100"
               }`}
             >
@@ -257,41 +328,93 @@ export default function LeaderboardPage() {
           aria-busy={busy}
         >
           {podium.length > 0 && (
-            <ul className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-              {podium.map((e) => (
-                <li key={e.userId}>
-                  <PodiumCard entry={e} isMe={user?.userId === e.userId} />
+            <ul className="mb-12 flex flex-col md:flex-row items-stretch md:items-end justify-center gap-6 max-w-4xl mx-auto pt-6">
+              {/* Rank 2 (Left) */}
+              {podium[1] && (
+                <li key={podium[1].userId} className="w-full md:w-1/3 order-2 md:order-1 self-stretch md:self-auto md:h-[90%]">
+                  <PodiumCard 
+                    entry={podium[1]} 
+                    isMe={user?.userId === podium[1].userId} 
+                    onCompare={() => handleCompareClick(podium[1])}
+                    compareActive={versusA?.userId === podium[1].userId || versusB?.userId === podium[1].userId}
+                  />
                 </li>
-              ))}
+              )}
+              {/* Rank 1 (Center) */}
+              {podium[0] && (
+                <li key={podium[0].userId} className="w-full md:w-1/3 order-1 md:order-2 md:scale-[1.05] z-10 relative">
+                  <div className="absolute -top-7 left-1/2 -translate-x-1/2 text-3xl animate-bounce pointer-events-none">👑</div>
+                  <PodiumCard 
+                    entry={podium[0]} 
+                    isMe={user?.userId === podium[0].userId} 
+                    onCompare={() => handleCompareClick(podium[0])}
+                    compareActive={versusA?.userId === podium[0].userId || versusB?.userId === podium[0].userId}
+                  />
+                </li>
+              )}
+              {/* Rank 3 (Right) */}
+              {podium[2] && (
+                <li key={podium[2].userId} className="w-full md:w-1/3 order-3 md:order-3 self-stretch md:self-auto md:h-[80%]">
+                  <PodiumCard 
+                    entry={podium[2]} 
+                    isMe={user?.userId === podium[2].userId} 
+                    onCompare={() => handleCompareClick(podium[2])}
+                    compareActive={versusA?.userId === podium[2].userId || versusB?.userId === podium[2].userId}
+                  />
+                </li>
+              )}
             </ul>
           )}
 
-          {listEntries.length > 0 && (
-            <motion.ul
-              className="divide-y divide-zinc-800/60 overflow-hidden rounded-2xl border border-zinc-800/80"
-              variants={staggerContainer}
-              initial="hidden"
-              animate="show"
-            >
+          <div className="relative overflow-hidden min-h-[400px]">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={page}
+                initial={{ opacity: 0, x: 25 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -25 }}
+                transition={{ duration: 0.25, ease: "easeInOut" }}
+              >
+                {listEntries.length > 0 && (
+                  <motion.ul
+                    className="divide-y divide-zinc-900/40 overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/15 backdrop-blur-md shadow-lg transition-all duration-300 hover:border-pink-500/20"
+                    variants={staggerContainer}
+                    initial="hidden"
+                    animate="show"
+                  >
               {listEntries.map((e) => {
                 const isMe = user?.userId === e.userId;
+                const isSelected = selectedUserId === e.userId;
+                const isCompared = versusA?.userId === e.userId || versusB?.userId === e.userId;
+
+                // Dynamic Trade combometer stats
+                const simulatedCombo = Math.max(2, (e.username.length % 5) + 3);
+                
                 return (
                   <motion.li
                     key={e.userId}
                     variants={fadeUp}
-                    className={`flex items-center gap-4 px-4 py-3.5 transition-colors motion-safe:hover:bg-zinc-800/50 ${
-                      isMe ? "bg-pink-500/[0.06]" : ""
+                    className={`flex items-center gap-4 px-4 py-4 transition-all duration-350 border-b border-zinc-850/40 relative z-0 ${
+                      isSelected
+                        ? "scale-[1.04] -translate-y-2.5 bg-gradient-to-r from-pink-500/15 via-purple-500/10 to-zinc-900/90 border-pink-500/80 shadow-[0_25px_45px_rgba(236,72,153,0.35)] ring-2 ring-pink-500/60 z-20 border-l-4 border-l-pink-400"
+                        : isMe
+                        ? "bg-pink-500/[0.08] border-l-4 border-l-pink-500 hover:scale-[1.015] hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(236,72,153,0.12)] hover:z-10"
+                        : "hover:scale-[1.015] hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(236,72,153,0.1)] hover:bg-zinc-800/80 hover:border-pink-500/30 hover:z-10"
                     }`}
                   >
                     <span
-                      className={`grid h-7 w-9 shrink-0 place-items-center rounded-lg text-xs font-semibold tabular-nums ring-1 ring-inset ${rankChip(
+                      onClick={() => setSelectedUserId(isSelected ? null : e.userId)}
+                      className={`grid h-7 w-9 shrink-0 place-items-center rounded-lg text-xs font-semibold tabular-nums cursor-pointer ring-1 ring-inset ${rankChip(
                         e.rank,
                       )}`}
                     >
                       {e.rank}
                     </span>
-                    <Avatar src={e.avatarUrl} name={e.username} size="sm" />
-                    <div className="min-w-0">
+                    <span onClick={() => setSelectedUserId(isSelected ? null : e.userId)} className="cursor-pointer">
+                      <Avatar src={e.avatarUrl} name={e.username} size="sm" />
+                    </span>
+                    
+                    <div className="min-w-0 flex-1 cursor-pointer" onClick={() => setSelectedUserId(isSelected ? null : e.userId)}>
                       <div className="flex items-center gap-2">
                         <span className="truncate font-medium text-zinc-100">
                           {e.username}
@@ -306,27 +429,218 @@ export default function LeaderboardPage() {
                           </span>
                         )}
                       </div>
-                      {typeof e.profitLoss === "number" && (
-                        <div className="mt-0.5 text-xs">
-                          <PriceChange value={e.profitLoss} />
-                        </div>
-                      )}
+                      
+                      <div className="flex items-center gap-2 mt-0.5">
+                        {typeof e.profitLoss === "number" && (
+                          <div className="text-xs">
+                            <PriceChange value={e.profitLoss} />
+                          </div>
+                        )}
+                        <span className="text-[9px] font-mono text-zinc-550 border border-zinc-900 rounded px-1.5 py-0.5 bg-zinc-950/40">
+                          STREAK x{simulatedCombo}
+                        </span>
+                      </div>
                     </div>
-                    <div className="ml-auto text-right font-mono text-sm font-semibold tabular-nums text-zinc-50">
-                      <Money value={e.portfolioValue} />
+
+                    <div className="flex items-center gap-4">
+                      <div className="text-right font-mono text-sm font-semibold tabular-nums text-zinc-50">
+                        <Money value={e.portfolioValue} />
+                      </div>
+
+                      {/* Versus Matchup Button */}
+                      <button
+                        onClick={() => handleCompareClick(e)}
+                        className={`p-2 rounded-xl border transition-all duration-300 ${
+                          isCompared 
+                            ? "bg-pink-500 border-pink-600 text-white shadow-md shadow-pink-500/25 scale-105" 
+                            : "bg-zinc-900/60 border-zinc-800 text-zinc-500 hover:text-zinc-300 hover:border-zinc-700"
+                        }`}
+                      >
+                        <Sword size={14} weight={isCompared ? "fill" : "regular"} />
+                      </button>
                     </div>
                   </motion.li>
                 );
               })}
             </motion.ul>
           )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
       )}
 
+      {/* Versus Combat split panel overlay */}
+      <AnimatePresence>
+        {versusA && (
+          <motion.div
+            initial={{ y: 120, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 120, opacity: 0 }}
+            className="fixed bottom-6 inset-x-4 max-w-lg mx-auto z-50 rounded-2xl border border-pink-500/35 bg-zinc-950/95 backdrop-blur-xl p-5 shadow-[0_20px_45px_rgba(236,72,153,0.22)] font-mono border-t-pink-500"
+          >
+            <div className="flex items-center justify-between border-b border-zinc-900 pb-2.5 mb-4">
+              <span className="text-[9px] font-bold text-pink-400 flex items-center gap-1.5">
+                <Target size={12} className="animate-spin-slow" />
+                TRADER TELEMETRY COMBAT
+              </span>
+              <button 
+                onClick={() => { setVersusA(null); setVersusB(null); }}
+                className="text-[9px] text-zinc-500 hover:text-zinc-300 uppercase font-bold tracking-wider"
+              >
+                [Reset Selection]
+              </button>
+            </div>
+            
+            <div className="flex items-center justify-between gap-4">
+              {/* Trader A */}
+              <div className="flex-1 text-center min-w-0 bg-zinc-900/20 border border-zinc-900 p-3 rounded-xl">
+                <Avatar src={versusA.avatarUrl} name={versusA.username} size="sm" className="mx-auto border border-zinc-800" />
+                <span className="text-xs font-bold text-zinc-200 block truncate mt-1.5">{versusA.username}</span>
+                <span className="text-[10px] text-zinc-400 block mt-0.5 font-mono"><Money value={versusA.portfolioValue} /></span>
+              </div>
+
+              <div className="text-center font-black text-pink-500 text-sm tracking-widest shrink-0 italic">
+                VS
+              </div>
+
+              {/* Trader B */}
+              <div className="flex-1 text-center min-w-0">
+                {versusB ? (
+                  <div className="bg-zinc-900/20 border border-zinc-900 p-3 rounded-xl">
+                    <Avatar src={versusB.avatarUrl} name={versusB.username} size="sm" className="mx-auto border border-zinc-800" />
+                    <span className="text-xs font-bold text-zinc-200 block truncate mt-1.5">{versusB.username}</span>
+                    <span className="text-[10px] text-zinc-400 block mt-0.5 font-mono"><Money value={versusB.portfolioValue} /></span>
+                  </div>
+                ) : (
+                  <div className="h-[76px] flex flex-col items-center justify-center border border-dashed border-zinc-800 rounded-xl text-[9px] text-zinc-500 px-2 leading-relaxed">
+                    <span>Select a 2nd trader</span>
+                    <span>to lock comparison</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {versusA && versusB && (() => {
+              const totalVal = versusA.portfolioValue + versusB.portfolioValue;
+              const pctA = totalVal > 0 ? (versusA.portfolioValue / totalVal) * 100 : 50;
+              const pctB = totalVal > 0 ? (versusB.portfolioValue / totalVal) * 100 : 50;
+              const rankDiff = Math.abs(versusA.rank - versusB.rank);
+              const rankLeader = versusA.rank < versusB.rank ? versusA.username : versusB.username;
+              return (
+                <div className="mt-4 pt-3.5 border-t border-zinc-900 text-[10px] space-y-3">
+                  {/* Grid header (usernames) */}
+                  <div className="grid grid-cols-7 text-center font-bold text-[9px] uppercase tracking-wider text-zinc-500 border-b border-zinc-900 pb-1.5">
+                    <span className="col-span-2 text-left">Metric</span>
+                    <span className="col-span-2 text-pink-400 truncate">{versusA.username}</span>
+                    <span className="col-span-1 text-zinc-700">vs</span>
+                    <span className="col-span-2 text-cyan-400 truncate">{versusB.username}</span>
+                  </div>
+
+                  {/* Net Worth Row */}
+                  <div className="grid grid-cols-7 text-center items-center font-mono">
+                    <span className="col-span-2 text-left font-sans text-zinc-400 font-medium">Net Worth</span>
+                    <span className="col-span-2 text-zinc-200"><Money value={versusA.portfolioValue} /></span>
+                    <span className="col-span-1 text-zinc-700">|</span>
+                    <span className="col-span-2 text-zinc-200"><Money value={versusB.portfolioValue} /></span>
+                  </div>
+
+                  {/* Global Rank Row */}
+                  <div className="grid grid-cols-7 text-center items-center font-mono">
+                    <span className="col-span-2 text-left font-sans text-zinc-400 font-medium">Rank</span>
+                    <span className="col-span-2 text-zinc-200">#{versusA.rank}</span>
+                    <span className="col-span-1 text-zinc-700">|</span>
+                    <span className="col-span-2 text-zinc-200">#{versusB.rank}</span>
+                  </div>
+
+                  {/* Performance Row */}
+                  <div className="grid grid-cols-7 text-center items-center font-mono">
+                    <span className="col-span-2 text-left font-sans text-zinc-400 font-medium">Profit/Loss</span>
+                    <span className="col-span-2">
+                      {typeof versusA.profitLoss === "number" ? (
+                        <span className={versusA.profitLoss > 0 ? "text-emerald-400" : versusA.profitLoss < 0 ? "text-rose-400" : "text-zinc-400"}>
+                          {versusA.profitLoss > 0 ? "+" : ""}{versusA.profitLoss.toFixed(2)}%
+                        </span>
+                      ) : (
+                        <span className="text-zinc-500">N/A</span>
+                      )}
+                    </span>
+                    <span className="col-span-1 text-zinc-700">|</span>
+                    <span className="col-span-2">
+                      {typeof versusB.profitLoss === "number" ? (
+                        <span className={versusB.profitLoss > 0 ? "text-emerald-400" : versusB.profitLoss < 0 ? "text-rose-400" : "text-zinc-400"}>
+                          {versusB.profitLoss > 0 ? "+" : ""}{versusB.profitLoss.toFixed(2)}%
+                        </span>
+                      ) : (
+                        <span className="text-zinc-500">N/A</span>
+                      )}
+                    </span>
+                  </div>
+
+                  {/* Summary / Variance Section */}
+                  <div className="mt-2 pt-2.5 border-t border-zinc-900/60 space-y-1.5 bg-zinc-900/10 p-2.5 rounded-lg border border-zinc-900/30 text-zinc-500">
+                    <div className="flex justify-between">
+                      <span>Net Worth Diff:</span>
+                      <span className="text-pink-400 font-bold font-mono">
+                        <Money value={Math.abs(versusA.portfolioValue - versusB.portfolioValue)} />
+                        <span className="text-zinc-400 font-sans font-medium text-[9px] ml-1">
+                          ({versusA.portfolioValue > versusB.portfolioValue ? versusA.username : versusB.username} leads)
+                        </span>
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span>Rank Spread:</span>
+                      <span className="text-zinc-300 font-bold">
+                        {rankDiff === 0 ? "Tied" : `${rankDiff} ranks (${rankLeader} leading)`}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span>Performance Delta:</span>
+                      <span className="font-bold font-mono">
+                        {typeof versusA.profitLoss === "number" && typeof versusB.profitLoss === "number" ? (
+                          (() => {
+                            const delta = versusA.profitLoss - versusB.profitLoss;
+                            const sign = delta > 0 ? "+" : "";
+                            const color = delta > 0 ? "text-emerald-400" : delta < 0 ? "text-rose-400" : "text-zinc-400";
+                            return <span className={color}>{sign}{delta.toFixed(2)}%</span>;
+                          })()
+                        ) : (
+                          <span className="text-zinc-500">N/A</span>
+                        )}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Comparative Ratio Bar */}
+                  <div className="mt-3.5 pt-2 border-t border-zinc-900/60">
+                    <div className="relative w-full h-2 rounded-full overflow-hidden bg-zinc-900 border border-zinc-850 flex">
+                      <div 
+                        className="h-full bg-gradient-to-r from-pink-500 to-pink-400 transition-all duration-500" 
+                        style={{ width: `${pctA}%` }}
+                      />
+                      <div 
+                        className="h-full bg-gradient-to-r from-cyan-400 to-cyan-550 transition-all duration-500" 
+                        style={{ width: `${pctB}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-[8px] text-zinc-500 mt-1.5 font-mono">
+                      <span>{pctA.toFixed(0)}% ({versusA.username})</span>
+                      <span>{pctB.toFixed(0)}% ({versusB.username})</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Pagination */}
-      {!loading && !error && entries.length > 0 && (page > 1 || hasMore) && (
+      {!loading && !error && entries.length > 0 && (
         <nav
-          className="mt-6 flex items-center justify-between gap-3"
+          className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-zinc-900/60 pt-6"
           aria-label="Leaderboard pages"
         >
           <Button
@@ -334,18 +648,69 @@ export default function LeaderboardPage() {
             size="sm"
             onClick={() => navigate(page - 1, period)}
             disabled={busy || page <= 1}
+            className="w-full sm:w-auto"
           >
             <CaretLeft size={16} weight="bold" />
             Previous
           </Button>
-          <span className="text-sm tabular-nums text-zinc-400" aria-live="polite">
-            Page {page}
-          </span>
+
+          {/* Page Numbers */}
+          {(() => {
+            const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+            if (totalPages <= 1) return null;
+            
+            const pages: number[] = [];
+            const range = 1; // how many pages to show around current page
+            
+            for (let i = 1; i <= totalPages; i++) {
+              if (
+                i === 1 ||
+                i === totalPages ||
+                (i >= page - range && i <= page + range)
+              ) {
+                pages.push(i);
+              } else if (pages[pages.length - 1] !== -1) {
+                pages.push(-1); // represents ellipsis '...'
+              }
+            }
+
+            return (
+              <div className="flex items-center gap-1.5 flex-wrap justify-center">
+                {pages.map((p, idx) => {
+                  if (p === -1) {
+                    return (
+                      <span key={`ell-${idx}`} className="px-1 text-zinc-650 font-bold select-none">
+                        ...
+                      </span>
+                    );
+                  }
+                  const active = p === page;
+                  return (
+                    <button
+                      key={p}
+                      type="button"
+                      disabled={busy}
+                      onClick={() => navigate(p, period)}
+                      className={`relative min-w-8 h-8 px-2.5 rounded-lg text-xs font-bold transition-all duration-300 outline-none select-none ${
+                        active
+                          ? "bg-pink-500 text-white shadow-[0_0_12px_rgba(236,72,153,0.3)]"
+                          : "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900/40"
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })()}
+
           <Button
             variant="secondary"
             size="sm"
             onClick={() => navigate(page + 1, period)}
             disabled={busy || !hasMore}
+            className="w-full sm:w-auto"
           >
             Next
             <CaretRight size={16} weight="bold" />

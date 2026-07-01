@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import {
-  ChartPieSlice,
   CaretRight,
   WarningCircle,
   Lock,
@@ -16,6 +15,8 @@ import {
   Check,
   PencilSimple,
   X,
+  ChartLineUp,
+  Briefcase,
 } from "@phosphor-icons/react";
 import {
   getPortfolio,
@@ -34,6 +35,7 @@ import type {
   StockSummary,
   Achievement,
   Mission,
+  Holding,
 } from "@/lib/api/types";
 import { formatNumber, formatShares } from "@/lib/format";
 import { Card } from "@/components/ui/Card";
@@ -49,35 +51,24 @@ import { spring, fadeUp, staggerContainer } from "@/lib/motion";
 import { useAuth } from "@/lib/auth/auth-context";
 import * as analytics from "@/lib/analytics";
 
+const MAX_SHOWCASE = 3;
+
 function PageShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:py-14">{children}</div>
   );
 }
 
-function PageHeader() {
-  return (
-    <Reveal>
-      <h1 className="text-3xl font-semibold tracking-tighter text-zinc-100 sm:text-4xl">
-        Portfolio
-      </h1>
-      <p className="mt-2 text-sm text-zinc-400">
-        Your holdings, cost basis, and unrealized performance at a glance.
-      </p>
-    </Reveal>
-  );
-}
-
 function PleaseLogIn() {
   return (
-    <Card>
+    <Card className="border border-zinc-800/80 bg-zinc-950/20">
       <EmptyState
-        icon={<Lock size={20} weight="bold" />}
-        title="Please log in"
-        message="You need to be signed in to view your portfolio."
+        icon={<Lock size={20} weight="bold" className="text-zinc-550" />}
+        title="Authentication Required"
+        message="You need to sign in to access your portfolio and asset ledger."
         action={
-          <Link href="/login" className={buttonClasses({ size: "sm" })}>
-            Go to login
+          <Link href="/login" className={buttonClasses({ size: "sm", className: "bg-pink-600 hover:bg-pink-500 text-white font-bold" })}>
+            Sign In to Account
           </Link>
         }
       />
@@ -85,10 +76,6 @@ function PleaseLogIn() {
   );
 }
 
-// osu!-userpage-style profile header for the signed-in investor: cover banner,
-// overlapping avatar, country flag, and portfolio stats as tiles.
-// Profile banner: renders the osu! cover when present (darkening overlays keep the
-// avatar/name legible), falling back to the pink gradient when absent or on load error.
 function ProfileBanner({
   coverUrl,
   children,
@@ -99,10 +86,9 @@ function ProfileBanner({
   const [failed, setFailed] = useState(false);
   const show = Boolean(coverUrl) && !failed;
   return (
-    <div className="relative h-28 sm:h-36">
+    <div className="relative h-28 sm:h-36 w-full">
       {show ? (
         <>
-          {/* osu! CDN cover; plain <img> (no host whitelist), degrades to gradient on error. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={coverUrl as string}
@@ -112,24 +98,21 @@ function ProfileBanner({
             onError={() => setFailed(true)}
             className="absolute inset-0 h-full w-full object-cover"
           />
-          {/* Strong bottom scrim so the avatar + username (which overlap the banner) stay
-              legible over any cover — osu! covers can be light. */}
-          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/70 to-zinc-950/20" />
-          <div className="absolute inset-0 bg-gradient-to-br from-pink-600/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-zinc-955 via-zinc-950/40 to-zinc-950/10" />
         </>
       ) : (
         <>
-          <div className="absolute inset-0 bg-gradient-to-br from-pink-600/45 via-pink-500/10 to-zinc-950" />
-          <div className="absolute inset-0 bg-[radial-gradient(120%_150%_at_12%_-30%,rgba(236,72,153,0.40),transparent_55%)]" />
+          <div className="absolute inset-0 bg-gradient-to-br from-pink-600/25 via-pink-500/5 to-zinc-955" />
+          <div className="absolute inset-0 bg-[radial-gradient(120%_150%_at_12%_-30%,rgba(236,72,153,0.2),transparent_55%)]" />
         </>
       )}
-      <div className="grain pointer-events-none absolute inset-0 opacity-[0.12]" />
+      <div className="grain pointer-events-none absolute inset-0 opacity-[0.06]" />
       {children}
     </div>
   );
 }
 
-function ProfileHeader({
+function ProfileHeaderCard({
   user,
   portfolio,
 }: {
@@ -138,115 +121,352 @@ function ProfileHeader({
 }) {
   return (
     <Reveal>
-      <h1 className="sr-only">Portfolio</h1>
-      <header className="overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-900/40">
+      <div className="overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/20 shadow-[0_8px_32px_rgba(0,0,0,0.35)] mb-8">
+        {/* Cover Banner at the top */}
         <ProfileBanner coverUrl={user.coverUrl}>
-          <span className="absolute left-5 top-4 rounded-md bg-zinc-950/40 px-2 py-1 text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-200 backdrop-blur">
-            Investor
+          <span className="absolute left-4 top-4 rounded-md bg-zinc-955/60 border border-zinc-800/50 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-pink-400 backdrop-blur">
+            Active Investor
           </span>
         </ProfileBanner>
 
-        <div className="px-5 pb-6 sm:px-7">
-          {/* Only the avatar overlaps the banner; the name + chips sit below on the dark
-              content area so they stay legible over any (possibly light) osu! cover. */}
-          <div className="-mt-12 sm:-mt-14">
-            <div className="inline-block rounded-full ring-4 ring-zinc-900 shadow-xl shadow-black/40">
-              <Avatar src={user.avatarUrl} name={user.username} size="xl" />
+        <div className="px-5 py-6 sm:px-7">
+          {/* Avatar and user details row - Clean separation, no negative margins */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="rounded-full ring-2 ring-pink-500/25 overflow-hidden shrink-0 bg-zinc-950 shadow-md">
+                <Avatar src={user.avatarUrl} name={user.username} size="xl" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2.5">
+                  <h2 className="text-2xl font-bold tracking-tight text-zinc-100">{user.username}</h2>
+                  {user.countryCode && (
+                    <span className="inline-block bg-zinc-955 border border-zinc-800 rounded px-1.5 py-0.5">
+                      <Flag countryCode={user.countryCode} className="h-3" />
+                    </span>
+                  )}
+                </div>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  {user.equippedTitle && (
+                    <span className="text-xs font-semibold text-pink-400 bg-pink-500/5 border border-pink-500/10 px-2.5 py-0.5 rounded">
+                      {user.equippedTitle}
+                    </span>
+                  )}
+                  {user.role === "Admin" && (
+                    <span className="text-[10px] font-bold text-indigo-400 bg-indigo-500/5 border border-indigo-500/10 px-2 py-0.5 rounded uppercase tracking-wider">
+                      Admin
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
 
-          <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <h2 className="text-3xl font-semibold tracking-tighter text-zinc-50 md:text-4xl">
-                {user.username}
-              </h2>
-              <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm">
-                {user.equippedTitle && (
-                  <span className="inline-flex items-center gap-1 rounded-md bg-pink-500/10 px-2 py-0.5 text-xs font-medium text-pink-300 ring-1 ring-inset ring-pink-500/25">
-                    <Trophy size={12} weight="fill" />
-                    {user.equippedTitle}
-                  </span>
-                )}
-                {user.countryCode && (
-                  <span className="inline-flex items-center rounded-md bg-zinc-800/70 px-1.5 py-1 ring-1 ring-inset ring-zinc-700/50">
-                    <Flag countryCode={user.countryCode} className="h-3.5" />
-                  </span>
-                )}
-                {user.role === "Admin" && (
-                  <span className="rounded-md bg-pink-500/10 px-2 py-0.5 text-xs font-medium uppercase tracking-wide text-pink-300 ring-1 ring-inset ring-pink-500/25">
-                    Admin
-                  </span>
-                )}
-              </div>
+              <a
+                href={`https://osu.ppy.sh/users/${user.osuUserId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={buttonClasses({
+                  variant: "secondary",
+                  size: "sm",
+                  className: "gap-1.5 text-xs font-semibold text-zinc-355 border border-zinc-800/80 bg-zinc-955/30 hover:bg-zinc-900/60",
+                })}
+              >
+                Verify osu! Profile
+                <ArrowSquareOut size={13} weight="bold" />
+              </a>
             </div>
-
-            <a
-              href={`https://osu.ppy.sh/users/${user.osuUserId}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={buttonClasses({
-                variant: "secondary",
-                size: "sm",
-                className: "gap-1.5 self-start sm:self-auto",
-              })}
-            >
-              View on osu!
-              <ArrowSquareOut size={14} weight="bold" />
-            </a>
           </div>
 
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div className="rounded-xl border border-zinc-800/70 bg-zinc-900/50 px-4 py-3">
-              <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">
-                Current Value
-              </div>
-              <div className="mt-1 font-mono text-2xl font-semibold tabular-nums text-zinc-50">
+          {/* 4 Symmetrical stats cards */}
+          <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+            {/* Current Value */}
+            <div className="p-4 rounded-xl border border-zinc-850/60 bg-zinc-955/20 hover:border-pink-500/20 transition-all duration-355">
+              <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500 block">Current Value</span>
+              <div className="mt-1.5 font-mono text-lg sm:text-xl font-bold tabular-nums text-zinc-100 flex items-center gap-1.5">
+                <Coins size={14} className="text-pink-400" />
                 {portfolio ? <Money value={portfolio.currentValue} /> : "—"}
               </div>
             </div>
-            <div className="rounded-xl border border-zinc-800/70 bg-zinc-900/50 px-4 py-3">
-              <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">
-                Cost Basis
-              </div>
-              <div className="mt-1 font-mono text-2xl font-semibold tabular-nums text-zinc-50">
+
+            {/* Cost Basis */}
+            <div className="p-4 rounded-xl border border-zinc-850/60 bg-zinc-955/20 hover:border-pink-500/20 transition-all duration-355">
+              <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500 block">Cost Basis</span>
+              <div className="mt-1.5 font-mono text-lg sm:text-xl font-bold tabular-nums text-zinc-150 flex items-center gap-1.5">
+                <Coins size={14} className="text-zinc-500" />
                 {portfolio ? <Money value={portfolio.costBasis} /> : "—"}
               </div>
             </div>
-            <div className="rounded-xl border border-zinc-800/70 bg-zinc-900/50 px-4 py-3">
-              <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">
-                Profit / Loss
-              </div>
+
+            {/* Profit / Loss */}
+            <div className="p-4 rounded-xl border border-zinc-850/60 bg-zinc-955/20 hover:border-pink-500/20 transition-all duration-355">
+              <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500 block">Profit / Loss</span>
               <div className="mt-1.5">
                 {portfolio ? (
-                  <PriceChange
-                    value={portfolio.profitLoss}
-                    className="text-lg"
-                  />
+                  <PriceChange value={portfolio.profitLoss} className="text-sm sm:text-base font-bold" />
                 ) : (
-                  <span className="font-mono text-2xl font-semibold text-zinc-50">—</span>
+                  <span className="font-mono text-lg sm:text-xl font-bold text-zinc-300">—</span>
                 )}
               </div>
             </div>
-            <div className="rounded-xl border border-zinc-800/70 bg-zinc-900/50 px-4 py-3">
-              <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">
-                Holdings
-              </div>
-              <div className="mt-1 font-mono text-2xl font-semibold tabular-nums text-zinc-50">
+
+            {/* Holdings count */}
+            <div className="p-4 rounded-xl border border-zinc-850/60 bg-zinc-955/20 hover:border-pink-500/20 transition-all duration-355">
+              <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500 block">Holdings</span>
+              <div className="mt-1.5 font-mono text-lg sm:text-xl font-bold tabular-nums text-zinc-300">
                 {portfolio ? formatNumber(portfolio.holdings.length) : "—"}
               </div>
             </div>
           </div>
         </div>
-      </header>
+      </div>
     </Reveal>
   );
 }
 
-const MAX_SHOWCASE = 3;
+function HoldingsTable({ holdings, totalValuation }: { holdings: Holding[]; totalValuation: number }) {
+  const reduceMotion = useReducedMotion();
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-zinc-800/80 border-t-pink-500/10 bg-zinc-955/10 shadow-lg backdrop-blur-md">
+      {/* Mobile Swipe Cue */}
+      <div className="block sm:hidden text-center py-2.5 bg-pink-500/5 border-b border-zinc-850/50 text-[10px] font-black uppercase tracking-widest text-pink-400/80 animate-pulse">
+        ← Swipe sideways to view full ledger →
+      </div>
 
-// Achievement showcase: pinned badges + an inline editor to equip a title and pick up
-// to 3 showcased achievements (only ones you've unlocked). Saves via the profile endpoint
-// and refreshes /auth/me so the header title updates immediately.
+      <div className="overflow-x-auto w-full">
+        <table className="w-full text-sm">
+          <caption className="sr-only">
+            Investment holdings ledger: player, positions, average cost, current price, net value, and returns.
+          </caption>
+          <thead>
+            <tr className="border-b border-zinc-800/80 text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-500 bg-zinc-955/40">
+              <th className="px-5 py-4 text-left font-bold">Asset</th>
+              <th className="px-5 py-4 text-right font-bold">Holdings Size</th>
+              <th className="hidden px-5 py-4 text-right sm:table-cell font-bold">Avg Cost</th>
+              <th className="hidden px-5 py-4 text-right sm:table-cell font-bold">Market Price</th>
+              <th className="px-5 py-4 text-right font-bold">Current Value</th>
+              <th className="hidden px-5 py-4 text-right md:table-cell font-bold">Allocation</th>
+              <th className="px-5 py-4 text-right font-bold">Yield Return</th>
+            </tr>
+          </thead>
+          <motion.tbody
+            className="divide-y divide-zinc-850/50"
+            variants={staggerContainer}
+            initial="hidden"
+            animate="show"
+          >
+            {holdings.map((h) => {
+              const allocation = totalValuation > 0 ? (h.currentValue / totalValuation) * 100 : 0;
+              const pctChange = h.averagePrice > 0 ? (h.profitLoss / (h.averagePrice * h.quantity)) * 100 : 0;
+              const isPositive = h.profitLoss > 0;
+              const isNegative = h.profitLoss < 0;
+
+              return (
+                <motion.tr
+                  key={h.holdingId}
+                  variants={fadeUp}
+                  whileHover={reduceMotion ? undefined : { backgroundColor: "rgba(236, 72, 153, 0.02)" }}
+                  transition={spring}
+                  className="group transition-colors duration-300"
+                >
+                  {/* Asset name, avatar, and ticker ID */}
+                  <td className="px-5 py-4">
+                    <Link
+                      href={`/stocks/${h.stockId}`}
+                      className="inline-flex items-center gap-3 font-semibold text-zinc-100 hover:text-pink-400 transition-colors"
+                    >
+                      <div className="relative rounded-full overflow-hidden ring-2 ring-zinc-800 group-hover:ring-pink-500/40 transition-all duration-300 shadow-md">
+                        <Avatar src={h.avatarUrl} name={h.playerName} size="sm" />
+                      </div>
+                      <div className="flex flex-col items-start">
+                        <span className="inline-flex items-center gap-0.5 text-sm font-semibold tracking-tight text-zinc-150 group-hover:text-pink-400 transition-colors">
+                          {h.playerName}
+                          <CaretRight
+                            size={11}
+                            className="text-pink-400 opacity-0 group-hover:opacity-100 transition-all duration-200 group-hover:translate-x-0.5"
+                          />
+                        </span>
+                        <span className="text-[9px] font-mono text-zinc-550 group-hover:text-pink-400/50 transition-colors">
+                          ID: {h.stockId.substring(0, 8)}
+                        </span>
+                      </div>
+                    </Link>
+                  </td>
+
+                  {/* Holdings size (quantity) */}
+                  <td className="px-5 py-4 text-right">
+                    <div className="inline-flex flex-col items-end">
+                      <span className="font-mono text-xs font-semibold tabular-nums text-zinc-200">
+                        {formatShares(h.quantity)}
+                      </span>
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-555 font-mono">
+                        Units
+                      </span>
+                    </div>
+                  </td>
+
+                  {/* Average Purchase Cost */}
+                  <td className="hidden px-5 py-4 text-right sm:table-cell">
+                    <div className="inline-flex flex-col items-end">
+                      <span className="font-mono text-xs font-medium tabular-nums text-zinc-400">
+                        <Money value={h.averagePrice} />
+                      </span>
+                      <span className="text-[9px] font-medium text-zinc-650 font-mono">
+                        Per Share
+                      </span>
+                    </div>
+                  </td>
+
+                  {/* Market Price */}
+                  <td className="hidden px-5 py-4 text-right sm:table-cell">
+                    <div className="inline-flex flex-col items-end">
+                      <span className="font-mono text-xs font-semibold tabular-nums text-zinc-305">
+                        <Money value={h.currentPrice} />
+                      </span>
+                      <span className="text-[9px] font-medium text-zinc-550 font-mono">
+                        Live Bid
+                      </span>
+                    </div>
+                  </td>
+
+                  {/* Current Net Value */}
+                  <td className="px-5 py-4 text-right">
+                    <div className="inline-flex flex-col items-end">
+                      <span className="font-mono text-xs font-bold tabular-nums text-pink-400">
+                        <Money value={h.currentValue} />
+                      </span>
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-pink-500/60 font-mono">
+                        Total
+                      </span>
+                    </div>
+                  </td>
+
+                  {/* Allocation percentage with visual micro progress bar */}
+                  <td className="hidden px-5 py-4 text-right md:table-cell">
+                    <div className="inline-flex flex-col items-end gap-1.5">
+                      <span className="font-mono text-xs font-bold text-zinc-300">{allocation.toFixed(1)}%</span>
+                      <div className="h-1.5 w-14 rounded-full bg-zinc-955 border border-zinc-800/60 overflow-hidden relative shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-pink-500 via-purple-500 to-pink-500 shadow-[0_0_8px_rgba(236,72,153,0.3)] transition-all duration-500 relative"
+                          style={{ width: `${allocation}%` }}
+                        >
+                          <div className="absolute right-0 top-0 bottom-0 w-0.5 bg-white opacity-80 blur-[0.5px]" />
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+
+                  {/* Yield Return (P&L absolute and percentage badge) */}
+                  <td className="px-5 py-4 text-right">
+                    <div className="inline-flex flex-col items-end gap-1">
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold border ${
+                        isPositive 
+                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" 
+                          : isNegative 
+                            ? "bg-rose-500/10 text-rose-455 border-rose-500/20" 
+                            : "bg-zinc-800/40 text-zinc-400 border-zinc-700/30"
+                      }`}>
+                        {isPositive ? "▲" : isNegative ? "▼" : "•"}{isPositive ? "+" : ""}<Money value={h.profitLoss} />
+                      </span>
+                      <span className={`text-[10px] font-mono font-semibold ${
+                        isPositive ? "text-emerald-500" : isNegative ? "text-rose-500" : "text-zinc-555"
+                      }`}>
+                        {isPositive ? "+" : ""}{pctChange.toFixed(2)}%
+                      </span>
+                    </div>
+                  </td>
+                </motion.tr>
+              );
+            })}
+          </motion.tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function InvestorLevelCard() {
+  const [level, setLevel] = useState<InvestorLevel | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    getInvestorLevel()
+      .then((data) => {
+        if (!cancelled) setLevel(data);
+      })
+      .catch(() => {
+        if (!cancelled) setFailed(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (failed) return null;
+
+  if (loading || !level) {
+    return (
+      <Card className="border border-zinc-800/80 bg-zinc-955/40">
+        <Skeleton className="h-24 w-full rounded-2xl animate-pulse" />
+      </Card>
+    );
+  }
+
+  const atMax = level.xpForNextLevel === 0 || level.level >= 100;
+  const pct = atMax ? 100 : Math.min(100, Math.max(0, level.progressToNext * 100));
+
+  return (
+    <Card className="border border-zinc-805 bg-zinc-955/20 hover:border-pink-500/25 shadow-md p-5 transition-all duration-300">
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Medal size={16} className="text-pink-400" />
+          <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Investor Standing</h2>
+        </div>
+        <span className="text-[10px] font-bold text-pink-400 bg-pink-500/5 border border-pink-500/15 px-2 py-0.5 rounded-full font-mono uppercase tracking-wider">
+          Lv. {level.level}
+        </span>
+      </div>
+
+      <div className="flex items-center gap-3 bg-zinc-950/30 border border-zinc-900/50 p-3 rounded-xl">
+        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-pink-500/10 to-purple-500/5 text-pink-400 border border-pink-500/20 shadow-inner">
+          <Trophy size={18} weight="bold" className="animate-pulse" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="font-display font-black text-sm uppercase tracking-wide text-zinc-100">
+            {level.title}
+          </div>
+          <div className="mt-0.5 font-mono text-[10px] text-zinc-500">
+            {formatNumber(level.totalXp)} total XP accumulated
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-4 space-y-2">
+        <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+          <span>Standing Progress</span>
+          {!atMax && (
+            <span className="font-mono text-zinc-400">
+              {formatNumber(level.xpIntoLevel)} / {formatNumber(level.xpForNextLevel)} XP
+            </span>
+          )}
+        </div>
+        <div className="h-1.5 w-full rounded-full bg-zinc-950 border border-zinc-800/60 overflow-hidden relative shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-pink-500 via-purple-500 to-pink-500 shadow-[0_0_10px_rgba(236,72,153,0.5)] transition-all duration-500 relative"
+            style={{ width: `${pct}%` }}
+          >
+            <div className="absolute right-0 top-0 bottom-0 w-1 bg-white opacity-80 blur-[1px]" />
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 function ShowcaseCard({ user }: { user: Me }) {
   const { refresh } = useAuth();
   const [data, setData] = useState<Achievement[] | null>(null);
@@ -313,134 +533,101 @@ function ShowcaseCard({ user }: { user: Me }) {
   };
 
   return (
-    <Reveal>
-      <Card>
-        <div className="mb-4 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Trophy size={18} weight="fill" className="text-pink-400" />
-            <h2 className="text-sm font-semibold text-zinc-100">Showcase</h2>
-            <span className="text-xs text-zinc-400">
-              {unlocked.length}/{data.length} achievements
-            </span>
-          </div>
+    <Card className="border border-zinc-805 bg-zinc-955/20 hover:border-pink-500/25 p-5 transition-all duration-300 shadow-md">
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <Trophy size={16} className="text-pink-400" />
+          <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Profile Showcase</h2>
+          <span className="text-[10px] font-bold text-zinc-550 font-mono">
+            ({unlocked.length} unlocked)
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={() => (editing ? setEditing(false) : openEditor())}
+          disabled={unlocked.length === 0}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-800 hover:border-zinc-700 bg-zinc-900/30 hover:bg-zinc-900/60 text-[9px] font-black uppercase tracking-wider text-zinc-300 transition-all cursor-pointer focus:outline-none"
+        >
+          {editing ? <X size={10} weight="bold" /> : <PencilSimple size={10} weight="bold" />}
+          {editing ? "Close" : "Edit"}
+        </button>
+      </div>
+
+      {!editing && (
+        <>
+          {unlocked.length === 0 ? (
+            <p className="text-xs text-zinc-500">No achievements unlocked yet.</p>
+          ) : showcased.length === 0 ? (
+            <p className="text-xs text-zinc-555 font-medium">No achievements showcased yet. Click Edit to showcase achievements.</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {showcased.map((a) => (
+                <span
+                  key={a.code}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-800 bg-zinc-955/60 hover:border-pink-500/20 px-3 py-2 text-xs font-semibold text-zinc-205 shadow-sm transition-all duration-300"
+                  title={a.description}
+                >
+                  <Trophy size={13} className="text-pink-400/80" />
+                  <span className="truncate">{a.name}</span>
+                </span>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {editing && (
+        <div className="space-y-3">
+          <ul className="divide-y divide-zinc-850/60 overflow-hidden rounded-xl border border-zinc-800/80 bg-zinc-955/20 max-h-56 overflow-y-auto scrollbar-thin">
+            {unlocked.map((a) => {
+              const picked = draftShowcase.includes(a.code);
+              const isTitle = draftTitle === a.code;
+              return (
+                <li key={a.code} className="flex items-center justify-between gap-3 px-3 py-2">
+                  <div className="min-w-0">
+                    <div className="truncate text-xs font-bold text-zinc-200">{a.name}</div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setDraftTitle(isTitle ? null : a.code)}
+                      className={`rounded px-2.5 py-1 text-[9px] font-black uppercase tracking-wider transition-colors ${
+                        isTitle ? "bg-pink-500/20 text-pink-400 border border-pink-500/35" : "text-zinc-500 hover:text-zinc-300"
+                      }`}
+                    >
+                      Title
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => toggleShowcase(a.code)}
+                      className={`rounded px-2.5 py-1 text-[9px] font-black uppercase tracking-wider transition-colors ${
+                        picked ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/35" : "text-zinc-555 hover:text-zinc-355"
+                      }`}
+                    >
+                      Pin
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+          {error && (
+            <p className="text-xs text-rose-400 font-semibold">{error}</p>
+          )}
           <button
             type="button"
-            onClick={() => (editing ? setEditing(false) : openEditor())}
-            disabled={unlocked.length === 0}
-            className={buttonClasses({ variant: "secondary", size: "sm", className: "gap-1.5" })}
+            onClick={save}
+            disabled={saving}
+            className="w-full flex justify-center py-2.5 bg-pink-500 hover:bg-pink-400 disabled:bg-zinc-800 text-white font-display font-black text-xs uppercase tracking-wider rounded-xl transition-all duration-200 cursor-pointer shadow-sm hover:shadow-[0_2px_15px_rgba(236,72,153,0.2)]"
           >
-            {editing ? <X size={14} weight="bold" /> : <PencilSimple size={14} weight="bold" />}
-            {editing ? "Close" : "Edit"}
+            {saving ? "Saving Changes…" : "Apply Showcase"}
           </button>
         </div>
-
-        {!editing && (
-          <>
-            {unlocked.length === 0 ? (
-              <p className="text-sm text-zinc-400">
-                Unlock achievements by trading — then pin your favourites here.{" "}
-                <Link href="/achievements" className="text-pink-300 hover:text-pink-200">
-                  Browse achievements
-                </Link>
-              </p>
-            ) : showcased.length === 0 ? (
-              <p className="text-sm text-zinc-400">
-                No achievements showcased yet. Hit <span className="text-zinc-200">Edit</span> to pin up to {MAX_SHOWCASE}.
-              </p>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {showcased.map((a) => (
-                  <span
-                    key={a.code}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-pink-500/25 bg-pink-500/10 px-2.5 py-1.5 text-sm text-pink-200"
-                    title={a.description}
-                  >
-                    <Trophy size={14} weight="fill" className="text-pink-400" />
-                    {a.name}
-                  </span>
-                ))}
-              </div>
-            )}
-          </>
-        )}
-
-        {editing && (
-          <div className="space-y-4">
-            <p className="text-xs text-zinc-500">
-              Pick a title and up to {MAX_SHOWCASE} achievements to feature ({draftShowcase.length}/{MAX_SHOWCASE} selected).
-            </p>
-            <ul className="divide-y divide-zinc-800/60 overflow-hidden rounded-xl border border-zinc-800/70">
-              {unlocked.map((a) => {
-                const picked = draftShowcase.includes(a.code);
-                const isTitle = draftTitle === a.code;
-                return (
-                  <li key={a.code} className="flex items-center justify-between gap-3 px-3 py-2.5">
-                    <div className="min-w-0">
-                      <div className="truncate text-sm font-medium text-zinc-100">{a.name}</div>
-                      <div className="truncate text-xs text-zinc-500">{a.description}</div>
-                    </div>
-                    <div className="flex shrink-0 items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => setDraftTitle(isTitle ? null : a.code)}
-                        aria-pressed={isTitle}
-                        className={`rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset transition-colors ${
-                          isTitle
-                            ? "bg-pink-500/20 text-pink-200 ring-pink-500/40"
-                            : "text-zinc-400 ring-zinc-700/60 hover:text-zinc-200"
-                        }`}
-                      >
-                        Title
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => toggleShowcase(a.code)}
-                        aria-pressed={picked}
-                        disabled={!picked && draftShowcase.length >= MAX_SHOWCASE}
-                        className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset transition-colors disabled:opacity-40 ${
-                          picked
-                            ? "bg-emerald-500/20 text-emerald-200 ring-emerald-500/40"
-                            : "text-zinc-400 ring-zinc-700/60 hover:text-zinc-200"
-                        }`}
-                      >
-                        {picked && <Check size={12} weight="bold" />}
-                        {picked ? "Pinned" : "Pin"}
-                      </button>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-            {error && (
-              <p role="alert" className="text-xs text-rose-300">
-                {error}
-              </p>
-            )}
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={save}
-                disabled={saving}
-                className={buttonClasses({ size: "sm", className: "gap-1.5" })}
-              >
-                {saving ? "Saving…" : "Save showcase"}
-              </button>
-              <button
-                type="button"
-                onClick={() => setDraftTitle(null)}
-                className="text-xs text-zinc-500 hover:text-zinc-300"
-              >
-                Clear title
-              </button>
-            </div>
-          </div>
-        )}
-      </Card>
-    </Reveal>
+      )}
+    </Card>
   );
 }
 
-// Compact "today's missions" summary for the profile, linking to the full /missions page.
 function MissionsSummary() {
   const [missions, setMissions] = useState<Mission[] | null>(null);
 
@@ -458,53 +645,55 @@ function MissionsSummary() {
     };
   }, []);
 
-  if (missions === null || missions.length === 0) return null;
+  if (!missions || missions.length === 0) return null;
 
   const daily = missions.filter((m) => m.period === "Daily");
   const done = daily.filter((m) => m.completed).length;
 
   return (
-    <Reveal>
-      <Card>
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Lightning size={18} weight="fill" className="text-pink-400" />
-            <h2 className="text-sm font-semibold text-zinc-100">Daily missions</h2>
-            <span className="text-xs text-zinc-400">{done}/{daily.length} done</span>
-          </div>
-          <Link href="/missions" className="text-xs font-medium text-pink-300 hover:text-pink-200">
-            View all
-          </Link>
+    <Card className="border border-zinc-805 bg-zinc-955/20 hover:border-pink-500/25 p-5 transition-all duration-300 shadow-md">
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Lightning size={16} className="text-pink-400" />
+          <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Daily Objectives</h2>
         </div>
-        <div className="space-y-2.5">
-          {daily.map((m) => {
-            const pct = Math.min(100, Math.max(0, (m.currentValue / m.target) * 100));
-            return (
-              <div key={m.code}>
-                <div className="flex items-center justify-between gap-2 text-xs">
-                  <span className={m.completed ? "text-emerald-300" : "text-zinc-300"}>{m.name}</span>
-                  <span className="font-mono tabular-nums text-zinc-500">
-                    {formatNumber(Math.min(m.currentValue, m.target))}/{formatNumber(m.target)}
-                  </span>
-                </div>
-                <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-zinc-800">
-                  <div
-                    className={`h-full rounded-full ${m.completed ? "bg-emerald-400" : "bg-pink-500"}`}
-                    style={{ width: `${pct}%` }}
-                  />
+        <span className="text-[10px] font-bold font-mono text-zinc-550 bg-zinc-950/50 border border-zinc-900/50 px-2 py-0.5 rounded-full">
+          {done}/{daily.length} Done
+        </span>
+      </div>
+      <div className="space-y-4">
+        {daily.map((m) => {
+          const pct = Math.min(100, Math.max(0, (m.currentValue / m.target) * 100));
+          return (
+            <div key={m.code} className="space-y-2">
+              <div className="flex items-center justify-between text-xs font-semibold">
+                <span className={`text-[11px] font-semibold ${m.completed ? "text-emerald-400 font-bold" : "text-zinc-300"}`}>
+                  {m.name}
+                </span>
+                <span className="text-[10px] text-zinc-500 font-mono">
+                  {formatNumber(Math.min(m.currentValue, m.target))}/{formatNumber(m.target)}
+                </span>
+              </div>
+              <div className="h-1.5 w-full rounded-full bg-zinc-950 border border-zinc-850/50 overflow-hidden relative shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]">
+                <div
+                  className={`h-full rounded-full transition-all duration-550 relative ${
+                    m.completed
+                      ? "bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-500 shadow-[0_0_10px_rgba(52,211,153,0.5)]"
+                      : "bg-gradient-to-r from-pink-500 via-purple-500 to-pink-500 shadow-[0_0_10px_rgba(236,72,153,0.5)]"
+                  }`}
+                  style={{ width: `${pct}%` }}
+                >
+                  <div className="absolute right-0 top-0 bottom-0 w-1 bg-white opacity-80 blur-[1px]" />
                 </div>
               </div>
-            );
-          })}
-        </div>
-      </Card>
-    </Reveal>
+            </div>
+          );
+        })}
+      </div>
+    </Card>
   );
 }
 
-// If the signed-in user is themselves a tracked player, surface their own stock
-// as a profile-detail card (price, rank, pp, 24h). Matches the user's osu!
-// username to a market stock; renders nothing when they aren't tracked.
 function YourStockCard({ user }: { user: Me }) {
   const [stock, setStock] = useState<StockSummary | null>(null);
 
@@ -519,7 +708,6 @@ function YourStockCard({ user }: { user: Me }) {
           if (!cancelled) setStock(null);
           return;
         }
-        // Fetch the full detail so we get rank/pp (the list endpoint omits them).
         const detail = await getStock(match.stockId);
         if (!cancelled) setStock(detail);
       })
@@ -534,300 +722,72 @@ function YourStockCard({ user }: { user: Me }) {
   if (!stock) return null;
 
   return (
-    <Reveal>
-      <Card>
-        <div className="mb-4 flex items-center gap-2">
-          <ChartPieSlice size={18} weight="bold" className="text-pink-400" />
-          <h2 className="text-sm font-semibold text-zinc-100">Your Stock</h2>
-          <span className="text-xs text-zinc-400">
-            You&apos;re a tracked player — this is your market stock.
-          </span>
+    <Card className="border border-zinc-805 bg-zinc-955/20 hover:border-pink-500/25 p-5 transition-all duration-300 shadow-md">
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <ChartLineUp size={16} className="text-pink-400" />
+          <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Personal Player Stock</h2>
         </div>
-
-        <Link
-          href={`/stocks/${stock.stockId}`}
-          className="group flex flex-col gap-4 rounded-xl border border-zinc-800/70 bg-zinc-900/50 p-4 transition-colors hover:border-pink-500/40 sm:flex-row sm:items-center sm:justify-between"
-        >
-          <div className="flex items-center gap-3">
-            <Avatar src={stock.avatarUrl} name={stock.playerName} size="lg" />
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-zinc-100 group-hover:text-pink-300">
-                  {stock.playerName}
-                </span>
-                {stock.countryCode && (
-                  <Flag countryCode={stock.countryCode} className="h-3" />
-                )}
-              </div>
-              <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
-                {stock.globalRank != null && (
-                  <span className="inline-flex items-center gap-1 rounded bg-zinc-800/70 px-1.5 py-0.5 font-mono tabular-nums text-zinc-300 ring-1 ring-inset ring-zinc-700/50">
-                    <span className="text-zinc-500">#</span>
-                    {formatNumber(stock.globalRank)}
-                  </span>
-                )}
-                {stock.currentPp != null && (
-                  <span className="inline-flex items-center gap-1 rounded bg-pink-500/10 px-1.5 py-0.5 font-mono tabular-nums text-pink-300 ring-1 ring-inset ring-pink-500/25">
-                    {formatNumber(Math.round(stock.currentPp))}
-                    <span className="text-pink-400/70">pp</span>
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-6">
-            <div className="text-right">
-              <div className="font-mono text-2xl font-semibold tabular-nums text-zinc-50">
-                <Money value={stock.currentPrice} />
-              </div>
-              <PriceChange value={stock.priceChange24h} className="justify-end text-sm" />
-            </div>
-            <CaretRight
-              size={18}
-              weight="bold"
-              className="text-zinc-600 transition-colors group-hover:text-pink-400"
-            />
-          </div>
-        </Link>
-      </Card>
-    </Reveal>
-  );
-}
-
-// Self-contained Investor Level card: fetches its own data so the rest of the
-// page renders even if this endpoint is slow/unavailable.
-function InvestorLevelCard() {
-  const [level, setLevel] = useState<InvestorLevel | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [failed, setFailed] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    getInvestorLevel()
-      .then((data) => {
-        if (!cancelled) setLevel(data);
-      })
-      .catch(() => {
-        if (!cancelled) setFailed(true);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  if (failed) return null;
-
-  if (loading || !level) {
-    return (
-      <Card>
-        <div className="flex items-center gap-3">
-          <Skeleton className="h-11 w-11 rounded-xl" />
-          <div className="flex-1">
-            <Skeleton className="h-4 w-28" />
-            <Skeleton className="mt-2 h-3 w-20" />
-          </div>
-        </div>
-        <Skeleton className="mt-4 h-1.5 w-full rounded-full" />
-      </Card>
-    );
-  }
-
-  const atMax = level.xpForNextLevel === 0 || level.level >= 100;
-  const pct = atMax ? 100 : Math.min(100, Math.max(0, level.progressToNext * 100));
-
-  return (
-    <Card>
-      <div className="flex items-center gap-3">
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-pink-500/15 text-pink-300 ring-1 ring-inset ring-pink-500/25">
-          <Medal size={22} weight="fill" />
+        <span className="text-[10px] font-bold text-pink-400 bg-pink-500/5 border border-pink-500/15 px-2 py-0.5 rounded-full uppercase tracking-wider font-mono">
+          Live Index
         </span>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-baseline gap-2">
-            <span className="text-sm font-semibold text-zinc-100">
-              Level {formatNumber(level.level)}
-            </span>
-            <span className="truncate text-xs font-medium uppercase tracking-wider text-pink-300">
-              {level.title}
-            </span>
-          </div>
-          <div className="mt-0.5 text-xs text-zinc-400">
-            {formatNumber(level.totalXp)} total XP
-          </div>
-        </div>
-        {atMax && (
-          <span className="rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs font-semibold text-amber-300 ring-1 ring-inset ring-amber-500/30">
-            MAX
-          </span>
-        )}
       </div>
 
-      <div className="mt-4 space-y-1.5">
-        <div className="flex items-center justify-between text-xs tabular-nums text-zinc-400">
-          <span>{atMax ? "Max level reached" : "Next level"}</span>
-          {!atMax && (
-            <span className="font-mono text-zinc-400">
-              {formatNumber(level.xpIntoLevel)} / {formatNumber(level.xpForNextLevel)} XP
-            </span>
-          )}
+      <Link
+        href={`/stocks/${stock.stockId}`}
+        className="group flex flex-col gap-3 rounded-xl border border-zinc-800 bg-zinc-955/40 p-4 transition-all duration-300 hover:bg-zinc-950/80 hover:border-pink-500/25 sm:flex-row sm:items-center sm:justify-between shadow-sm"
+      >
+        <div className="flex items-center gap-3">
+          <div className="rounded-full overflow-hidden ring-1 ring-zinc-800 group-hover:ring-pink-500/20 transition-all duration-300 shadow-sm">
+            <Avatar src={stock.avatarUrl} name={stock.playerName} size="md" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-zinc-105 group-hover:text-pink-400 transition-colors text-sm">
+                {stock.playerName}
+              </span>
+            </div>
+            <div className="mt-0.5 flex items-center gap-2 text-xs">
+              {stock.globalRank != null && (
+                <span className="text-[10px] font-semibold text-zinc-500 font-mono">
+                  Rank #{formatNumber(stock.globalRank)} Global
+                </span>
+              )}
+            </div>
+          </div>
         </div>
-        <div
-          role="progressbar"
-          aria-label={`Investor level ${level.level} progress`}
-          aria-valuenow={Math.round(pct)}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-800"
-        >
-          <div
-            className="h-full rounded-full bg-pink-500"
-            style={{ width: `${pct}%` }}
-          />
+
+        <div className="flex items-center gap-4 justify-between sm:justify-end">
+          <div className="text-right">
+            <div className="font-mono text-sm font-bold text-zinc-100">
+              <Money value={stock.currentPrice} />
+            </div>
+            <PriceChange value={stock.priceChange24h} className="justify-end text-[10px] font-semibold mt-0.5" />
+          </div>
         </div>
-      </div>
+      </Link>
     </Card>
   );
 }
 
 function HoldingsEmpty() {
   return (
-    <Card>
+    <Card className="border border-zinc-800/80 bg-zinc-950/10 p-10 text-center">
       <EmptyState
-        icon={<ChartPieSlice size={20} weight="bold" />}
-        title="No holdings yet"
-        message="You don't own any players yet. Browse the market to make your first trade."
+        icon={<Briefcase size={24} className="text-zinc-555 mx-auto" />}
+        title="No Assets Held"
+        message="Your portfolio is currently empty. Browse the stock market to initiate player trades."
         action={
           <Link
             href="/"
-            className={buttonClasses({ size: "sm", className: "gap-1.5" })}
+            className={buttonClasses({ size: "sm", className: "gap-1.5 bg-pink-600 hover:bg-pink-500 font-bold" })}
           >
             <Coins size={16} weight="bold" />
-            Browse the market
+            Explore Live Market
           </Link>
         }
       />
     </Card>
-  );
-}
-
-function HoldingsTable({ portfolio }: { portfolio: Portfolio }) {
-  const reduceMotion = useReducedMotion();
-  return (
-    <div className="overflow-x-auto rounded-2xl border border-zinc-800/80">
-      <table className="w-full text-sm">
-        <caption className="sr-only">
-          Your holdings: player, quantity, average price, current price, value,
-          and profit or loss.
-        </caption>
-        <thead>
-          <tr className="border-b border-zinc-800 text-[11px] uppercase tracking-wider text-zinc-500">
-            <th className="px-4 py-3 text-left font-medium">Player</th>
-            <th className="px-4 py-3 text-right font-medium">Quantity</th>
-            <th className="hidden px-4 py-3 text-right font-medium sm:table-cell">
-              Avg Price
-            </th>
-            <th className="hidden px-4 py-3 text-right font-medium sm:table-cell">
-              Current
-            </th>
-            <th className="px-4 py-3 text-right font-medium">Value</th>
-            <th className="px-4 py-3 text-right font-medium">P&amp;L</th>
-          </tr>
-        </thead>
-        <motion.tbody
-          className="divide-y divide-zinc-800/60"
-          variants={staggerContainer}
-          initial="hidden"
-          animate="show"
-        >
-          {portfolio.holdings.map((h) => (
-            <motion.tr
-              key={h.holdingId}
-              variants={fadeUp}
-              whileHover={reduceMotion ? undefined : { y: -2 }}
-              transition={spring}
-              className="group transition-colors hover:bg-zinc-900/50"
-            >
-              <td className="px-4 py-3">
-                <Link
-                  href={`/stocks/${h.stockId}`}
-                  className="inline-flex items-center gap-2.5 font-medium text-zinc-100 transition-colors hover:text-pink-400"
-                >
-                  <Avatar src={h.avatarUrl} name={h.playerName} size="sm" />
-                  <span className="inline-flex items-center gap-1">
-                    {h.playerName}
-                    <CaretRight
-                      size={14}
-                      weight="bold"
-                      className="text-zinc-600 opacity-0 transition-opacity group-hover:opacity-100 group-hover:text-pink-400"
-                    />
-                  </span>
-                </Link>
-              </td>
-              <td className="px-4 py-3 text-right font-mono tabular-nums text-zinc-300">
-                {formatShares(h.quantity)}
-              </td>
-              <td className="hidden px-4 py-3 text-right font-mono tabular-nums text-zinc-300 sm:table-cell">
-                <Money value={h.averagePrice} />
-              </td>
-              <td className="hidden px-4 py-3 text-right font-mono tabular-nums text-zinc-300 sm:table-cell">
-                <Money value={h.currentPrice} />
-              </td>
-              <td className="px-4 py-3 text-right font-mono tabular-nums text-zinc-100">
-                <Money value={h.currentValue} />
-              </td>
-              <td className="px-4 py-3 text-right">
-                <PriceChange value={h.profitLoss} className="justify-end" />
-              </td>
-            </motion.tr>
-          ))}
-        </motion.tbody>
-      </table>
-    </div>
-  );
-}
-
-// Skeleton mirrors the final summary band + holdings table layout.
-function PortfolioSkeleton() {
-  return (
-    <div className="mt-8 space-y-8">
-      <Card className="p-0">
-        <div className="grid grid-cols-1 divide-y divide-zinc-800 md:grid-cols-3 md:divide-x md:divide-y-0">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="p-5 sm:p-6">
-              <Skeleton className="h-3 w-24" />
-              <Skeleton className="mt-3 h-8 w-32" />
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      <div className="overflow-hidden rounded-2xl border border-zinc-800/80">
-        <div className="border-b border-zinc-800 px-4 py-3">
-          <Skeleton className="h-3 w-40" />
-        </div>
-        <div className="divide-y divide-zinc-800/60">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div
-              key={i}
-              className="flex items-center justify-between px-4 py-4"
-            >
-              <div className="flex items-center gap-2.5">
-                <Skeleton className="h-8 w-8 rounded-full" />
-                <Skeleton className="h-4 w-32" />
-              </div>
-              <div className="flex items-center gap-6">
-                <Skeleton className="hidden h-4 w-16 sm:block" />
-                <Skeleton className="hidden h-4 w-20 sm:block" />
-                <Skeleton className="h-4 w-24" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
   );
 }
 
@@ -842,9 +802,6 @@ export default function PortfolioPage() {
     if (authLoading || !user) return;
 
     let cancelled = false;
-    // Resetting fetch state synchronously is intentional: it shows the loading
-    // skeleton while we (re)fetch — the documented exception to
-    // react-hooks/set-state-in-effect (this is not the derive-state anti-pattern).
     /* eslint-disable react-hooks/set-state-in-effect */
     setLoading(true);
     setError(null);
@@ -881,7 +838,6 @@ export default function PortfolioPage() {
   if (authLoading) {
     return (
       <PageShell>
-        <PageHeader />
         <PortfolioSkeleton />
       </PageShell>
     );
@@ -890,7 +846,6 @@ export default function PortfolioPage() {
   if (!user || unauthorized) {
     return (
       <PageShell>
-        <PageHeader />
         <div className="mt-8">
           <PleaseLogIn />
         </div>
@@ -900,45 +855,62 @@ export default function PortfolioPage() {
 
   return (
     <PageShell>
-      <ProfileHeader user={user} portfolio={portfolio} />
+      {/* Symmetrical Unified Profile & Stats Header */}
+      <ProfileHeaderCard user={user} portfolio={portfolio} />
 
       {loading && <PortfolioSkeleton />}
 
       {!loading && error && (
-        <div className="mt-8 flex items-start gap-3 rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-300">
-          <WarningCircle
-            size={18}
-            weight="bold"
-            className="mt-0.5 shrink-0"
-          />
+        <div className="mt-6 flex items-start gap-3 rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-355">
+          <WarningCircle size={18} className="mt-0.5 shrink-0 text-rose-455" />
           <span>{error}</span>
         </div>
       )}
 
       {!loading && !error && portfolio && (
-        <div className="mt-8 space-y-8">
-          <YourStockCard user={user} />
+        <div className="space-y-8">
+          {/* Main Content Layout Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            {/* Holdings & Positions Ledger */}
+            <div className="lg:col-span-2 space-y-6 min-w-0">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-400">
+                  Asset Ledger Positions ({portfolio.holdings.length})
+                </h3>
+              </div>
+              {portfolio.holdings.length === 0 ? (
+                <HoldingsEmpty />
+              ) : (
+                <HoldingsTable holdings={portfolio.holdings} totalValuation={portfolio.currentValue} />
+              )}
+            </div>
 
-          <Reveal>
-            <InvestorLevelCard />
-          </Reveal>
-
-          <ShowcaseCard user={user} />
-
-          <MissionsSummary />
-
-          <Reveal delay={0.05}>
-            <h2 className="mb-3 text-[11px] font-medium uppercase tracking-wider text-zinc-500">
-              Holdings
-            </h2>
-            {portfolio.holdings.length === 0 ? (
-              <HoldingsEmpty />
-            ) : (
-              <HoldingsTable portfolio={portfolio} />
-            )}
-          </Reveal>
+            {/* Sidebar Controls */}
+            <div className="lg:col-span-1 space-y-6">
+              <YourStockCard user={user} />
+              <InvestorLevelCard />
+              <ShowcaseCard user={user} />
+              <MissionsSummary />
+            </div>
+          </div>
         </div>
       )}
     </PageShell>
+  );
+}
+
+function PortfolioSkeleton() {
+  return (
+    <div className="space-y-8">
+      <Skeleton className="h-64 w-full rounded-2xl" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2">
+          <Skeleton className="h-80 w-full rounded-2xl" />
+        </div>
+        <div className="lg:col-span-1">
+          <Skeleton className="h-40 w-full rounded-2xl" />
+        </div>
+      </div>
+    </div>
   );
 }

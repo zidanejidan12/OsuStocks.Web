@@ -5,15 +5,14 @@
 import { memo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 
-type Tone = "emerald" | "pink" | "amber";
+type Tone = "cyan" | "pink" | "amber";
 
 function StatusDotBase({
-  tone = "emerald",
+  tone = "cyan",
   label = "Live",
   className = "",
 }: {
   tone?: Tone;
-  /** Screen-reader text describing the state (not color-only). Defaults to "Live". */
   label?: string;
   className?: string;
 }) {
@@ -23,7 +22,7 @@ function StatusDotBase({
       ? "bg-pink-500"
       : tone === "amber"
         ? "bg-amber-400"
-        : "bg-emerald-400";
+        : "bg-cyan-400";
 
   return (
     <span
