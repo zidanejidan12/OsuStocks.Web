@@ -62,7 +62,7 @@ export class ApiError extends Error {
 }
 
 function getMockResponse(path: string, init?: RequestInit): any {
-  if (process.env.NODE_ENV === "test") {
+  if (process.env.NEXT_PUBLIC_ENABLE_MOCK === "false" || process.env.NODE_ENV === "test") {
     return undefined;
   }
   // Extract path and query params

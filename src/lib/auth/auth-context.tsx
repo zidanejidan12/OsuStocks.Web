@@ -81,7 +81,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
     } catch {
-      // Backend is down or timed out, proceed to mock login
+      // Backend is down or timed out, proceed to mock login if enabled
+    }
+
+    if (process.env.NEXT_PUBLIC_ENABLE_MOCK === "false") {
+      console.error("Authentication failed: OsuStocks backend is unreachable.");
+      alert("Cannot connect to OsuStocks server. Please try again later.");
+      return;
     }
 
     console.warn("OsuStocks backend is unreachable. Initiating client-side mock login mode.");
