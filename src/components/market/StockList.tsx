@@ -366,6 +366,25 @@ export function StockList({
     hasAnimatedRef.current = true;
   }, []);
 
+  const renderSortIndicator = (ascVal: StockSort, descVal: StockSort) => {
+    const isActive = sort === ascVal || sort === descVal;
+    if (!isActive) return null;
+    const isAsc = sort === ascVal;
+    return (
+      <span className="inline-flex ml-1 text-pink-500 font-mono text-[9px] select-none">
+        {isAsc ? "▲" : "▼"}
+      </span>
+    );
+  };
+
+  const handleHeaderClick = (ascVal: StockSort, descVal: StockSort) => {
+    if (sort === descVal) {
+      onSortChange(ascVal);
+    } else {
+      onSortChange(descVal);
+    }
+  };
+
   // Favorites logic
   const [favorites, setFavorites] = useState<string[]>([]);
   useEffect(() => {
@@ -570,15 +589,50 @@ export function StockList({
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-zinc-800 text-left text-[10px] uppercase tracking-widest text-zinc-500 bg-zinc-900/40 sticky top-0 backdrop-blur-md z-10">
+                <tr className="border-b border-zinc-800 text-left text-[10px] uppercase tracking-widest text-zinc-500 bg-zinc-900/40 sticky top-0 backdrop-blur-md z-10 select-none">
                   <th className="px-4 py-3.5 text-center w-12 font-bold">Rank</th>
                   <th className="px-2 py-3.5 w-8"></th>
-                  <th className="px-4 py-3.5 font-bold">Player</th>
+                  <th 
+                    onClick={() => handleHeaderClick("name_asc", "name_desc")}
+                    className="px-4 py-3.5 font-bold cursor-pointer hover:text-zinc-200 transition-colors"
+                  >
+                    <div className="flex items-center gap-1">
+                      Player {renderSortIndicator("name_asc", "name_desc")}
+                    </div>
+                  </th>
                   <th className="hidden md:table-cell px-4 py-3.5 font-bold">Region</th>
-                  <th className="px-4 py-3.5 text-right font-bold">Price</th>
-                  <th className="px-4 py-3.5 text-right font-bold">24h Change</th>
-                  <th className="hidden lg:table-cell px-4 py-3.5 text-right font-bold">7d Change</th>
-                  <th className="hidden sm:table-cell px-4 py-3.5 text-right font-bold">Volume</th>
+                  <th 
+                    onClick={() => handleHeaderClick("price_asc", "price_desc")}
+                    className="px-4 py-3.5 text-right font-bold cursor-pointer hover:text-zinc-200 transition-colors"
+                  >
+                    <div className="flex items-center justify-end gap-1">
+                      Price {renderSortIndicator("price_asc", "price_desc")}
+                    </div>
+                  </th>
+                  <th 
+                    onClick={() => handleHeaderClick("change24h_asc", "change24h_desc")}
+                    className="px-4 py-3.5 text-right font-bold cursor-pointer hover:text-zinc-200 transition-colors"
+                  >
+                    <div className="flex items-center justify-end gap-1">
+                      24h Change {renderSortIndicator("change24h_asc", "change24h_desc")}
+                    </div>
+                  </th>
+                  <th 
+                    onClick={() => handleHeaderClick("change24h_asc", "change24h_desc")}
+                    className="hidden lg:table-cell px-4 py-3.5 text-right font-bold cursor-pointer hover:text-zinc-200 transition-colors"
+                  >
+                    <div className="flex items-center justify-end gap-1">
+                      7d Change {renderSortIndicator("change24h_asc", "change24h_desc")}
+                    </div>
+                  </th>
+                  <th 
+                    onClick={() => handleHeaderClick("volume_asc", "volume_desc")}
+                    className="hidden sm:table-cell px-4 py-3.5 text-right font-bold cursor-pointer hover:text-zinc-200 transition-colors"
+                  >
+                    <div className="flex items-center justify-end gap-1">
+                      Volume {renderSortIndicator("volume_asc", "volume_desc")}
+                    </div>
+                  </th>
                   <th className="hidden sm:table-cell px-4 py-3.5 text-center w-24 font-bold">Trend</th>
                   <th className="px-4 py-3.5 text-right w-20 font-bold">Trade</th>
                 </tr>

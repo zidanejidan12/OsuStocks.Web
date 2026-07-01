@@ -920,7 +920,13 @@ export default function Home() {
             <ErrorNotice message={overviewError} />
           ) : overview ? (
             <Reveal delay={0.05}>
-              <MarketOverviewCards overview={overview} />
+              <MarketOverviewCards
+                overview={overview}
+                onSortChange={(value) => {
+                  setSort(value);
+                  setPage(1);
+                }}
+              />
             </Reveal>
           ) : (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-12">

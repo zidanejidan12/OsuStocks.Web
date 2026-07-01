@@ -473,7 +473,7 @@ function WalletAnalytics({ transactions, balance }: { transactions: WalletTransa
           </div>
           <div className="rounded-xl border border-zinc-800 bg-zinc-955/40 p-3">
             <span className="text-[8px] font-bold uppercase tracking-wider text-zinc-500 block">Market Trades</span>
-            <span className="font-mono text-xs font-bold text-indigo-400 mt-1 block">{tradeCount} ops</span>
+            <span className="font-mono text-xs font-bold text-indigo-400 mt-1 block">{tradeCount} Trades</span>
           </div>
         </div>
       </div>
