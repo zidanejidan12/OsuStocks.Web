@@ -84,7 +84,7 @@ export function Footer() {
               Privacy Policy
             </Link>
             <Link
-              href="/about"
+              href="/#faq"
               className="text-zinc-400 transition-all duration-200 hover:text-pink-400 hover:translate-x-1.5 font-medium"
             >
               Platform FAQ
