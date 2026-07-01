@@ -15,7 +15,7 @@ const TEAM = [
     roleClass: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20",
     tagline: (
       <>
-        Engineers the <span className="text-purple-600 dark:text-purple-400 font-bold">core database</span> and <span className="text-purple-600 dark:text-purple-400 font-bold">live API pricing</span> systems.
+        Converts <span className="text-purple-600 dark:text-purple-400 font-bold">caffeine into database</span> queries and prays the server doesn't break its combo.
       </>
     )
   },
@@ -26,7 +26,7 @@ const TEAM = [
     roleClass: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20",
     tagline: (
       <>
-        Crafts the <span className="text-cyan-600 dark:text-cyan-400 font-bold">user interface</span> and <span className="text-cyan-600 dark:text-cyan-400 font-bold">interactive trade</span> dashboards.
+        Moving <span className="text-cyan-600 dark:text-cyan-400 font-bold">buttons 1px</span> to the left and crying when a div doesn't center on mobile.
       </>
     )
   },
@@ -37,7 +37,7 @@ const TEAM = [
     roleClass: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20",
     tagline: (
       <>
-        Coordinates <span className="text-rose-600 dark:text-rose-400 font-bold">business operations</span> and <span className="text-rose-600 dark:text-rose-400 font-bold">platform strategy</span>.
+        Pretending to <span className="text-rose-600 dark:text-rose-400 font-bold">understand stocks</span> while keeping the developers from losing their minds.
       </>
     )
   },
