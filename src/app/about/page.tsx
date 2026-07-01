@@ -11,17 +11,35 @@ const TEAM = [
   { 
     id: 3484548, 
     name: "Almond Eye", 
-    role: "Backend Developer"
+    role: "Backend Developer",
+    roleClass: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20",
+    tagline: (
+      <>
+        Engineers the <span className="text-purple-600 dark:text-purple-400 font-bold">core database</span> and <span className="text-purple-600 dark:text-purple-400 font-bold">live API pricing</span> systems.
+      </>
+    )
   },
   { 
     id: 11421465, 
     name: "Verxina", 
-    role: "Frontend Developer"
+    role: "Frontend Developer",
+    roleClass: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20",
+    tagline: (
+      <>
+        Crafts the <span className="text-cyan-600 dark:text-cyan-400 font-bold">user interface</span> and <span className="text-cyan-600 dark:text-cyan-400 font-bold">interactive trade</span> dashboards.
+      </>
+    )
   },
   { 
     id: 6560131, 
     name: "Nishino Flower", 
-    role: "BUM"
+    role: "BUM",
+    roleClass: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20",
+    tagline: (
+      <>
+        Coordinates <span className="text-rose-600 dark:text-rose-400 font-bold">business operations</span> and <span className="text-rose-600 dark:text-rose-400 font-bold">platform strategy</span>.
+      </>
+    )
   },
 ];
 
@@ -70,7 +88,7 @@ export default function AboutPage() {
         <h1 className="text-4xl sm:text-5xl font-display font-black tracking-tight uppercase pb-2">
           Inside <span className="text-pink-600 dark:text-pink-500">Osu</span><span className="text-zinc-955 dark:text-zinc-50">Stocks</span>
         </h1>
-        <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400 max-w-[65ch] leading-relaxed">
+        <p className="mt-3 text-sm text-zinc-650 dark:text-zinc-400 max-w-[65ch] leading-relaxed font-medium">
           <span className="text-pink-600 dark:text-pink-500 font-bold">Osu</span><span className="text-zinc-955 dark:text-zinc-50 font-bold">Stocks</span> is a fan-made fantasy market simulator where users trade virtual shares of osu! players based on live game performance and historical statistics.
         </p>
       </div>
@@ -133,41 +151,62 @@ export default function AboutPage() {
           {TEAM.map((member) => {
             const theme = MEMBER_THEMES[member.name] || MEMBER_THEMES["Almond Eye"];
             return (
-              <a
+              <div
                 key={member.id}
-                href={`https://osu.ppy.sh/users/${member.id}`}
-                target="_blank"
-                rel="noopener noreferrer"
                 className={`group relative flex flex-col justify-between rounded-[24px] border ${theme.border} bg-zinc-100/40 dark:bg-zinc-955/25 p-5 transition-all duration-300 ${theme.glow} hover:bg-zinc-200/30 dark:hover:bg-zinc-900/20 hover:scale-[1.02] shadow-[0_8px_30px_rgb(0,0,0,0.02)] dark:shadow-none overflow-hidden`}
               >
                 <div className={`absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r ${theme.banner}`} />
                 <div className="absolute -right-16 -top-16 w-32 h-32 bg-current opacity-[0.02] rounded-full blur-2xl pointer-events-none group-hover:opacity-[0.04] transition-opacity" />
                 <div>
-                  <div className="flex items-center gap-4">
-                    <Avatar
-                      src={`https://a.ppy.sh/${member.id}`}
-                      name={member.name}
-                      size="md"
-                      className="ring-2 ring-zinc-300/60 dark:ring-zinc-800 transition-all duration-300 group-hover:ring-pink-500/50 shrink-0"
-                    />
-                    <div className="min-w-0">
-                      <div className="truncate text-base font-display font-black text-zinc-900 dark:text-zinc-100 transition-colors group-hover:text-pink-500 dark:group-hover:text-pink-400">
+                  <div className="flex items-start gap-4">
+                    <a
+                      href={`https://osu.ppy.sh/users/${member.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="shrink-0"
+                    >
+                      <Avatar
+                        src={`https://a.ppy.sh/${member.id}`}
+                        name={member.name}
+                        size="md"
+                        className="ring-2 ring-zinc-300/60 dark:ring-zinc-800 transition-all duration-300 group-hover:ring-pink-500/50"
+                      />
+                    </a>
+                    <div className="min-w-0 flex-1">
+                      <a
+                        href={`https://osu.ppy.sh/users/${member.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="truncate text-base font-display font-black text-zinc-900 dark:text-zinc-100 transition-colors group-hover:text-pink-500 dark:group-hover:text-pink-400 block"
+                      >
                         {member.name}
-                      </div>
-                      <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
-                        <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold truncate uppercase tracking-wider font-mono">
+                      </a>
+                      <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider font-mono border ${member.roleClass}`}>
                           {member.role}
                         </span>
                       </div>
                     </div>
                   </div>
+                  
+                  <div className="mt-4">
+                    <p className="text-xs leading-relaxed text-zinc-500 dark:text-zinc-400 font-medium">
+                      {member.tagline}
+                    </p>
+                  </div>
                 </div>
+                
                 <div className="mt-5 text-right">
-                  <span className="text-[9px] font-mono text-pink-500 dark:text-pink-400 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <a
+                    href={`https://osu.ppy.sh/users/${member.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[9px] font-mono text-pink-500 dark:text-pink-400 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  >
                     View Profile &rarr;
-                  </span>
+                  </a>
                 </div>
-              </a>
+              </div>
             );
           })}
         </div>
