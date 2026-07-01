@@ -211,7 +211,6 @@
   }
 }
 
-/* --- Theme Config for LIGHT mode --- */
 :root.light {
   --color-background: #eee6ee;
   --color-foreground: #1c151c;
@@ -294,9 +293,8 @@
   color: #766975 !important;
 }
 
-/* --- Light Mode Contrast & Readability Enhancements --- */
 :root.light .text-pink-400 {
-  color: #db2777 !important; /* Rich pink for readable contrast */
+  color: #db2777 !important;
 }
 
 :root.light .text-pink-500 {
@@ -304,22 +302,21 @@
 }
 
 :root.light .text-cyan-400 {
-  color: #0891b2 !important; /* Rich cyan */
+  color: #0891b2 !important;
 }
 
 :root.light .text-amber-400 {
-  color: #d97706 !important; /* Rich amber */
+  color: #d97706 !important;
 }
 
 :root.light .text-emerald-400 {
-  color: #059669 !important; /* Rich emerald green */
+  color: #059669 !important;
 }
 
 :root.light .text-rose-400 {
-  color: #dc2626 !important; /* Rich rose red */
+  color: #dc2626 !important;
 }
 
-/* Sponsor Card & Custom Cards in Light Mode */
 :root.light .shine-sweep {
   background: rgba(253, 250, 252, 0.9) !important;
   border-color: rgba(236, 72, 153, 0.25) !important;
@@ -337,7 +334,6 @@
   color: #584b57 !important;
 }
 
-/* Light mode adjustments for OsuAuroraBackground and Buttons */
 :root.light .btn-secondary {
   border-color: rgba(28, 21, 28, 0.15) !important;
   background-color: rgba(28, 21, 28, 0.03) !important;
@@ -355,9 +351,6 @@
   color: #766975 !important;
 }
 
-/* --- Premium Background & Particle Animations --- */
-
-/* Wind-drifting snowflake path */
 @keyframes fall-wobble {
   0% {
     transform: translateY(-20px) translateX(0) rotate(0deg);
@@ -411,7 +404,6 @@
   animation: spin-slow 16s linear infinite;
 }
 
-/* Aurora Fluid Motion Mesh Gradients */
 @keyframes aurora-morph-1 {
   0%, 100% {
     transform: translate(0px, 0px) scale(1);
