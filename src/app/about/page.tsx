@@ -12,20 +12,17 @@ const TEAM = [
   { 
     id: 3484548, 
     name: "Almond Eye", 
-    role: "Backend Architect",
-    mod: "Hidden"
+    role: "Backend Architect"
   },
   { 
     id: 11421465, 
     name: "Verxina", 
-    role: "Lead Frontend Engineer",
-    mod: "DoubleTime"
+    role: "Lead Frontend Engineer"
   },
   { 
     id: 6560131, 
     name: "Nishino Flower", 
-    role: "Business Operations",
-    mod: "HardRock"
+    role: "Business Operations"
   },
 ];
 
@@ -75,7 +72,7 @@ export default function AboutPage() {
           Inside OsuStocks
         </h1>
         <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400 max-w-[65ch]">
-          OsuStocks is a virtual fan-made trading simulator connecting real-world performance points to a gamified fantasy market.
+          OsuStocks is a fan-made fantasy market simulator where users trade virtual shares of osu! players based on live game performance and historical statistics.
         </p>
       </div>
 
@@ -95,7 +92,7 @@ export default function AboutPage() {
               Championship Partner: <span className="text-pink-500">{SPONSOR.name}</span>
             </h2>
             <p className="mt-5 text-xs sm:text-sm text-zinc-650 dark:text-zinc-400 leading-relaxed max-w-[55ch]">
-              The operations and automated pricing engines of OsuStocks are funded entirely by our legendary core sponsor. Because of their backing, the platform remains 100% ad-free and free to play.
+              All automated pricing algorithms and server operations of OsuStocks are funded entirely by our core support sponsor. Because of their backing, the platform remains completely ad-free and free-to-play.
             </p>
             <div className="mt-6 flex flex-wrap gap-4 items-center">
               <a
@@ -130,7 +127,7 @@ export default function AboutPage() {
         <div className="mb-6 flex items-center gap-2">
           <GameController size={18} className="text-purple-500 dark:text-purple-400" />
           <h2 className="text-lg font-display font-bold uppercase tracking-wider text-zinc-800 dark:text-zinc-100">
-            Development Team Profile Stats
+            Development Team Profiles
           </h2>
         </div>
 
@@ -162,10 +159,6 @@ export default function AboutPage() {
                       <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
                         <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold truncate uppercase tracking-wider font-mono">
                           {member.role}
-                        </span>
-                        <span className="text-zinc-350 dark:text-zinc-700 font-mono text-[9px]">•</span>
-                        <span className={`font-black tracking-wide px-1.5 py-0.5 rounded text-[8px] uppercase bg-zinc-900/5 dark:bg-zinc-950/60 border border-zinc-200/50 dark:border-zinc-800/50 ${theme.text}`}>
-                          {member.mod}
                         </span>
                       </div>
                     </div>
