@@ -86,7 +86,9 @@ export default function AboutPage() {
     <PageShell>
       <div className="mb-14 text-center sm:text-left">
         <h1 className="text-4xl sm:text-5xl font-display font-black tracking-tight uppercase pb-2">
-          Inside <span className="text-pink-600 dark:text-pink-500">Osu</span><span className="text-zinc-955 dark:text-zinc-50">Stocks</span>
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-zinc-800 to-zinc-950 dark:from-zinc-100 dark:to-zinc-300">Inside </span>
+          <span className="text-pink-600 dark:text-pink-500 drop-shadow-[0_0_15px_rgba(236,72,153,0.35)] dark:drop-shadow-[0_0_15px_rgba(236,72,153,0.5)]">Osu</span>
+          <span className="text-zinc-955 dark:text-zinc-50 drop-shadow-[0_0_15px_rgba(0,0,0,0.1)] dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]">Stocks</span>
         </h1>
         <p className="mt-3 text-sm text-zinc-650 dark:text-zinc-400 max-w-[65ch] leading-relaxed font-medium">
           <span className="text-pink-600 dark:text-pink-500 font-bold">Osu</span><span className="text-zinc-955 dark:text-zinc-50 font-bold">Stocks</span> is a fan-made fantasy market simulator where users trade virtual shares of osu! players based on live game performance and historical statistics.
@@ -100,7 +102,6 @@ export default function AboutPage() {
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-3">
-              <Sparkle size={14} className="text-pink-500 dark:text-pink-400 animate-pulse" weight="fill" />
               <span className="text-[10px] font-mono font-bold uppercase tracking-[0.25em] text-pink-600 dark:text-pink-400">
                 {SPONSOR.tier}
               </span>
