@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { TrendUp, TrendDown, Coins, Users, Trophy, ChartLineUp, CaretRight } from "@phosphor-icons/react";
-import type { MarketOverview } from "@/lib/api/types";
+import type { MarketOverview, StockSort } from "@/lib/api/types";
 import { Avatar } from "@/components/ui/Avatar";
 import { PriceChange } from "@/components/ui/PriceChange";
 import { Money } from "@/components/ui/Money";
@@ -12,7 +12,13 @@ import { Coin } from "@/components/ui/Coin";
 import { formatNumber, formatCompact } from "@/lib/format";
 import { spring } from "@/lib/motion";
 
-export function MarketOverviewCards({ overview }: { overview: MarketOverview }) {
+export function MarketOverviewCards({ 
+  overview,
+  onSortChange
+}: { 
+  overview: MarketOverview;
+  onSortChange?: (val: StockSort) => void;
+}) {
   // Live wiggle simulation for active traders
   const [activeTraders, setActiveTraders] = useState(2481);
   useEffect(() => {
@@ -52,8 +58,13 @@ export function MarketOverviewCards({ overview }: { overview: MarketOverview }) 
       {/* 2. Total Volume */}
       <motion.div
         whileHover={{ y: -3 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={() => {
+          onSortChange?.("volume_desc");
+          document.getElementById("stock-search")?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }}
         transition={spring}
-        className="glass relative overflow-hidden rounded-2xl p-5 border border-zinc-800/80 hover:border-cyan-500/30 hover:shadow-[0_0_25px_rgba(6,182,212,0.06)] group"
+        className="glass relative overflow-hidden rounded-2xl p-5 border border-zinc-800/80 hover:border-cyan-500/35 hover:shadow-[0_0_25px_rgba(6,182,212,0.08)] group cursor-pointer"
       >
         <div className="absolute top-0 left-0 w-8 h-[1px] bg-gradient-to-r from-cyan-500/30 to-transparent" />
         <div className="absolute top-0 left-0 w-[1px] h-8 bg-gradient-to-b from-cyan-500/30 to-transparent" />
@@ -75,8 +86,13 @@ export function MarketOverviewCards({ overview }: { overview: MarketOverview }) 
       {/* 3. Market Cap */}
       <motion.div
         whileHover={{ y: -3 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={() => {
+          onSortChange?.("price_desc");
+          document.getElementById("stock-search")?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }}
         transition={spring}
-        className="glass relative overflow-hidden rounded-2xl p-5 border border-zinc-800/80 hover:border-purple-500/30 hover:shadow-[0_0_25px_rgba(168,85,247,0.06)] group"
+        className="glass relative overflow-hidden rounded-2xl p-5 border border-zinc-800/80 hover:border-purple-500/35 hover:shadow-[0_0_25px_rgba(168,85,247,0.08)] group cursor-pointer"
       >
         <div className="absolute top-0 left-0 w-8 h-[1px] bg-gradient-to-r from-purple-500/30 to-transparent" />
         <div className="absolute top-0 left-0 w-[1px] h-8 bg-gradient-to-b from-purple-500/30 to-transparent" />
