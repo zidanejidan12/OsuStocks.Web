@@ -1488,7 +1488,7 @@ function FaqSection() {
   ];
 
   return (
-    <section className="relative z-10 mx-auto w-full max-w-3xl px-6 py-16 sm:py-24">
+    <section id="faq" className="relative z-10 mx-auto w-full max-w-3xl px-6 py-16 sm:py-24">
       <Reveal>
         <div className="text-center mb-14">
           <p className="text-[10px] font-bold text-amber-500 uppercase tracking-[0.25em] mb-2">FAQ KNOWLEDGE</p>
