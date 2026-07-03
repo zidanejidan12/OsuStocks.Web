@@ -123,37 +123,6 @@ export default function TrendingPage() {
     };
   }, []);
 
-  // Soft fluctuate price data over time
-  useEffect(() => {
-    if (!data) return;
-    const interval = setInterval(() => {
-      setData(prev => {
-        if (!prev) return prev;
-        const next = { ...prev };
-        const keys = Object.keys(next) as Array<keyof Trending>;
-        const randomKey = keys[Math.floor(Math.random() * keys.length)];
-        const list = next[randomKey] ? [...next[randomKey]!] : [];
-        if (list.length > 0) {
-          const idx = Math.floor(Math.random() * list.length);
-          const current = list[idx];
-          const isUp = Math.random() > 0.45;
-          const pct = ((Math.random() * 0.2 + 0.05) * (isUp ? 1 : -1)) / 100;
-          const diff = current.currentPrice * pct;
-          
-          list[idx] = {
-            ...current,
-            currentPrice: Math.max(1, current.currentPrice + diff),
-            priceChange24h: current.priceChange24h + (pct * 100)
-          };
-          next[randomKey] = list;
-        }
-        return next;
-      });
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, [data]);
-
   const isEmpty = data !== null && BUCKETS.every((b) => (data[b.key]?.length ?? 0) === 0);
   const activeBucket = BUCKETS[selectedBucketIndex];
   const activeStocks = data && activeBucket ? (data[activeBucket.key] ?? []) : [];

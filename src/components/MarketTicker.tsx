@@ -76,7 +76,6 @@ function Item({ m, linked }: { m: LiveMover; linked: boolean }) {
  */
 export function MarketTicker() {
   const pathname = usePathname();
-  if (pathname === "/login") return null;
 
   const reduce = useReducedMotion();
   const { user } = useAuth();
@@ -103,6 +102,10 @@ export function MarketTicker() {
       clearInterval(id);
     };
   }, []);
+
+  // Hidden on the login route. Placed AFTER all hooks so the hook count stays
+  // stable across route changes (this is a persistent layout component).
+  if (pathname === "/login") return null;
 
   if (!movers || movers.length === 0) return null;
 

@@ -107,7 +107,6 @@ function ThemeToggle() {
 
 export function Nav() {
   const pathname = usePathname();
-  if (pathname === "/login") return null;
   const { user, loading, logout } = useAuth();
   const { unreadCount } = useNotifications();
   const [open, setOpen] = useState(false);
@@ -209,6 +208,10 @@ export function Nav() {
       trigger?.focus();
     };
   }, [open]);
+
+  // Hidden on the login route. Placed AFTER all hooks so the hook count stays
+  // stable across route changes (this is a persistent layout component).
+  if (pathname === "/login") return null;
 
   return (
     <>

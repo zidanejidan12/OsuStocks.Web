@@ -697,76 +697,9 @@ export default function Home() {
     };
   }, [user, page, sort, country, debouncedSearch]);
 
-  // Periodic wiggling for live stocks list on the landing page
-  useEffect(() => {
-    if (stocks.length === 0) return;
-    
-    const interval = setInterval(() => {
-      setStocks(prev => {
-        if (prev.length === 0) return prev;
-        const next = [...prev];
-        // Pick 1-3 random stocks to update
-        const count = Math.min(next.length, Math.floor(Math.random() * 3) + 1);
-        for (let i = 0; i < count; i++) {
-          const idx = Math.floor(Math.random() * next.length);
-          const current = next[idx];
-          if (!current) continue;
-          const isUp = Math.random() > 0.45;
-          const pct = ((Math.random() * 0.25 + 0.05) * (isUp ? 1 : -1)) / 100;
-          const diff = current.currentPrice * pct;
-          
-          next[idx] = {
-            ...current,
-            currentPrice: Math.max(1, current.currentPrice + diff),
-            priceChange24h: current.priceChange24h + (pct * 100)
-          };
-        }
-        return next;
-      });
-    }, 2550);
-
-    return () => clearInterval(interval);
-  }, [stocks]);
-
-  // Periodic wiggling for live market overview on the landing page
-  useEffect(() => {
-    if (!overview) return;
-    
-    const interval = setInterval(() => {
-      setOverview(prev => {
-        if (!prev) return prev;
-        
-        // update volume slightly
-        const volumeDiff = Math.floor(Math.random() * 45) + 5;
-        const next = {
-          ...prev,
-          totalVolume: prev.totalVolume + volumeDiff
-        };
-        
-        // wiggle topGainer and topLoser prices
-        if (next.topGainer) {
-          const changePct = (Math.random() * 0.2 + 0.05) / 100;
-          next.topGainer = {
-            ...next.topGainer,
-            currentPrice: next.topGainer.currentPrice + (next.topGainer.currentPrice * changePct),
-            priceChange24h: next.topGainer.priceChange24h + (changePct * 100)
-          };
-        }
-        if (next.topLoser) {
-          const changePct = -(Math.random() * 0.15 + 0.05) / 100;
-          next.topLoser = {
-            ...next.topLoser,
-            currentPrice: Math.max(1, next.topLoser.currentPrice + (next.topLoser.currentPrice * changePct)),
-            priceChange24h: next.topLoser.priceChange24h + (changePct * 100)
-          };
-        }
-        
-        return next;
-      });
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [overview]);
+  // NOTE: the landing page renders server values as-is. Do not synthesize price
+  // or volume movement client-side (that shows fabricated numbers as real market
+  // data). Live updates must come from a real feed/poll.
 
   const handleQuickTrade = () => {
     const searchInput = document.getElementById("stock-search");

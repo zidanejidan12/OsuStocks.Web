@@ -227,9 +227,6 @@ function StockRow({
   // Calculate global page rank index
   const rank = (page - 1) * 25 + index + 1;
 
-  // Derived 7d change
-  const change7d = (stock.priceChange24h * 1.62) + (Math.sin(index) * 4);
-
   return (
     <motion.tr
       initial={animateRows ? { opacity: 0, y: 8 } : false}
@@ -310,15 +307,7 @@ function StockRow({
         />
       </td>
 
-      {/* 6. 7d Change (Derived/Simulated) */}
-      <td className="hidden lg:table-cell px-4 py-3.5 text-right">
-        <PriceChange
-          value={change7d}
-          className="justify-end font-semibold text-xs"
-        />
-      </td>
-
-      {/* 7. Volume */}
+      {/* 6. Volume */}
       <td className="hidden sm:table-cell px-4 py-3.5 text-right font-mono text-xs tabular-nums text-zinc-400">
         {formatNumber(stock.volume)}
       </td>
@@ -531,7 +520,6 @@ export function StockList({
                   <th className="hidden md:table-cell px-4 py-3">Region</th>
                   <th className="px-4 py-3 text-right">Price</th>
                   <th className="px-4 py-3 text-right">24h</th>
-                  <th className="hidden lg:table-cell px-4 py-3 text-right">7d</th>
                   <th className="hidden sm:table-cell px-4 py-3 text-right">Volume</th>
                   <th className="hidden sm:table-cell px-4 py-3 text-center w-24">Trend</th>
                   <th className="px-4 py-3 text-right w-20">Trade</th>
@@ -551,7 +539,6 @@ export function StockList({
                     <td className="hidden md:table-cell px-4 py-4"><Skeleton className="h-4 w-16 rounded" /></td>
                     <td className="px-4 py-4"><Skeleton className="ml-auto h-4 w-16 rounded" /></td>
                     <td className="px-4 py-4"><Skeleton className="ml-auto h-4 w-14 rounded" /></td>
-                    <td className="hidden lg:table-cell px-4 py-4"><Skeleton className="ml-auto h-4 w-14 rounded" /></td>
                     <td className="hidden sm:table-cell px-4 py-4"><Skeleton className="ml-auto h-4 w-16 rounded" /></td>
                     <td className="hidden sm:table-cell px-4 py-4"><Skeleton className="mx-auto h-4 w-12 rounded" /></td>
                     <td className="px-4 py-4"><Skeleton className="ml-auto h-7 w-12 rounded-lg" /></td>
@@ -577,7 +564,6 @@ export function StockList({
                   <th className="hidden md:table-cell px-4 py-3.5 font-bold">Region</th>
                   <th className="px-4 py-3.5 text-right font-bold">Price</th>
                   <th className="px-4 py-3.5 text-right font-bold">24h Change</th>
-                  <th className="hidden lg:table-cell px-4 py-3.5 text-right font-bold">7d Change</th>
                   <th className="hidden sm:table-cell px-4 py-3.5 text-right font-bold">Volume</th>
                   <th className="hidden sm:table-cell px-4 py-3.5 text-center w-24 font-bold">Trend</th>
                   <th className="px-4 py-3.5 text-right w-20 font-bold">Trade</th>

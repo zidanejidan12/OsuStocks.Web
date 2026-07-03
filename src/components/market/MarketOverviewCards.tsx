@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { TrendUp, TrendDown, Coins, Users, Trophy, ChartLineUp, CaretRight } from "@phosphor-icons/react";
+import { TrendUp, TrendDown, Coins, Trophy, CaretRight } from "@phosphor-icons/react";
 import type { MarketOverview } from "@/lib/api/types";
 import { Avatar } from "@/components/ui/Avatar";
 import { PriceChange } from "@/components/ui/PriceChange";
@@ -13,18 +12,6 @@ import { formatNumber, formatCompact } from "@/lib/format";
 import { spring } from "@/lib/motion";
 
 export function MarketOverviewCards({ overview }: { overview: MarketOverview }) {
-  // Live wiggle simulation for active traders
-  const [activeTraders, setActiveTraders] = useState(2481);
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveTraders(prev => prev + (Math.random() > 0.5 ? 1 : -1) * (Math.floor(Math.random() * 3) + 1));
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Derived market cap
-  const marketCap = overview.totalVolume * 2.45 + 4125900;
-
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
       {/* 1. Total Stocks */}
@@ -72,56 +59,7 @@ export function MarketOverviewCards({ overview }: { overview: MarketOverview }) 
         </div>
       </motion.div>
 
-      {/* 3. Market Cap */}
-      <motion.div
-        whileHover={{ y: -3 }}
-        transition={spring}
-        className="glass relative overflow-hidden rounded-2xl p-5 border border-zinc-800/80 hover:border-purple-500/30 hover:shadow-[0_0_25px_rgba(168,85,247,0.06)] group"
-      >
-        <div className="absolute top-0 left-0 w-8 h-[1px] bg-gradient-to-r from-purple-500/30 to-transparent" />
-        <div className="absolute top-0 left-0 w-[1px] h-8 bg-gradient-to-b from-purple-500/30 to-transparent" />
-        <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/3 rounded-full blur-2xl pointer-events-none group-hover:bg-purple-500/5 transition-all duration-500" />
-        <div className="flex items-center gap-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 group-hover:border-purple-500/30 transition-all duration-300">
-            <ChartLineUp size={20} weight="bold" />
-          </div>
-          <div>
-            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block">Market Cap</span>
-            <span className="text-2xl font-mono font-black text-zinc-100 mt-0.5 flex items-center gap-1.5">
-              <Coin />
-              {formatCompact(marketCap)}
-            </span>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* 4. Active Traders */}
-      <motion.div
-        whileHover={{ y: -3 }}
-        transition={spring}
-        className="glass relative overflow-hidden rounded-2xl p-5 border border-zinc-800/80 hover:border-emerald-500/30 hover:shadow-[0_0_25px_rgba(16,185,129,0.06)] group"
-      >
-        <div className="absolute top-0 left-0 w-8 h-[1px] bg-gradient-to-r from-emerald-500/30 to-transparent" />
-        <div className="absolute top-0 left-0 w-[1px] h-8 bg-gradient-to-b from-emerald-500/30 to-transparent" />
-        <div className="absolute top-4 right-4 flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
-          <span className="text-[8px] font-bold text-emerald-400 uppercase tracking-wider">Live</span>
-        </div>
-        <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/3 rounded-full blur-2xl pointer-events-none group-hover:bg-emerald-500/5 transition-all duration-500" />
-        <div className="flex items-center gap-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 group-hover:border-emerald-500/30 transition-all duration-300">
-            <Users size={20} weight="bold" />
-          </div>
-          <div>
-            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block">Active Traders</span>
-            <span className="text-2xl font-mono font-black text-zinc-100 mt-0.5 block">
-              {formatNumber(activeTraders)}
-            </span>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* 5. Top Gainer */}
+      {/* 3. Top Gainer */}
       {overview.topGainer ? (
         <Link href={`/stocks/${overview.topGainer.stockId}`} className="block">
           <motion.div
