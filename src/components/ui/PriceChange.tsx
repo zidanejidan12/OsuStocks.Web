@@ -44,7 +44,7 @@ export function PriceChange({
   const up = rounded > 0;
   const down = rounded < 0;
   const color = up
-    ? "text-cyan-400"
+    ? "text-emerald-400"
     : down
       ? "text-rose-400"
       : "text-zinc-400";
