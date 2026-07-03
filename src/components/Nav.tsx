@@ -18,6 +18,9 @@ import {
   SignIn,
   List,
   X,
+  Sun,
+  Moon,
+  Question,
 } from "@phosphor-icons/react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { useNotifications } from "@/lib/notifications/notifications-context";
@@ -34,6 +37,11 @@ const LINKS = [
   { href: "/missions", label: "Missions", Icon: Target },
   { href: "/portfolio", label: "Portfolio", Icon: ChartPieSlice },
   { href: "/wallet", label: "Wallet", Icon: Wallet },
+];
+
+const PUBLIC_LINKS = [
+  { href: "/trending", label: "Trending", Icon: Fire },
+  { href: "/leaderboard", label: "Leaderboard", Icon: Trophy },
 ];
 
 function isActiveHref(pathname: string, href: string): boolean {
@@ -67,11 +75,66 @@ function NotificationBell() {
   );
 }
 
+function ThemeToggle() {
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+
+  useEffect(() => {
+    const isLight = document.documentElement.classList.contains("light");
+    setTheme(isLight ? "light" : "dark");
+  }, []);
+
+  const toggleTheme = () => {
+    if (theme === "dark") {
+      document.documentElement.classList.add("light");
+      setTheme("light");
+    } else {
+      document.documentElement.classList.remove("light");
+      setTheme("dark");
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={toggleTheme}
+      aria-label="Toggle theme"
+      className="grid h-9 w-9 place-items-center rounded-lg text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-100 transition-colors"
+    >
+      {theme === "dark" ? <Sun size={18} weight="bold" /> : <Moon size={18} weight="bold" />}
+    </button>
+  );
+}
+
 export function Nav() {
   const pathname = usePathname();
+  if (pathname === "/login") return null;
   const { user, loading, logout } = useAuth();
   const { unreadCount } = useNotifications();
   const [open, setOpen] = useState(false);
+  const [showWelcomePopup, setShowWelcomePopup] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [dropdownOpen]);
+
+  useEffect(() => {
+    if (user && typeof window !== "undefined") {
+      const shouldShow = window.localStorage.getItem("show_welcome_toast");
+      if (shouldShow === "true") {
+        setShowWelcomePopup(true);
+        window.localStorage.removeItem("show_welcome_toast");
+      }
+    }
+  }, [user]);
 
   // The hamburger that opened the drawer — focus returns here on close so
   // keyboard users aren't dumped at the top of the document.
@@ -84,6 +147,7 @@ export function Nav() {
   useEffect(() => {
     /* eslint-disable-next-line react-hooks/set-state-in-effect */
     setOpen(false);
+    setDropdownOpen(false);
   }, [pathname]);
 
   // While the drawer is open: lock background scroll, close on Escape, mark the
@@ -148,133 +212,220 @@ export function Nav() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-white/5 bg-zinc-950/70 backdrop-blur-xl">
-        <nav className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4">
-          <Link href="/" className="group flex items-center gap-2.5">
-            <span
-              aria-hidden="true"
-              className="grid h-8 w-8 place-items-center rounded-lg bg-pink-500/15 text-pink-400 ring-1 ring-inset ring-pink-500/25 transition-transform group-hover:scale-105"
+      <header className="sticky top-0 z-50 bg-zinc-950/75 backdrop-blur-xl">
+        {/* Bottom glowing gradient border */}
+        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-pink-500/30 via-purple-500/20 to-cyan-500/30" />
+        
+        <nav className="mx-auto flex h-16 max-w-none w-full items-center justify-between px-6 sm:px-10 xl:px-12 relative">
+          
+          {/* Left: Mobile hamburger menu (visible below lg) */}
+          <div className="flex items-center gap-2 lg:hidden">
+            <button
+              ref={triggerRef}
+              type="button"
+              onClick={() => setOpen(true)}
+              aria-label="Open menu"
+              aria-expanded={open}
+              aria-controls="mobile-nav"
+              className="grid h-10 w-10 place-items-center rounded-xl text-zinc-400 bg-zinc-900/30 border border-zinc-800/60 transition-all hover:bg-zinc-800/60 hover:text-pink-400 hover:border-pink-500/30 active:scale-95"
             >
-              <ChartLineUp size={18} weight="bold" />
-            </span>
-            <span className="text-[15px] font-semibold tracking-tight">
-              <span className="text-pink-400">Osu</span>Stocks
-            </span>
-          </Link>
+              <List size={22} weight="bold" />
+            </button>
+          </div>
 
-          {/* Authenticated nav links — hidden for guests so they aren't sent into
-              login-walled pages; logged-out visitors only see the landing page. */}
-          {user && (
-          <ul className="ml-2 hidden items-center gap-1 text-sm lg:flex">
-            {LINKS.map(({ href, label, Icon }) => {
-              const active = isActiveHref(pathname, href);
-              return (
-                <li key={href}>
-                  <Link
-                    href={href}
-                    aria-current={active ? "page" : undefined}
-                    className={`relative flex items-center gap-2 rounded-lg px-3 py-1.5 transition-colors ${
-                      active
-                        ? "text-zinc-100"
-                        : "text-zinc-400 hover:text-zinc-100"
-                    }`}
-                  >
-                    {active && (
-                      <motion.span
-                        layoutId="nav-active"
-                        transition={spring}
-                        className="absolute inset-0 -z-10 rounded-lg bg-zinc-800/80 ring-1 ring-inset ring-white/5"
+          {/* Logo & Desktop Nav Links */}
+          <div className="flex items-center gap-4 xl:gap-8 lg:gap-5">
+            <Link href="/" className="group flex items-center gap-2.5">
+              <span
+                aria-hidden="true"
+                className="grid h-8 w-8 place-items-center rounded-lg bg-pink-500/15 text-pink-400 ring-1 ring-inset ring-pink-500/25 transition-all duration-300 group-hover:scale-105 group-hover:bg-pink-500/25 group-hover:shadow-[0_0_12px_rgba(236,72,153,0.4)]"
+              >
+                <ChartLineUp size={18} weight="bold" />
+              </span>
+              <span className="text-[15px] font-semibold tracking-tight transition-transform group-hover:translate-x-0.5">
+                <span className="text-pink-500 font-extrabold drop-shadow-[0_0_8px_rgba(236,72,153,0.5)] font-display">Osu</span>
+                <span className="text-zinc-50 dark:text-zinc-100 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] font-display">Stocks</span>
+              </span>
+            </Link>
+
+            {/* Desktop Navigation Links */}
+            <ul className="hidden items-center gap-1 xl:gap-2 text-sm lg:flex">
+              {(user ? LINKS : PUBLIC_LINKS).map(({ href, label, Icon }) => {
+                const active = isActiveHref(pathname, href);
+                return (
+                  <li key={href}>
+                    <Link
+                      href={href}
+                      aria-current={active ? "page" : undefined}
+                      className={`relative flex items-center gap-1.5 rounded-lg lg:px-2.5 lg:py-1.5 xl:px-4 xl:py-2 font-display text-xs uppercase tracking-wider font-extrabold transition-all duration-300 border ${
+                        active
+                          ? "text-white bg-gradient-to-r from-pink-500/10 to-purple-500/10 border-pink-500/30 shadow-[0_0_15px_rgba(236,72,153,0.15)]"
+                          : "text-zinc-400 border-transparent hover:text-pink-300 hover:bg-zinc-900/40 hover:border-zinc-800"
+                      }`}
+                    >
+                      <Icon 
+                        size={15} 
+                        weight={active ? "fill" : "regular"} 
+                        className={active ? "text-pink-400" : "transition-colors"}
                       />
-                    )}
-                    <Icon size={16} weight={active ? "fill" : "regular"} />
-                    {label}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-          )}
+                      {label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
 
-          {/* Desktop auth cluster (lg+) — sponsor credit lives sitewide in the
-              ticker + footer (and prominently on the landing/About pages), so the
-              nav stays uncluttered. */}
-          <div className="ml-auto hidden items-center gap-2 text-sm sm:gap-3 lg:flex">
-            {loading ? (
-              <Spinner />
-            ) : user ? (
-              <>
-                <NotificationBell />
-                {user.role === "Admin" && (
-                  <Link
-                    href="/admin"
-                    aria-label="Admin"
-                    className={`grid h-9 w-9 place-items-center rounded-lg transition-colors ${
-                      pathname.startsWith("/admin")
-                        ? "bg-zinc-800/80 text-pink-300 ring-1 ring-inset ring-pink-500/30"
-                        : "text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-100"
-                    }`}
-                  >
-                    <GearSix size={18} weight="bold" />
-                  </Link>
-                )}
+          {/* Right: Actions / Auth Cluster */}
+          <div className="flex items-center gap-1.5 xl:gap-2.5">
+            <ThemeToggle />
+            
+            {/* Desktop Auth Links */}
+            <div className="hidden lg:flex items-center gap-1.5 xl:gap-2.5">
+              {loading ? (
+                <Spinner />
+              ) : user ? (
+                <>
+                  <NotificationBell />
+                  {user.role === "Admin" && (
+                    <Link
+                      href="/admin"
+                      aria-label="Admin Panel"
+                      title="Admin Panel"
+                      className={`grid h-9 w-9 place-items-center rounded-xl transition-all duration-200 cursor-pointer ${
+                        pathname.startsWith("/admin")
+                          ? "bg-pink-500/10 text-pink-400 border border-pink-500/30 shadow-[0_0_12px_rgba(236,72,153,0.25)]"
+                          : "text-zinc-400 border border-transparent hover:bg-zinc-900/60 hover:border-zinc-800 hover:text-zinc-200"
+                      }`}
+                    >
+                      <GearSix size={18} weight="bold" className={pathname.startsWith("/admin") ? "animate-[spin_10s_linear_infinite]" : ""} />
+                    </Link>
+                  )}
+                  <div className="relative" ref={dropdownRef}>
+                    <button
+                      type="button"
+                      aria-label="Toggle user menu"
+                      onClick={() => setDropdownOpen(!dropdownOpen)}
+                      className="shrink-0 rounded-full ring-2 ring-transparent transition-all hover:ring-pink-500/40 focus:outline-none cursor-pointer"
+                    >
+                      <Avatar src={user.avatarUrl} name={user.username} size="sm" />
+                    </button>
+                    
+                    <AnimatePresence>
+                      {dropdownOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                          transition={{ duration: 0.15, ease: "easeOut" }}
+                          className="absolute right-0 mt-2.5 w-52 rounded-2xl border border-zinc-800 bg-zinc-950/95 p-1.5 shadow-[0_10px_35px_rgba(0,0,0,0.6)] backdrop-blur-xl z-50 text-left"
+                        >
+                          <div className="flex items-center gap-2.5 p-2 bg-zinc-900/20 rounded-xl mb-1">
+                            <Avatar src={user.avatarUrl} name={user.username} size="sm" />
+                            <div className="min-w-0 flex-1">
+                              <div className="truncate text-xs font-black text-zinc-100">{user.username}</div>
+                              <div className="truncate text-[8px] font-bold uppercase tracking-wider text-pink-400 font-mono mt-0.5">
+                                {user.equippedTitleCode || user.role}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="h-[1px] bg-zinc-850/60 my-1" />
+                          
+                          <div className="space-y-0.5">
+                            <Link
+                              href="/portfolio"
+                              onClick={() => setDropdownOpen(false)}
+                              className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-400 hover:text-zinc-105 hover:bg-zinc-900/40 transition-colors"
+                            >
+                              <ChartPieSlice size={13} weight="bold" className="text-pink-400/80" />
+                              Trading Portfolio
+                            </Link>
+                            <Link
+                              href="/wallet"
+                              onClick={() => setDropdownOpen(false)}
+                              className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-400 hover:text-zinc-105 hover:bg-zinc-900/40 transition-colors"
+                            >
+                              <Wallet size={13} weight="bold" className="text-pink-400/80" />
+                              Capital Wallet
+                            </Link>
+                            <Link
+                              href="/missions"
+                              onClick={() => setDropdownOpen(false)}
+                              className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-400 hover:text-zinc-105 hover:bg-zinc-900/40 transition-colors"
+                            >
+                              <Target size={13} weight="bold" className="text-pink-400/80" />
+                              Daily Missions
+                            </Link>
+                            <Link
+                              href="/achievements"
+                              onClick={() => setDropdownOpen(false)}
+                              className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-400 hover:text-zinc-105 hover:bg-zinc-900/40 transition-colors"
+                            >
+                              <Medal size={13} weight="bold" className="text-pink-400/80" />
+                              Achievements
+                            </Link>
+                            {user.role === "Admin" && (
+                              <Link
+                                href="/admin"
+                                onClick={() => setDropdownOpen(false)}
+                                className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-400 hover:text-zinc-105 hover:bg-zinc-900/40 transition-colors"
+                              >
+                                <GearSix size={13} weight="bold" className="text-pink-400/80" />
+                                Admin Console
+                              </Link>
+                            )}
+                          </div>
+                          
+                          <div className="h-[1px] bg-zinc-850/60 my-1" />
+                          
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setDropdownOpen(false);
+                              logout();
+                            }}
+                            className="w-full flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-rose-400 hover:text-rose-350 hover:bg-rose-500/5 transition-colors cursor-pointer"
+                          >
+                            <SignOut size={13} weight="bold" />
+                            Sign Out
+                          </button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </>
+              ) : (
                 <Link
-                  href="/portfolio"
-                  aria-label={user.username}
-                  title={user.username}
-                  className="shrink-0 rounded-full ring-2 ring-transparent transition-colors hover:ring-pink-500/40"
+                  href="/login"
+                  className="relative inline-flex items-center gap-1.5 lg:px-3 lg:py-1.5 xl:px-5 xl:py-2 overflow-hidden rounded-xl bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-500 font-display text-xs font-black uppercase tracking-widest text-white shadow-[0_0_15px_rgba(236,72,153,0.35)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_25px_rgba(6,182,212,0.5)] hover:brightness-110 active:scale-95 group/login"
                 >
-                  <Avatar src={user.avatarUrl} name={user.username} size="sm" />
+                  <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover/login:animate-[shimmer_1.5s_infinite]" />
+                  <SignIn size={14} weight="bold" />
+                  Login
                 </Link>
-                <button
-                  type="button"
-                  onClick={logout}
-                  aria-label="Logout"
-                  className={buttonClasses({ variant: "secondary", size: "sm" })}
+              )}
+            </div>
+
+            {/* Mobile Auth/Toggle (visible below lg) */}
+            <div className="flex lg:hidden items-center gap-2">
+              {loading ? (
+                <Spinner />
+              ) : user ? (
+                <NotificationBell />
+              ) : (
+                <Link
+                  href="/login"
+                  className="relative inline-flex items-center gap-1.5 px-4 py-1.5 overflow-hidden rounded-xl bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-500 font-display text-xs font-black uppercase tracking-widest text-white shadow-[0_0_12px_rgba(236,72,153,0.3)] transition-all duration-300 hover:scale-105 active:scale-95 group/login"
                 >
-                  <SignOut size={16} weight="bold" />
-                  Logout
-                </button>
-              </>
-            ) : (
-              <Link
-                href="/login"
-                className={buttonClasses({ variant: "primary", size: "sm" })}
-              >
-                <SignIn size={16} weight="bold" />
-                Login
-              </Link>
-            )}
+                  <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover/login:animate-[shimmer_1.5s_infinite]" />
+                  <SignIn size={13} weight="bold" />
+                  Login
+                </Link>
+              )}
+            </div>
           </div>
 
-          {/* Mobile cluster (below lg): guests get a Login button; signed-in users get bell + menu */}
-          <div className="ml-auto flex items-center gap-2 lg:hidden">
-            {loading ? (
-              <Spinner />
-            ) : user ? (
-              <>
-                <NotificationBell />
-                <button
-                  ref={triggerRef}
-                  type="button"
-                  onClick={() => setOpen(true)}
-                  aria-label="Open menu"
-                  aria-expanded={open}
-                  aria-controls="mobile-nav"
-                  className="grid h-9 w-9 place-items-center rounded-lg text-zinc-300 transition-colors hover:bg-zinc-800/60 hover:text-zinc-100"
-                >
-                  <List size={20} weight="bold" />
-                </button>
-              </>
-            ) : (
-              <Link
-                href="/login"
-                className={buttonClasses({ variant: "primary", size: "sm" })}
-              >
-                <SignIn size={16} weight="bold" />
-                Login
-              </Link>
-            )}
-          </div>
         </nav>
       </header>
 
@@ -294,34 +445,37 @@ export function Nav() {
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
               variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }}
             />
-            <motion.div
+             <motion.div
               ref={panelRef}
               id="mobile-nav"
               role="dialog"
               aria-modal="true"
               aria-label="Menu"
-              className="absolute right-0 top-0 flex h-full w-[82%] max-w-xs flex-col border-l border-white/10 bg-zinc-950 shadow-2xl"
-              variants={{ hidden: { x: "100%" }, show: { x: 0 } }}
+              className="absolute left-0 top-0 flex h-full w-[82%] max-w-xs flex-col border-r border-white/10 bg-zinc-950 shadow-2xl"
+              variants={{ hidden: { x: "-100%" }, show: { x: 0 } }}
               transition={spring}
             >
               <div className="flex h-16 shrink-0 items-center justify-between border-b border-white/5 px-4">
-                <span className="text-[15px] font-semibold tracking-tight">
-                  <span className="text-pink-400">Osu</span>Stocks
+                <span className="text-[15px] font-semibold tracking-tight text-zinc-50 dark:text-zinc-100">
+                  <span className="text-pink-500">Osu</span>Stocks
                 </span>
-                <button
-                  autoFocus
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  aria-label="Close menu"
-                  className="grid h-9 w-9 place-items-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-800/60 hover:text-zinc-100"
-                >
-                  <X size={18} weight="bold" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <ThemeToggle />
+                  <button
+                    autoFocus
+                    type="button"
+                    onClick={() => setOpen(false)}
+                    aria-label="Close menu"
+                    className="grid h-9 w-9 place-items-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-800/60 hover:text-zinc-100"
+                  >
+                    <X size={18} weight="bold" />
+                  </button>
+                </div>
               </div>
 
               <nav className="flex-1 overflow-y-auto p-3">
                 <ul className="flex flex-col gap-1">
-                  {LINKS.map(({ href, label, Icon }) => {
+                  {(user ? LINKS : PUBLIC_LINKS).map(({ href, label, Icon }) => {
                     const active = isActiveHref(pathname, href);
                     return (
                       <li key={href}>
@@ -370,14 +524,14 @@ export function Nav() {
                         aria-current={
                           pathname.startsWith("/admin") ? "page" : undefined
                         }
-                        className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                        className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold uppercase tracking-wider text-[10px] transition-all border ${
                           pathname.startsWith("/admin")
-                            ? "bg-zinc-800/80 text-pink-300 ring-1 ring-inset ring-pink-500/30"
-                            : "text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100"
+                            ? "bg-pink-500/10 text-pink-400 border-pink-500/25 shadow-[0_0_12px_rgba(236,72,153,0.15)]"
+                            : "text-zinc-400 border-transparent hover:bg-zinc-900 hover:text-zinc-200"
                         }`}
                       >
-                        <GearSix size={18} weight="bold" />
-                        Admin
+                        <GearSix size={16} weight="bold" className={pathname.startsWith("/admin") ? "animate-[spin_10s_linear_infinite] text-pink-400" : "text-zinc-500"} />
+                        Admin Console
                       </Link>
                     </li>
                   )}
@@ -428,6 +582,77 @@ export function Nav() {
               </div>
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Welcome Popup Modal */}
+      <AnimatePresence>
+        {showWelcomePopup && user && (
+          <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+            {/* Backdrop overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowWelcomePopup(false)}
+              className="absolute inset-0 bg-black/75 backdrop-blur-sm"
+            />
+
+            {/* Modal Card */}
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 350 }}
+              className="relative w-full max-w-sm overflow-hidden rounded-[2.5rem] border border-pink-500/35 bg-zinc-950/90 p-8 shadow-[0_0_50px_rgba(236,72,153,0.3)] backdrop-blur-xl text-center z-10"
+            >
+              {/* Corner decorative light path */}
+              <div className="absolute -left-16 -top-16 w-36 h-36 bg-pink-500/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -right-16 -bottom-16 w-36 h-36 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+
+              {/* Close button */}
+              <button
+                type="button"
+                onClick={() => setShowWelcomePopup(false)}
+                className="absolute top-4 right-4 p-2 rounded-xl text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50 transition-colors"
+                aria-label="Close welcome message"
+              >
+                <X size={16} weight="bold" />
+              </button>
+
+              {/* Glowing Avatar Frame */}
+              <div className="relative mx-auto w-24 h-24 mb-5 flex items-center justify-center">
+                {/* Rotating accent aura */}
+                <div className="absolute inset-0 rounded-full border-2 border-dashed border-pink-500/40 animate-spin-slow" />
+                <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-pink-500 to-cyan-400 opacity-20 blur-md" />
+                <div className="relative rounded-full ring-4 ring-zinc-900 shadow-2xl">
+                  <Avatar src={user.avatarUrl} name={user.username} size="lg" />
+                </div>
+              </div>
+
+              {/* Text */}
+              <span className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.35)]">
+                Welcome back
+              </span>
+              <h2 className="mt-2 text-2xl font-black tracking-tight font-display text-zinc-50 leading-tight">
+                Hi, <span className="bg-gradient-to-r from-zinc-100 via-pink-100 to-pink-500 bg-clip-text text-transparent animate-gradient-text drop-shadow-[0_0_15px_rgba(236,72,153,0.35)]">{user.username}</span>!
+              </h2>
+
+              <p className="mt-4 text-xs sm:text-sm leading-relaxed text-zinc-400">
+                You are successfully logged into OsuStocks. Start tracking performance, buying shares, and dominating the leaderboard!
+              </p>
+
+              {/* Action Button */}
+              <button
+                type="button"
+                onClick={() => setShowWelcomePopup(false)}
+                className="mt-6 w-full relative inline-flex items-center justify-center h-11 overflow-hidden rounded-xl bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-500 font-display text-xs font-black uppercase tracking-widest text-white shadow-[0_0_15px_rgba(236,72,153,0.35)] transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_25px_rgba(6,182,212,0.5)] hover:brightness-110 active:scale-95 group/btn"
+              >
+                <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover/btn:animate-[shimmer_1.5s_infinite]" />
+                Start Trading
+              </button>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </>

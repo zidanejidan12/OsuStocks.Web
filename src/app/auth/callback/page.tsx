@@ -55,6 +55,9 @@ export default function AuthCallbackPage() {
 
         setAuth({ accessToken, expiresAt: expiresAt ?? twoHoursFromNow() });
         analytics.track("login_completed");
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem("show_welcome_toast", "true");
+        }
         await refresh();
         if (!cancelled) router.replace(returnTo);
       } catch {

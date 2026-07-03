@@ -56,7 +56,6 @@ import { useToast } from "@/components/ui/Toast";
 
 const TIERS: TrackingTier[] = ["Tier1", "Tier2", "Tier3"];
 
-// Wallet-ledger labels + which types are money IN (rest are money OUT). Mirrors /wallet.
 const WALLET_TYPES: WalletTransactionType[] = [
   "InitialGrant",
   "BuyStock",
@@ -89,16 +88,21 @@ const WALLET_CREDIT_TYPES: ReadonlySet<WalletTransactionType> = new Set([
 ]);
 
 const inputClass =
-  "w-full rounded-xl border border-zinc-800 bg-zinc-900/60 px-3.5 py-2.5 text-sm font-mono tabular-nums text-zinc-100 transition-colors focus:border-pink-500/50 focus:outline-none focus:ring-2 focus:ring-pink-500/20";
+  "w-full rounded-xl border border-zinc-800/80 bg-zinc-950/40 px-3.5 py-2.5 text-sm font-mono tabular-nums text-zinc-100 transition-all focus:border-pink-500/50 focus:outline-none focus:ring-1 focus:ring-pink-500/30";
 
-// Same look as inputClass but auto-width (for inline filter dropdowns). Defined
-// separately rather than overriding w-full — Tailwind precedence is by stylesheet
-// order, not className order, so "w-full w-auto" wouldn't reliably win.
 const filterSelectClass =
-  "rounded-xl border border-zinc-800 bg-zinc-900/60 px-3 py-2 text-sm text-zinc-100 transition-colors focus:border-pink-500/50 focus:outline-none focus:ring-2 focus:ring-pink-500/20";
+  "rounded-xl border border-zinc-800/80 bg-zinc-950/40 px-3 py-2 text-sm text-zinc-200 transition-all focus:border-pink-500/50 focus:outline-none focus:ring-1 focus:ring-pink-500/30 cursor-pointer";
 
 function PageShell({ children }: { children: React.ReactNode }) {
-  return <div className="mx-auto max-w-5xl px-4 py-10 sm:py-14">{children}</div>;
+  return (
+    <div className="relative w-full overflow-hidden min-h-screen">
+      <div className="absolute top-0 right-0 -z-10 h-[350px] w-[350px] rounded-full bg-violet-500/12 dark:bg-violet-500/5 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 -z-10 h-[350px] w-[350px] rounded-full bg-fuchsia-500/12 dark:bg-fuchsia-500/5 blur-[120px] pointer-events-none" />
+      <div className="relative z-10 mx-auto max-w-5xl px-4 py-10 sm:py-14">
+        {children}
+      </div>
+    </div>
+  );
 }
 
 function errorMessage(err: unknown, fallback: string): string {
@@ -122,10 +126,6 @@ function DecimalField({
   step: number;
   hint?: string;
 }) {
-  // Track the raw text so the user can freely type partial decimals like "0.",
-  // "0.0", or "0.0001" without each keystroke being clamped/parsed back into a
-  // number (which would, e.g., snap "0." to the min). We only clamp + commit on
-  // blur, and re-sync the text when the committed value changes externally.
   const [text, setText] = useState(() => String(value));
   const [editing, setEditing] = useState(false);
 
@@ -145,7 +145,7 @@ function DecimalField({
 
   return (
     <label className="flex flex-col gap-1.5">
-      <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">
+      <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-500 font-mono">
         {label}
       </span>
       <input
@@ -160,7 +160,7 @@ function DecimalField({
         onBlur={commit}
         className={inputClass}
       />
-      {hint && <span className="text-[11px] leading-snug text-zinc-600">{hint}</span>}
+      {hint && <span className="text-[10px] leading-snug text-zinc-550 font-mono mt-1">{hint}</span>}
     </label>
   );
 }
@@ -169,7 +169,6 @@ function DecimalField({
 function MarketSettingsCard() {
   const { notify } = useToast();
   const [settings, setSettings] = useState<MarketSettings | null>(null);
-  // Last-saved snapshot, used to detect unsaved edits.
   const [savedSettings, setSavedSettings] = useState<MarketSettings | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
@@ -207,7 +206,6 @@ function MarketSettingsCard() {
     if (!settings) return;
     setSaving(true);
     try {
-      // PUT returns 204 — keep the locally-edited values rather than clearing state.
       await updateMarketSettings(settings);
       setSavedSettings(settings);
       notify({ tone: "success", title: "Market settings saved" });
@@ -223,10 +221,11 @@ function MarketSettingsCard() {
   };
 
   return (
-    <Card>
+    <Card className="relative overflow-hidden border border-zinc-805 bg-zinc-955/20 hover:border-pink-500/10 p-5 transition-all duration-300 shadow-md">
+      <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-transparent" />
       <div className="mb-5 flex items-center gap-2">
-        <GearSix size={18} weight="bold" className="text-pink-400" />
-        <h2 className="text-sm font-semibold text-zinc-100">Market Settings</h2>
+        <GearSix size={16} className="text-pink-400" />
+        <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-405">Market Configuration</h2>
       </div>
 
       {!loaded ? (
@@ -238,7 +237,7 @@ function MarketSettingsCard() {
           </div>
         </div>
       ) : unavailable || !settings ? (
-        <p className="py-4 text-sm text-zinc-500">
+        <p className="py-4 text-sm text-zinc-500 font-mono">
           Market settings are unavailable right now.
         </p>
       ) : (
@@ -249,32 +248,32 @@ function MarketSettingsCard() {
             aria-checked={settings.isMaintenanceMode}
             aria-label="Maintenance mode"
             onClick={() => patch({ isMaintenanceMode: !settings.isMaintenanceMode })}
-            className="flex w-full items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 text-left transition-colors hover:border-zinc-700"
+            className="flex w-full items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900/20 p-4 text-left transition-colors hover:border-zinc-700 cursor-pointer"
           >
             <span className="flex items-center gap-2.5">
               <Power
                 size={18}
                 weight="bold"
-                className={settings.isMaintenanceMode ? "text-amber-400" : "text-zinc-500"}
+                className={settings.isMaintenanceMode ? "text-amber-400 drop-shadow-[0_0_8px_rgba(245,158,11,0.3)]" : "text-zinc-500"}
               />
-              <span className="text-sm font-medium text-zinc-100">Maintenance mode</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-zinc-200">Maintenance mode</span>
             </span>
             <span
               className={`relative h-6 w-11 rounded-full transition-colors ${
-                settings.isMaintenanceMode ? "bg-amber-500" : "bg-zinc-700"
+                settings.isMaintenanceMode ? "bg-amber-500" : "bg-zinc-800"
               }`}
             >
               <motion.span
                 layout
                 transition={spring}
-                className={`absolute top-0.5 h-5 w-5 rounded-full bg-white ${
+                className={`absolute top-0.5 h-5 w-5 rounded-full bg-zinc-100 ${
                   settings.isMaintenanceMode ? "right-0.5" : "left-0.5"
                 }`}
               />
             </span>
           </button>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
             <DecimalField
               label="pp multiplier"
               value={settings.ppMultiplier}
@@ -303,21 +302,29 @@ function MarketSettingsCard() {
               min={0}
               max={10}
               step={0.05}
-              hint="Scales the progressive trade fee. 1 = baseline, 0 = no fee. Max 10×."
+              hint="1 = baseline, 0 = no fee. Max 10×."
             />
           </div>
 
-          <div className="flex items-center justify-end gap-3">
+          <div className="flex items-center justify-end gap-3 pt-2">
             {dirty && !saving && (
-              <span className="flex items-center gap-1.5 text-xs text-amber-400" aria-live="polite">
-                <span className="h-1.5 w-1.5 rounded-full bg-amber-400" aria-hidden="true" />
+              <span className="flex items-center gap-1.5 text-xs text-amber-400 font-mono" aria-live="polite">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" aria-hidden="true" />
                 Unsaved changes
               </span>
             )}
-            <Button onClick={save} disabled={saving || !dirty} loading={saving}>
-              <FloppyDisk size={16} weight="bold" />
+            <button
+              onClick={save}
+              disabled={saving || !dirty}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer ${
+                dirty 
+                  ? "bg-pink-500 text-white hover:bg-pink-400 hover:shadow-[0_0_15px_rgba(236,72,153,0.3)]" 
+                  : "bg-zinc-800 text-zinc-500 cursor-not-allowed border border-transparent"
+              }`}
+            >
+              <FloppyDisk size={14} weight="bold" />
               {saving ? "Saving…" : "Save settings"}
-            </Button>
+            </button>
           </div>
         </div>
       )}
@@ -326,7 +333,7 @@ function MarketSettingsCard() {
 }
 
 // --- Tracked players -------------------------------------------------------
-const PAGE_SIZE = 25;
+const TRACKED_PAGE_SIZE = 25;
 
 function TrackedPlayersCard() {
   const { notify } = useToast();
@@ -340,18 +347,15 @@ function TrackedPlayersCard() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  // Tracked-player id awaiting a remove confirmation, if any.
   const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
-  // When the confirm prompt appears, move focus to the safe "No" button so an
-  // accidental Enter/Space cancels rather than destroys.
   const cancelRemoveRef = useRef<HTMLButtonElement>(null);
+
   useEffect(() => {
     if (confirmRemoveId) cancelRemoveRef.current?.focus();
   }, [confirmRemoveId]);
 
-  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(totalCount / TRACKED_PAGE_SIZE));
 
-  // Debounce the search box and reset to the first page whenever the term changes.
   useEffect(() => {
     const handle = setTimeout(() => {
       setDebouncedSearch(search.trim());
@@ -364,7 +368,7 @@ function TrackedPlayersCard() {
     try {
       const result = await getTrackedPlayers({
         page,
-        pageSize: PAGE_SIZE,
+        pageSize: TRACKED_PAGE_SIZE,
         search: debouncedSearch || undefined,
       });
       setPlayers(result.items);
@@ -378,14 +382,12 @@ function TrackedPlayersCard() {
   }, [page, debouncedSearch]);
 
   useEffect(() => {
-    // Reload whenever the page or (debounced) search term changes.
-    /* eslint-disable-next-line react-hooks/set-state-in-effect */
     load();
   }, [load]);
 
   const onAdd = async () => {
     const id = Number(osuUserId);
-    if (!Number.isFinite(id) || id <= 0) {
+    if (!osuUserId || !Number.isFinite(id) || id <= 0) {
       notify({ tone: "danger", title: "Enter a valid osu! user ID" });
       return;
     }
@@ -394,8 +396,6 @@ function TrackedPlayersCard() {
       const created = await addTrackedPlayer({ osuUserId: id, tier });
       setOsuUserId("");
       notify({ tone: "success", title: `Tracking ${created.username || id}` });
-      // Jump to an unfiltered first page and reload so the new player and counts
-      // reflect server-side ordering/pagination.
       setSearch("");
       if (page === 1 && debouncedSearch === "") {
         load();
@@ -428,7 +428,7 @@ function TrackedPlayersCard() {
       );
       notify({
         tone: "danger",
-        title: "Couldn't update player",
+        title: "Couldn't update player status",
         message: errorMessage(err, "Please try again."),
       });
     }
@@ -454,16 +454,17 @@ function TrackedPlayersCard() {
   };
 
   return (
-    <Card>
+    <Card className="relative overflow-hidden border border-zinc-805 bg-zinc-955/20 hover:border-pink-500/10 p-5 transition-all duration-300 shadow-md">
+      <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-transparent" />
       <div className="mb-5 flex items-center gap-2">
-        <UsersThree size={18} weight="bold" className="text-pink-400" />
-        <h2 className="text-sm font-semibold text-zinc-100">Tracked Players</h2>
+        <UsersThree size={16} className="text-pink-400" />
+        <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-405">Tracked Players</h2>
       </div>
 
       {/* Add form */}
-      <div className="mb-5 flex flex-col gap-3 rounded-xl border border-zinc-800 bg-zinc-900/40 p-4 sm:flex-row sm:items-end">
+      <div className="mb-5 flex flex-col gap-3 rounded-xl border border-zinc-800/80 bg-zinc-900/20 p-4 sm:flex-row sm:items-end">
         <label className="flex flex-1 flex-col gap-1.5">
-          <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">
+          <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-500 font-mono">
             osu! user ID
           </span>
           <input
@@ -475,9 +476,9 @@ function TrackedPlayersCard() {
             className={inputClass}
           />
         </label>
-        <label className="flex flex-col gap-1.5">
-          <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">
-            Tier
+        <label className="flex flex-col gap-1.5 sm:w-36">
+          <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-500 font-mono">
+            Tracking Tier
           </span>
           <select
             value={tier}
@@ -491,10 +492,14 @@ function TrackedPlayersCard() {
             ))}
           </select>
         </label>
-        <Button onClick={onAdd} disabled={adding}>
-          <Plus size={16} weight="bold" />
+        <button
+          onClick={onAdd}
+          disabled={adding}
+          className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-pink-500 hover:bg-pink-400 text-white text-xs font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer disabled:opacity-40 shadow-sm"
+        >
+          <Plus size={14} weight="bold" />
           {adding ? "Adding…" : "Add"}
-        </Button>
+        </button>
       </div>
 
       {/* Search + count */}
@@ -514,7 +519,7 @@ function TrackedPlayersCard() {
           />
         </div>
         {loaded && !unavailable && (
-          <span className="shrink-0 font-mono text-xs tabular-nums text-zinc-500">
+          <span className="shrink-0 font-mono text-xs font-semibold tabular-nums text-zinc-500">
             {formatNumber(totalCount)} tracked
           </span>
         )}
@@ -527,12 +532,12 @@ function TrackedPlayersCard() {
           ))}
         </div>
       ) : unavailable ? (
-        <p className="py-4 text-sm text-zinc-500">
+        <p className="py-4 text-sm text-zinc-500 font-mono">
           The tracked-players service is unavailable right now.
         </p>
       ) : players.length === 0 ? (
         <EmptyState
-          icon={<UsersThree size={20} weight="bold" />}
+          icon={<UsersThree size={20} weight="bold" className="text-zinc-650" />}
           title={debouncedSearch ? "No matches" : "No tracked players"}
           message={
             debouncedSearch
@@ -542,7 +547,7 @@ function TrackedPlayersCard() {
         />
       ) : (
         <motion.ul
-          className="divide-y divide-zinc-800/60 overflow-hidden rounded-xl border border-zinc-800/80"
+          className="divide-y divide-zinc-850/60 overflow-hidden rounded-xl border border-zinc-800/80 bg-zinc-950/20 shadow-[0_4px_16px_rgba(0,0,0,0.2)]"
           variants={staggerContainer}
           initial="hidden"
           animate="show"
@@ -551,7 +556,7 @@ function TrackedPlayersCard() {
             <motion.li
               key={p.trackedPlayerId}
               variants={fadeUp}
-              className="flex items-center gap-3 px-4 py-3"
+              className="flex items-center gap-3 px-4 py-3 hover:bg-zinc-900/20 transition-colors"
             >
               <Avatar src={p.avatarUrl} name={p.username || String(p.osuUserId)} size="sm" />
               <div className="min-w-0 flex-1">
@@ -559,53 +564,50 @@ function TrackedPlayersCard() {
                   {p.stockId ? (
                     <Link
                       href={`/stocks/${p.stockId}`}
-                      className="truncate font-medium text-zinc-100 hover:text-pink-300"
+                      className="truncate text-xs font-bold text-zinc-200 hover:text-pink-400 transition-colors"
                     >
                       {p.username || `osu! #${p.osuUserId}`}
                     </Link>
                   ) : (
-                    <span className="truncate font-medium text-zinc-100">
+                    <span className="truncate text-xs font-bold text-zinc-200">
                       {p.username || `osu! #${p.osuUserId}`}
                     </span>
                   )}
-                  <Badge tone="neutral">{p.tier}</Badge>
+                  <Badge tone="neutral" className="text-[8px] font-bold uppercase tracking-wider py-0.5 px-1.5">{p.tier}</Badge>
                 </div>
-                <span className="font-mono text-xs tabular-nums text-zinc-500">
+                <span className="font-mono text-[10px] font-semibold tracking-wide text-zinc-500">
                   #{p.osuUserId}
                 </span>
               </div>
               {confirmRemoveId === p.trackedPlayerId ? (
-                <div className="flex shrink-0 items-center gap-2">
-                  <span className="text-xs text-zinc-400">Remove?</span>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400 mr-1">Remove?</span>
                   <button
                     type="button"
                     onClick={() => onRemove(p)}
-                    aria-label={`Confirm remove ${p.username || p.osuUserId}`}
-                    className="rounded-lg bg-rose-500/15 px-2.5 py-1.5 text-xs font-medium text-rose-300 ring-1 ring-inset ring-rose-500/30 transition-colors hover:bg-rose-500/25"
+                    className="rounded-lg bg-rose-500/10 px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-wider text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 cursor-pointer"
                   >
-                    Yes
+                    Confirm
                   </button>
                   <button
                     ref={cancelRemoveRef}
                     type="button"
                     onClick={() => setConfirmRemoveId(null)}
-                    aria-label="Cancel remove"
-                    className="rounded-lg bg-zinc-800/70 px-2.5 py-1.5 text-xs font-medium text-zinc-300 ring-1 ring-inset ring-zinc-700/50 transition-colors hover:bg-zinc-800"
+                    className="rounded-lg bg-zinc-900 px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-wider text-zinc-400 border border-zinc-800 hover:bg-zinc-800 cursor-pointer"
                   >
-                    No
+                    Cancel
                   </button>
                 </div>
               ) : (
-                <>
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => onToggleActive(p)}
                     aria-pressed={p.isActive}
-                    aria-label={`${p.isActive ? "Pause" : "Activate"} ${p.username || p.osuUserId}`}
-                    className={`rounded-lg px-2.5 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors ${
+                    className={`rounded-lg px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-wider border cursor-pointer transition-all ${
                       p.isActive
-                        ? "bg-emerald-500/15 text-emerald-300 ring-emerald-500/30 hover:bg-emerald-500/25"
-                        : "bg-zinc-800/70 text-zinc-400 ring-zinc-700/50 hover:bg-zinc-800"
+                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20"
+                        : "bg-zinc-900/60 text-zinc-500 border-zinc-800 hover:text-zinc-400 hover:bg-zinc-800"
                     }`}
                   >
                     {p.isActive ? "Active" : "Paused"}
@@ -613,12 +615,11 @@ function TrackedPlayersCard() {
                   <button
                     type="button"
                     onClick={() => setConfirmRemoveId(p.trackedPlayerId)}
-                    aria-label={`Remove ${p.username || p.osuUserId}`}
-                    className="rounded-lg p-2 text-zinc-500 transition-colors hover:bg-rose-500/10 hover:text-rose-400"
+                    className="rounded-lg p-2 text-zinc-500 hover:bg-rose-500/10 hover:text-rose-400 cursor-pointer transition-all"
                   >
-                    <Trash size={16} weight="bold" />
+                    <Trash size={14} weight="bold" />
                   </button>
-                </>
+                </div>
               )}
             </motion.li>
           ))}
@@ -631,22 +632,22 @@ function TrackedPlayersCard() {
             type="button"
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page <= 1}
-            className="flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:border-zinc-700 disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/40 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-350 transition-colors hover:border-zinc-700 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
           >
-            <CaretLeft size={14} weight="bold" />
+            <CaretLeft size={12} weight="bold" />
             Prev
           </button>
-          <span className="font-mono text-xs tabular-nums text-zinc-500">
+          <span className="font-mono text-xs font-semibold tabular-nums text-zinc-500">
             Page {page} / {totalPages}
           </span>
           <button
             type="button"
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page >= totalPages}
-            className="flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:border-zinc-700 disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/40 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-350 transition-colors hover:border-zinc-700 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
           >
             Next
-            <CaretRight size={14} weight="bold" />
+            <CaretRight size={12} weight="bold" />
           </button>
         </div>
       )}
@@ -659,16 +660,15 @@ type MonitorTab = "trades" | "wallet";
 
 function FilterChip({ label, value, onClear }: { label: string; value: string; onClear: () => void }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-lg border border-pink-500/30 bg-pink-500/10 py-1 pl-2.5 pr-1 text-xs text-pink-200">
-      <span className="text-pink-400/70">{label}:</span>
-      <span className="max-w-[10rem] truncate font-medium">{value}</span>
+    <span className="inline-flex items-center gap-1.5 rounded-lg border border-pink-500/30 bg-pink-500/10 py-1 pl-2.5 pr-1 text-[9px] font-bold uppercase tracking-wider text-pink-300">
+      <span className="text-pink-400/80 font-mono">{label}:</span>
+      <span className="max-w-[10rem] truncate">{value}</span>
       <button
         type="button"
         onClick={onClear}
-        aria-label={`Clear ${label} filter`}
-        className="rounded-md p-0.5 text-pink-300/70 transition-colors hover:bg-pink-500/20 hover:text-pink-200"
+        className="rounded-md p-0.5 text-pink-300/70 hover:bg-pink-500/20 hover:text-pink-200 transition-colors cursor-pointer"
       >
-        <X size={13} weight="bold" />
+        <X size={11} weight="bold" />
       </button>
     </span>
   );
@@ -678,7 +678,6 @@ function TransactionMonitorCard() {
   const [tab, setTab] = useState<MonitorTab>("trades");
   const [tradeType, setTradeType] = useState<"" | TradeType>("");
   const [walletType, setWalletType] = useState<"" | WalletTransactionType>("");
-  // Filters set by clicking a row — let an admin pivot to "everything by this user/stock".
   const [userFilter, setUserFilter] = useState<{ id: string; name: string } | null>(null);
   const [stockFilter, setStockFilter] = useState<{ id: string; name: string } | null>(null);
 
@@ -689,13 +688,13 @@ function TransactionMonitorCard() {
   const [loading, setLoading] = useState(true);
   const [unavailable, setUnavailable] = useState(false);
 
-  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(totalCount / TRACKED_PAGE_SIZE));
 
   const switchTab = (t: MonitorTab) => {
     if (t === tab) return;
     setTab(t);
     setPage(1);
-    if (t === "wallet") setStockFilter(null); // stock filter is trades-only
+    if (t === "wallet") setStockFilter(null);
   };
 
   const filterByUser = (id: string, name: string) => {
@@ -713,7 +712,7 @@ function TransactionMonitorCard() {
       if (tab === "trades") {
         const res = await getAdminTrades({
           page,
-          pageSize: PAGE_SIZE,
+          pageSize: TRACKED_PAGE_SIZE,
           tradeType: tradeType || undefined,
           userId: userFilter?.id,
           stockId: stockFilter?.id,
@@ -723,7 +722,7 @@ function TransactionMonitorCard() {
       } else {
         const res = await getAdminWalletTransactions({
           page,
-          pageSize: PAGE_SIZE,
+          pageSize: TRACKED_PAGE_SIZE,
           type: walletType || undefined,
           userId: userFilter?.id,
         });
@@ -736,11 +735,9 @@ function TransactionMonitorCard() {
     } finally {
       setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab, page, tradeType, walletType, userFilter, stockFilter]);
 
   useEffect(() => {
-    /* eslint-disable-next-line react-hooks/set-state-in-effect */
     load();
   }, [load]);
 
@@ -754,20 +751,21 @@ function TransactionMonitorCard() {
   };
 
   const tabBtn = (t: MonitorTab, label: string) =>
-    `rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+    `rounded-lg px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all border cursor-pointer ${
       tab === t
-        ? "bg-pink-500/15 text-pink-300 ring-1 ring-inset ring-pink-500/30"
-        : "text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-200"
+        ? "bg-pink-500/10 text-pink-400 border-pink-500/35 shadow-[0_0_12px_rgba(236,72,153,0.1)]"
+        : "bg-zinc-950/20 text-zinc-500 border-zinc-800/80 hover:text-zinc-350 hover:border-zinc-700"
     }`;
 
   return (
-    <Card>
-      <div className="mb-5 flex items-center justify-between gap-3">
+    <Card className="relative overflow-hidden border border-zinc-805 bg-zinc-955/20 hover:border-pink-500/10 p-5 transition-all duration-300 shadow-md">
+      <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-transparent" />
+      <div className="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Receipt size={18} weight="bold" className="text-pink-400" />
-          <h2 className="text-sm font-semibold text-zinc-100">Transaction Monitor</h2>
+          <Receipt size={16} className="text-pink-400" />
+          <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-405">Transaction Monitor</h2>
         </div>
-        <div className="flex items-center gap-1 rounded-xl border border-zinc-800 bg-zinc-900/50 p-1">
+        <div className="flex items-center gap-1 rounded-xl border border-zinc-800 bg-zinc-950/30 p-1 self-start">
           <button type="button" onClick={() => switchTab("trades")} className={tabBtn("trades", "Trades")}>
             Trades
           </button>
@@ -822,12 +820,12 @@ function TransactionMonitorCard() {
           <button
             type="button"
             onClick={clearAll}
-            className="text-xs text-zinc-500 underline underline-offset-2 transition-colors hover:text-zinc-300"
+            className="text-[10px] font-bold uppercase tracking-wider text-zinc-550 hover:text-zinc-350 transition-colors cursor-pointer"
           >
             Clear all
           </button>
         )}
-        <span className="ml-auto shrink-0 font-mono text-xs tabular-nums text-zinc-500">
+        <span className="ml-auto shrink-0 font-mono text-xs font-semibold tabular-nums text-zinc-500">
           {formatNumber(totalCount)} {tab === "trades" ? "trades" : "entries"}
         </span>
       </div>
@@ -839,123 +837,139 @@ function TransactionMonitorCard() {
           ))}
         </div>
       ) : unavailable ? (
-        <p className="py-4 text-sm text-zinc-500">The transaction feed is unavailable right now.</p>
+        <p className="py-4 text-sm text-zinc-500 font-mono">The transaction feed is unavailable right now.</p>
       ) : (tab === "trades" ? trades.length === 0 : walletTx.length === 0) ? (
         <EmptyState
-          icon={<Receipt size={20} weight="bold" />}
+          icon={<Receipt size={20} weight="bold" className="text-zinc-650" />}
           title="No transactions"
           message={hasFilters ? "No transactions match the current filters." : "No activity recorded yet."}
         />
       ) : tab === "trades" ? (
-        <div className="overflow-x-auto rounded-xl border border-zinc-800/80">
-          <table className="w-full min-w-[44rem] text-sm">
-            <caption className="sr-only">Trades: trader, player, side, quantity, price, total, time.</caption>
-            <thead>
-              <tr className="border-b border-zinc-800 text-left text-[11px] uppercase tracking-wider text-zinc-500">
-                <th className="px-3 py-2.5 font-medium">Trader</th>
-                <th className="px-3 py-2.5 font-medium">Player</th>
-                <th className="px-3 py-2.5 font-medium">Side</th>
-                <th className="px-3 py-2.5 text-right font-medium">Qty</th>
-                <th className="px-3 py-2.5 text-right font-medium">Price</th>
-                <th className="px-3 py-2.5 text-right font-medium">Total</th>
-                <th className="px-3 py-2.5 text-right font-medium">Time</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-800/60">
-              {trades.map((t) => (
-                <tr key={t.tradeId} className="transition-colors hover:bg-zinc-900/40">
-                  <td className="px-3 py-2.5">
-                    <button
-                      type="button"
-                      onClick={() => filterByUser(t.userId, t.username)}
-                      className="flex items-center gap-2 text-left hover:text-pink-300"
-                      title="Filter by this user"
-                    >
-                      <Avatar src={t.avatarUrl} name={t.username} size="xs" />
-                      <span className="max-w-[8rem] truncate font-medium text-zinc-200">{t.username}</span>
-                    </button>
-                  </td>
-                  <td className="px-3 py-2.5">
-                    <button
-                      type="button"
-                      onClick={() => filterByStock(t.stockId, t.playerName ?? "stock")}
-                      className="max-w-[9rem] truncate text-left text-zinc-300 hover:text-pink-300"
-                      title="Filter by this stock"
-                    >
-                      {t.playerName ?? "—"}
-                    </button>
-                  </td>
-                  <td className="px-3 py-2.5">
-                    <Badge tone={t.tradeType === "Buy" ? "success" : "danger"}>{t.tradeType}</Badge>
-                  </td>
-                  <td className="px-3 py-2.5 text-right font-mono tabular-nums text-zinc-300">
-                    {formatShares(t.quantity)}
-                  </td>
-                  <td className="px-3 py-2.5 text-right text-zinc-300">
-                    <Money value={t.unitPrice} />
-                  </td>
-                  <td className="px-3 py-2.5 text-right text-zinc-100">
-                    <Money value={t.totalAmount} />
-                  </td>
-                  <td className="px-3 py-2.5 text-right font-mono text-xs tabular-nums text-zinc-500">
-                    {formatDateTime(t.executedAt)}
-                  </td>
+        <div className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950/20 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
+          {/* Mobile Swipe Cue */}
+          <div className="block sm:hidden text-center py-2 bg-pink-500/5 border-b border-zinc-850/50 text-[10px] font-black uppercase tracking-widest text-pink-400/80 animate-pulse">
+            ← Swipe sideways to view all trade records →
+          </div>
+
+          <div className="overflow-x-auto w-full">
+            <table className="w-full min-w-[44rem] text-sm">
+              <caption className="sr-only">Trades: trader, player, side, quantity, price, total, time.</caption>
+              <thead>
+                <tr className="border-b border-zinc-800 text-left text-[10px] uppercase tracking-wider text-zinc-500 bg-zinc-900/40">
+                  <th className="px-4 py-3 font-semibold">Trader</th>
+                  <th className="px-4 py-3 font-semibold">Player</th>
+                  <th className="px-4 py-3 font-semibold">Side</th>
+                  <th className="px-4 py-3 text-right font-semibold">Qty</th>
+                  <th className="px-4 py-3 text-right font-semibold">Price</th>
+                  <th className="px-4 py-3 text-right font-semibold">Total</th>
+                  <th className="px-4 py-3 text-right font-semibold">Time</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <div className="overflow-x-auto rounded-xl border border-zinc-800/80">
-          <table className="w-full min-w-[32rem] text-sm">
-            <caption className="sr-only">Wallet ledger: owner, type, amount, time.</caption>
-            <thead>
-              <tr className="border-b border-zinc-800 text-left text-[11px] uppercase tracking-wider text-zinc-500">
-                <th className="px-3 py-2.5 font-medium">Owner</th>
-                <th className="px-3 py-2.5 font-medium">Type</th>
-                <th className="px-3 py-2.5 text-right font-medium">Amount</th>
-                <th className="px-3 py-2.5 text-right font-medium">Time</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-800/60">
-              {walletTx.map((tx) => {
-                const isCredit = WALLET_CREDIT_TYPES.has(tx.transactionType);
-                const TypeIcon = isCredit ? ArrowDownLeft : ArrowUpRight;
-                const signedAmount = (isCredit ? 1 : -1) * Math.abs(tx.amount);
-                return (
-                  <tr key={tx.id} className="transition-colors hover:bg-zinc-900/40">
-                    <td className="px-3 py-2.5">
+              </thead>
+              <tbody className="divide-y divide-zinc-850/60 font-mono text-xs">
+                {trades.map((t) => (
+                  <tr key={t.tradeId} className="transition-colors hover:bg-zinc-900/30 border-l border-l-transparent hover:border-l-pink-500">
+                    <td className="px-4 py-3 font-sans">
                       <button
                         type="button"
-                        onClick={() => filterByUser(tx.userId, tx.username)}
-                        className="max-w-[10rem] truncate text-left font-medium text-zinc-200 hover:text-pink-300"
+                        onClick={() => filterByUser(t.userId, t.username)}
+                        className="flex items-center gap-2.5 text-left hover:text-pink-400 cursor-pointer"
                         title="Filter by this user"
                       >
-                        {tx.username}
+                        <Avatar src={t.avatarUrl} name={t.username} size="xs" />
+                        <span className="max-w-[8rem] truncate font-bold text-zinc-200">{t.username}</span>
                       </button>
                     </td>
-                    <td className="px-3 py-2.5">
-                      <Badge tone={isCredit ? "success" : "danger"}>
-                        <TypeIcon size={14} weight="bold" />
-                        {WALLET_TYPE_LABELS[tx.transactionType] ?? tx.transactionType}
-                      </Badge>
+                    <td className="px-4 py-3 font-sans">
+                      <button
+                        type="button"
+                        onClick={() => filterByStock(t.stockId, t.playerName ?? "stock")}
+                        className="max-w-[9rem] truncate text-left font-bold text-zinc-350 hover:text-pink-400 cursor-pointer"
+                        title="Filter by this stock"
+                      >
+                        {t.playerName ?? "—"}
+                      </button>
                     </td>
-                    <td
-                      className={`px-3 py-2.5 text-right font-mono tabular-nums ${
-                        isCredit ? "text-emerald-400" : "text-rose-400"
-                      }`}
-                    >
-                      <Coin />
-                      {formatChange(signedAmount)}
+                    <td className="px-4 py-3 font-sans">
+                      <Badge tone={t.tradeType === "Buy" ? "success" : "danger"} className="font-bold text-[9px] uppercase tracking-wider py-0.5 px-2">{t.tradeType}</Badge>
                     </td>
-                    <td className="px-3 py-2.5 text-right font-mono text-xs tabular-nums text-zinc-500">
-                      {formatDateTime(tx.createdAt)}
+                    <td className="px-4 py-3 text-right font-semibold tabular-nums text-zinc-300">
+                      {formatShares(t.quantity)}
+                    </td>
+                    <td className="px-4 py-3 text-right font-semibold text-zinc-300">
+                      <Money value={t.unitPrice} />
+                    </td>
+                    <td className="px-4 py-3 text-right font-black text-zinc-150">
+                      <Money value={t.totalAmount} />
+                    </td>
+                    <td className="px-4 py-3 text-right tabular-nums text-zinc-500">
+                      {formatDateTime(t.executedAt)}
                     </td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : (
+        <div className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950/20 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
+          {/* Mobile Swipe Cue */}
+          <div className="block sm:hidden text-center py-2 bg-pink-500/5 border-b border-zinc-850/50 text-[10px] font-black uppercase tracking-widest text-pink-400/80 animate-pulse">
+            ← Swipe sideways to view ledger details →
+          </div>
+
+          <div className="overflow-x-auto w-full">
+            <table className="w-full min-w-[32rem] text-sm">
+              <caption className="sr-only">Wallet ledger: owner, type, amount, time.</caption>
+              <thead>
+                <tr className="border-b border-zinc-800 text-left text-[10px] uppercase tracking-wider text-zinc-500 bg-zinc-900/40">
+                  <th className="px-4 py-3 font-semibold">Owner</th>
+                  <th className="px-4 py-3 font-semibold">Type</th>
+                  <th className="px-4 py-3 text-right font-semibold">Amount</th>
+                  <th className="px-4 py-3 text-right font-semibold">Time</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-850/60 font-mono text-xs">
+                {walletTx.map((tx) => {
+                  const isCredit = WALLET_CREDIT_TYPES.has(tx.transactionType);
+                  const TypeIcon = isCredit ? ArrowDownLeft : ArrowUpRight;
+                  const signedAmount = (isCredit ? 1 : -1) * Math.abs(tx.amount);
+                  return (
+                    <tr key={tx.id} className="transition-colors hover:bg-zinc-900/30 border-l border-l-transparent hover:border-l-pink-500">
+                      <td className="px-4 py-3 font-sans">
+                        <button
+                          type="button"
+                          onClick={() => filterByUser(tx.userId, tx.username)}
+                          className="max-w-[10rem] truncate text-left font-bold text-zinc-200 hover:text-pink-400 cursor-pointer"
+                          title="Filter by this user"
+                        >
+                          {tx.username}
+                        </button>
+                      </td>
+                      <td className="px-4 py-3 font-sans">
+                        <Badge tone={isCredit ? "success" : "danger"} className="font-bold text-[9px] uppercase tracking-wider py-0.5 px-2">
+                          <TypeIcon size={12} weight="bold" className="mr-1" />
+                          {WALLET_TYPE_LABELS[tx.transactionType] ?? tx.transactionType}
+                        </Badge>
+                      </td>
+                      <td
+                        className={`px-4 py-3 text-right font-black tabular-nums ${
+                          isCredit ? "text-emerald-400" : "text-rose-455"
+                        }`}
+                      >
+                        <span className="inline-flex items-center gap-1">
+                          <Coin size="h-3 w-3" className={isCredit ? "text-emerald-400" : "text-rose-455"} />
+                          {formatChange(signedAmount)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right tabular-nums text-zinc-500">
+                        {formatDateTime(tx.createdAt)}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
@@ -965,22 +979,22 @@ function TransactionMonitorCard() {
             type="button"
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page <= 1}
-            className="flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:border-zinc-700 disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/40 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-350 transition-colors hover:border-zinc-700 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
           >
-            <CaretLeft size={14} weight="bold" />
+            <CaretLeft size={12} weight="bold" />
             Prev
           </button>
-          <span className="font-mono text-xs tabular-nums text-zinc-500">
+          <span className="font-mono text-xs font-semibold tabular-nums text-zinc-500">
             Page {page} / {totalPages}
           </span>
           <button
             type="button"
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page >= totalPages}
-            className="flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:border-zinc-700 disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/40 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-350 transition-colors hover:border-zinc-700 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
           >
             Next
-            <CaretRight size={14} weight="bold" />
+            <CaretRight size={12} weight="bold" />
           </button>
         </div>
       )}
@@ -1007,13 +1021,13 @@ export default function AdminPage() {
     return (
       <PageShell>
         <Reveal>
-          <Card>
+          <Card className="border border-zinc-805 bg-zinc-955/20 p-6">
             <EmptyState
-              icon={<Lock size={20} weight="bold" />}
-              title="Please log in"
-              message="You need to be signed in as an admin to view this page."
+              icon={<Lock size={20} weight="bold" className="text-pink-400" />}
+              title="Access Restricted"
+              message="You need to be signed in as an administrator to view the control panel."
               action={
-                <Link href="/login" className={buttonClasses({ size: "sm" })}>
+                <Link href="/login" className="px-4 py-2 rounded-xl bg-pink-500 hover:bg-pink-400 text-white text-xs font-black uppercase tracking-wider transition-all duration-200 shadow-sm">
                   Go to login
                 </Link>
               }
@@ -1028,13 +1042,13 @@ export default function AdminPage() {
     return (
       <PageShell>
         <Reveal>
-          <Card>
+          <Card className="border border-zinc-805 bg-zinc-955/20 p-6">
             <EmptyState
-              icon={<ShieldWarning size={20} weight="bold" />}
-              title="Not authorized"
-              message="This area is restricted to administrators."
+              icon={<ShieldWarning size={20} weight="bold" className="text-rose-400" />}
+              title="Access Denied"
+              message="This administrative sector is restricted to platform operators."
               action={
-                <Link href="/" className={buttonClasses({ variant: "secondary", size: "sm" })}>
+                <Link href="/" className="px-4 py-2 rounded-xl border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer">
                   Back to market
                 </Link>
               }
@@ -1048,16 +1062,16 @@ export default function AdminPage() {
   return (
     <PageShell>
       <Reveal>
-        <header className="mb-8 flex items-center gap-3">
-          <span className="grid h-10 w-10 place-items-center rounded-xl bg-pink-500/15 text-pink-400 ring-1 ring-inset ring-pink-500/25">
-            <GearSix size={20} weight="bold" />
+        <header className="mb-8 flex items-center gap-3 border-b border-zinc-800/80 pb-6">
+          <span className="grid h-10 w-10 place-items-center rounded-xl bg-pink-500/15 text-pink-400 ring-1 ring-inset ring-pink-500/25 shadow-[0_0_12px_rgba(236,72,153,0.15)]">
+            <GearSix size={20} weight="bold" className="animate-[spin_20s_linear_infinite]" />
           </span>
           <div>
-            <h1 className="text-3xl font-semibold tracking-tighter text-zinc-100 sm:text-4xl">
-              Admin
+            <h1 className="pb-2 text-3xl sm:text-4xl font-black tracking-tight font-display bg-gradient-to-r from-violet-600 via-violet-200 to-fuchsia-700 dark:from-violet-500 dark:via-zinc-100 dark:to-fuchsia-500 bg-clip-text text-transparent animate-gradient-text">
+              Admin Panel
             </h1>
-            <p className="mt-1 text-sm text-zinc-400">
-              Market configuration and tracked-player management.
+            <p className="mt-1.5 text-xs text-zinc-405 font-mono">
+              Central node configuration and player tracking indexes.
             </p>
           </div>
         </header>
