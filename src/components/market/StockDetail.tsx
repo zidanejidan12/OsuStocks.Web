@@ -43,6 +43,7 @@ import {
   sell,
   ApiError,
 } from "@/lib/api/client";
+import { getWalletStanding } from "@/lib/wallet-tiers";
 import { useAuth } from "@/lib/auth/auth-context";
 import { useToast } from "@/components/ui/Toast";
 import * as analytics from "@/lib/analytics";
@@ -206,7 +207,6 @@ function PriceChartCard({
   refreshKey: number;
 }) {
   const [range, setRange] = useState<HistoryRange>("24h");
-  const [mode, setMode] = useState<"candle" | "line">("candle");
   const [candles, setCandles] = useState<Candle[]>([]);
   const [loaded, setLoaded] = useState(false);
 
@@ -260,27 +260,6 @@ function PriceChartCard({
           </h2>
         </div>
         <div className="flex items-center gap-2">
-          {/* Candle / line mode toggle */}
-          <div className="flex rounded-lg border border-zinc-800 bg-zinc-900/60 p-0.5">
-            {(["candle", "line"] as const).map((m) => {
-              const Icon = m === "candle" ? ChartBar : ChartLine;
-              return (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => setMode(m)}
-                  aria-label={m === "candle" ? "Candlestick" : "Line"}
-                  className={`grid h-8 w-8 place-items-center rounded-md transition-colors ${
-                    mode === m
-                      ? "bg-zinc-800 text-zinc-100"
-                      : "text-zinc-500 hover:text-zinc-300"
-                  }`}
-                >
-                  <Icon size={15} weight="bold" />
-                </button>
-              );
-            })}
-          </div>
           {/* Range selector */}
           <div className="flex rounded-lg border border-zinc-800 bg-zinc-900/60 p-0.5">
             {RANGES.map((r) => (
@@ -318,11 +297,7 @@ function PriceChartCard({
       ) : (
         <div className="w-full">
           <div className="relative">
-            {mode === "candle" ? (
-              <CandleChart candles={candles} />
-            ) : (
-              <LineChart candles={candles} />
-            )}
+            <LineChart candles={candles} />
             <span className="pointer-events-none absolute right-0 top-0 rounded-md bg-zinc-950/60 px-1.5 py-0.5 font-mono text-[11px] tabular-nums text-zinc-400 backdrop-blur-sm">
               <Money value={max} />
             </span>
@@ -523,6 +498,7 @@ function TradePanel({
   // Accurate, fee-inclusive buy estimate from the server (debounced). Computed with the
   // same engine as a real trade, so the shown total matches what the wallet is charged.
   const [quote, setQuote] = useState<TradeQuote | null>(null);
+  const standing = balance !== null ? getWalletStanding(balance) : null;
 
   useEffect(() => {
     if (!user || !(quantity > 0) || !(currentPrice > 0)) return;
@@ -847,6 +823,21 @@ function TradePanel({
           </div>
         )}
 
+        {quantity > 0 && currentPrice > 0 && standing && (
+          <div className="flex flex-col gap-1 rounded-xl border border-zinc-800/80 bg-zinc-950/40 p-2.5">
+            <div className="flex items-center justify-between text-[9px] font-mono">
+              <span className="text-zinc-500">Tier Benefits:</span>
+              <span className={`px-1.5 py-0.5 rounded border font-bold uppercase text-[8px] ${standing.currentTier.color.split(' ')[0]} ${standing.currentTier.color.split(' ')[1]} ${standing.currentTier.color.split(' ')[2]}`}>
+                {standing.currentTier.name}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-[9px] font-mono border-t border-zinc-900 pt-1 mt-1 text-zinc-400">
+              <span>Card Fee Rate:</span>
+              <span className="font-bold text-white">{standing.formattedFee}</span>
+            </div>
+          </div>
+        )}
+
         {/* The buy estimate now includes the progressive service fee (quoted server-side with
             the same engine as a real trade), so it matches what the wallet is charged. */}
         {quantity > 0 && currentPrice > 0 && (
@@ -1166,7 +1157,15 @@ function ProfileCover({ bannerUrl }: { bannerUrl?: string | null }) {
   );
 }
 
-export function StockDetail({ stockId }: { stockId: string }) {
+export function StockDetail({
+  stockId,
+  isModal = false,
+  onClose,
+}: {
+  stockId: string;
+  isModal?: boolean;
+  onClose?: () => void;
+}) {
   const [stock, setStock] = useState<StockSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -1220,7 +1219,19 @@ export function StockDetail({ stockId }: { stockId: string }) {
     };
   }, [stockId]);
 
-  const backLink = (
+  const backLink = isModal ? (
+    <button
+      onClick={onClose}
+      className="group inline-flex items-center gap-1.5 text-sm text-zinc-400 transition-colors hover:text-zinc-100 cursor-pointer focus:outline-none bg-zinc-900/60 border border-zinc-800 px-3.5 py-1.5 rounded-xl hover:border-zinc-700 active:scale-95"
+    >
+      <CaretLeft
+        size={16}
+        weight="bold"
+        className="transition-transform group-hover:-translate-x-0.5"
+      />
+      Back to Market
+    </button>
+  ) : (
     <Link
       href="/"
       className="group inline-flex items-center gap-1.5 text-sm text-zinc-400 transition-colors hover:text-zinc-100"
@@ -1234,10 +1245,14 @@ export function StockDetail({ stockId }: { stockId: string }) {
     </Link>
   );
 
+  const containerClass = isModal
+    ? "w-full max-w-5xl mx-auto px-1.5 py-3 sm:py-5"
+    : "mx-auto max-w-6xl px-4 py-10 sm:py-14";
+
   if (loading) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-10 sm:py-14">
-        <Skeleton className="h-5 w-24" />
+      <div className={containerClass}>
+        <Skeleton className="h-8 w-32 rounded-xl" />
         <div className="mt-8 flex flex-col gap-4 border-b border-zinc-800/60 pb-8 sm:flex-row sm:items-end sm:justify-between">
           <div className="flex items-center gap-4">
             <Skeleton className="h-16 w-16 rounded-full" />
@@ -1261,7 +1276,7 @@ export function StockDetail({ stockId }: { stockId: string }) {
 
   if (unauthorized) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-10 sm:py-14">
+      <div className={containerClass}>
         {backLink}
         <div className="mt-8">
           <EmptyState
@@ -1281,7 +1296,7 @@ export function StockDetail({ stockId }: { stockId: string }) {
 
   if (notFound) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-10 sm:py-14">
+      <div className={containerClass}>
         {backLink}
         <div className="mt-8">
           <EmptyState
@@ -1289,9 +1304,15 @@ export function StockDetail({ stockId }: { stockId: string }) {
             message="We couldn't find a stock with that id."
             icon={<WarningCircle size={20} weight="bold" />}
             action={
-              <Link href="/" className={buttonClasses({ variant: "secondary" })}>
-                Back to market
-              </Link>
+              isModal ? (
+                <button onClick={onClose} className={buttonClasses({ variant: "secondary" })}>
+                  Close
+                </button>
+              ) : (
+                <Link href="/" className={buttonClasses({ variant: "secondary" })}>
+                  Back to market
+                </Link>
+              )
             }
           />
         </div>
@@ -1301,24 +1322,33 @@ export function StockDetail({ stockId }: { stockId: string }) {
 
   if (error || !stock) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-10 sm:py-14">
+      <div className={containerClass}>
         {backLink}
         <div className="mt-8 flex items-start gap-2.5 rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-300">
           <WarningCircle size={18} weight="bold" className="mt-0.5 shrink-0" />
           <span>{error ?? "Failed to load this stock."}</span>
         </div>
-        <Link
-          href="/"
-          className={buttonClasses({ variant: "secondary", size: "sm", className: "mt-6" })}
-        >
-          Back to market
-        </Link>
+        {isModal ? (
+          <button
+            onClick={onClose}
+            className={buttonClasses({ variant: "secondary", size: "sm", className: "mt-6" })}
+          >
+            Close
+          </button>
+        ) : (
+          <Link
+            href="/"
+            className={buttonClasses({ variant: "secondary", size: "sm", className: "mt-6" })}
+          >
+            Back to market
+          </Link>
+        )}
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:py-14">
+    <div className={containerClass}>
       {backLink}
 
       <Reveal className="mt-8">
