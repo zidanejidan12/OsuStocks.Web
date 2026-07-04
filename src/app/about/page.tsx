@@ -1,228 +1,151 @@
 "use client";
 
 import { Avatar } from "@/components/ui/Avatar";
-import { ArrowRight, Sparkle } from "@phosphor-icons/react";
+import { ArrowRight, ArrowUpRight } from "@phosphor-icons/react";
 import { useAuth } from "@/lib/auth/auth-context";
 import Link from "next/link";
 
-const SPONSOR = { id: 15640966, name: "Raids", tier: "CHAMPIONSHIP SPONSOR", code: "RAIDS_CORE_01" };
+const SPONSOR = { id: 15640966, name: "Raids" };
 
 const TEAM = [
-  { 
-    id: 3484548, 
-    name: "Almond Eye", 
-    role: "Backend Developer",
-    roleClass: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20",
-    tagline: (
-      <>
-        Converts <span className="text-purple-600 dark:text-purple-400 font-bold">caffeine into database</span> queries and prays the server doesn't break its combo.
-      </>
-    )
+  {
+    id: 3484548,
+    name: "Almond Eye",
+    role: "Backend",
+    accent: "text-emerald-400 border-emerald-500/25 bg-emerald-500/10",
   },
-  { 
-    id: 11421465, 
-    name: "Verxina", 
-    role: "Frontend Developer",
-    roleClass: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20",
-    tagline: (
-      <>
-        Moving <span className="text-cyan-600 dark:text-cyan-400 font-bold">buttons 1px</span> to the left and crying when a div doesn't center on mobile.
-      </>
-    )
+  {
+    id: 11421465,
+    name: "Verxina",
+    role: "Frontend",
+    accent: "text-cyan-400 border-cyan-500/25 bg-cyan-500/10",
   },
-  { 
-    id: 6560131, 
-    name: "Nishino Flower", 
-    role: "BUM",
-    roleClass: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20",
-    tagline: (
-      <>
-        Pretending to <span className="text-rose-600 dark:text-rose-400 font-bold">understand stocks</span> while keeping the developers from losing their minds.
-      </>
-    )
+  {
+    id: 6560131,
+    name: "Nishino Flower",
+    role: "Project Lead",
+    accent: "text-rose-400 border-rose-500/25 bg-rose-500/10",
   },
 ];
-
-const MEMBER_THEMES: Record<string, { border: string; bg: string; text: string; glow: string; banner: string }> = {
-  "Almond Eye": {
-    border: "border-zinc-200 dark:border-zinc-805 hover:border-purple-500/40 dark:hover:border-purple-500/30",
-    bg: "bg-purple-950/5 dark:bg-purple-950/10",
-    text: "text-purple-600 dark:text-purple-400",
-    glow: "hover:shadow-[0_15px_30px_-10px_rgba(168,85,247,0.15)]",
-    banner: "from-purple-500 to-indigo-500",
-  },
-  "Verxina": {
-    border: "border-zinc-200 dark:border-zinc-805 hover:border-cyan-500/40 dark:hover:border-cyan-500/30",
-    bg: "bg-cyan-950/5 dark:bg-cyan-950/10",
-    text: "text-cyan-600 dark:text-cyan-400",
-    glow: "hover:shadow-[0_15px_30px_-10px_rgba(6,182,212,0.15)]",
-    banner: "from-cyan-500 to-teal-500",
-  },
-  "Nishino Flower": {
-    border: "border-zinc-200 dark:border-zinc-805 hover:border-rose-500/40 dark:hover:border-rose-500/30",
-    bg: "bg-rose-955/5 dark:bg-rose-955/10",
-    text: "text-rose-600 dark:text-rose-400",
-    glow: "hover:shadow-[0_15px_30px_-10px_rgba(244,63,94,0.15)]",
-    banner: "from-rose-500 to-orange-500",
-  }
-};
-
-function PageShell({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="relative w-full overflow-hidden min-h-screen">
-      <div className="absolute top-0 right-0 -z-10 h-[380px] w-[380px] rounded-full bg-pink-500/12 dark:bg-pink-500/5 blur-[130px] pointer-events-none" />
-      <div className="absolute bottom-0 left-0 -z-10 h-[380px] w-[380px] rounded-full bg-purple-500/12 dark:bg-purple-500/5 blur-[130px] pointer-events-none" />
-      <div className="relative z-10 mx-auto max-w-5xl px-6 py-12 sm:py-16">
-        {children}
-      </div>
-    </div>
-  );
-}
 
 export default function AboutPage() {
   const { user } = useAuth();
 
   return (
-    <PageShell>
-      <div className="mb-14 text-center sm:text-left">
-        <h1 className="text-4xl sm:text-5xl font-display font-black tracking-tight uppercase pb-2">
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-zinc-800 to-zinc-950 dark:from-zinc-100 dark:to-zinc-300">Inside </span>
-          <span className="text-pink-600 dark:text-pink-500 drop-shadow-[0_0_15px_rgba(236,72,153,0.35)] dark:drop-shadow-[0_0_15px_rgba(236,72,153,0.5)]">Osu</span>
-          <span className="text-zinc-955 dark:text-zinc-50 drop-shadow-[0_0_15px_rgba(0,0,0,0.1)] dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]">Stocks</span>
-        </h1>
-        <p className="mt-3 text-sm text-zinc-650 dark:text-zinc-400 max-w-[65ch] leading-relaxed font-medium">
-          <span className="text-pink-600 dark:text-pink-500 font-bold">Osu</span><span className="text-zinc-955 dark:text-zinc-50 font-bold">Stocks</span> is a fan-made fantasy market simulator where users trade virtual shares of osu! players based on live game performance and historical statistics.
+    <div className="relative w-full overflow-hidden">
+      {/* A single soft wash — not a light show. */}
+      <div className="pointer-events-none absolute -top-24 right-0 -z-10 h-80 w-80 rounded-full bg-pink-500/10 blur-[130px]" />
+
+      <div className="mx-auto max-w-3xl px-6 py-14 sm:py-20">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+          About
         </p>
-      </div>
+        <h1 className="mt-3 font-display text-3xl font-bold tracking-tight text-zinc-100 sm:text-4xl">
+          <span className="text-pink-500">Osu</span>Stocks
+        </h1>
+        <p className="mt-3 max-w-[60ch] text-sm leading-relaxed text-zinc-400">
+          A fan-made osu! stock market where you trade shares in osu! players and
+          build a portfolio. Prices move with real pp and rank changes, and with
+          how people trade.
+        </p>
 
-      <section className="relative overflow-hidden rounded-[28px] border border-pink-500/25 dark:border-pink-500/15 bg-gradient-to-br from-pink-50/40 via-zinc-50/90 to-zinc-100/30 dark:from-pink-955/10 dark:via-zinc-955/40 dark:to-zinc-900/30 p-6 sm:p-8 mb-14 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.15)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] group backdrop-blur-md">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-pink-500/10 rounded-full blur-[110px] pointer-events-none group-hover:bg-pink-500/15 transition-colors duration-500" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(236,72,153,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(236,72,153,0.02)_1px,transparent_1px)] bg-[size:1.5rem_1.5rem] opacity-30 pointer-events-none" />
+        <section className="mt-12 space-y-4 text-sm leading-relaxed text-zinc-300">
+          <p>
+            Every tracked player has a stock whose price rises and falls with
+            their performance. Set a new top play or climb the rankings and the
+            price reacts. Your own buys and sells nudge it along a bonding curve,
+            with a per-trade cap to keep things fair.
+          </p>
+          <p className="text-zinc-500">
+            OsuStocks is a game. All coins, prices, and holdings are virtual. They
+            have no real-world value and cannot be exchanged for money. Not
+            affiliated with osu! or ppy Pty Ltd.
+          </p>
+        </section>
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-[0.25em] text-pink-600 dark:text-pink-400">
-                {SPONSOR.tier}
-              </span>
-            </div>
-            <h2 className="text-3xl font-display font-black tracking-tight text-zinc-900 dark:text-zinc-50 leading-none uppercase">
-              Platform Partner: <span className="text-pink-500">{SPONSOR.name}</span>
-            </h2>
-            <p className="mt-5 text-xs sm:text-sm text-zinc-650 dark:text-zinc-400 leading-relaxed max-w-[55ch]">
-              All automated pricing algorithms and server operations of <span className="text-pink-600 dark:text-pink-500 font-bold">Osu</span><span className="text-zinc-955 dark:text-zinc-50 font-bold">Stocks</span> are funded entirely by our core support sponsor. Because of their backing, the platform remains completely ad-free and free-to-play.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-4 items-center">
+        <section className="mt-14">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
+            Sponsor
+          </h2>
+          <div className="mt-4 flex items-center gap-4 rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-5">
+            <Avatar
+              src={`https://a.ppy.sh/${SPONSOR.id}`}
+              name={SPONSOR.name}
+              size="lg"
+              className="ring-1 ring-zinc-800"
+            />
+            <div className="min-w-0">
+              <p className="text-base font-semibold text-zinc-100">
+                Sponsored by {SPONSOR.name}
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-zinc-500">
+                {SPONSOR.name} helps keep OsuStocks running and free to play.
+              </p>
               <a
                 href={`https://osu.ppy.sh/users/${SPONSOR.id}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-xl bg-pink-500/15 border border-pink-500/30 px-5 py-2.5 text-xs font-bold text-pink-600 dark:text-pink-300 transition-all duration-300 hover:bg-pink-500 hover:text-white hover:border-pink-500 hover:shadow-[0_0_20px_rgba(236,72,153,0.3)]"
+                className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-pink-400 transition-colors hover:text-pink-300"
               >
-                Visit Champion Profile
+                osu! profile
+                <ArrowUpRight size={12} weight="bold" />
               </a>
             </div>
           </div>
+        </section>
 
-          <div className="flex shrink-0 items-center justify-start md:justify-center">
-            <div className="relative p-2 rounded-full border border-pink-500/30 bg-zinc-100/60 dark:bg-zinc-955/60 backdrop-blur-md">
-              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-pink-500 to-purple-500 opacity-20 blur-[6px] animate-pulse" />
-              <Avatar
-                src={`https://a.ppy.sh/${SPONSOR.id}`}
-                name={SPONSOR.name}
-                size="xl"
-                className="h-24 w-24 sm:h-28 sm:w-28 rounded-full ring-4 ring-zinc-50 dark:ring-zinc-950 relative z-10"
-              />
-              <span className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-pink-500 text-xs text-white font-bold border-2 border-zinc-50 dark:border-zinc-950 shadow-md z-20">
-                ★
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="mb-14">
-        <div className="mb-6 flex items-center gap-2">
-          <h2 className="text-lg font-display font-bold uppercase tracking-wider text-zinc-800 dark:text-zinc-100">
-            Development Team
+        <section className="mt-14">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
+            Team
           </h2>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-3">
-          {TEAM.map((member) => {
-            const theme = MEMBER_THEMES[member.name] || MEMBER_THEMES["Almond Eye"];
-            return (
-              <div
-                key={member.id}
-                className={`group relative flex flex-col justify-between rounded-[24px] border ${theme.border} bg-zinc-100/40 dark:bg-zinc-955/25 p-5 transition-all duration-300 ${theme.glow} hover:bg-zinc-200/30 dark:hover:bg-zinc-900/20 hover:scale-[1.02] shadow-[0_8px_30px_rgb(0,0,0,0.02)] dark:shadow-none overflow-hidden`}
-              >
-                <div className={`absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r ${theme.banner}`} />
-                <div className="absolute -right-16 -top-16 w-32 h-32 bg-current opacity-[0.02] rounded-full blur-2xl pointer-events-none group-hover:opacity-[0.04] transition-opacity" />
-                <div>
-                  <div className="flex items-start gap-4">
-                    <a
-                      href={`https://osu.ppy.sh/users/${member.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="shrink-0"
-                    >
-                      <Avatar
-                        src={`https://a.ppy.sh/${member.id}`}
-                        name={member.name}
-                        size="md"
-                        className="ring-2 ring-zinc-300/60 dark:ring-zinc-800 transition-all duration-300 group-hover:ring-pink-500/50"
-                      />
-                    </a>
-                    <div className="min-w-0 flex-1">
-                      <a
-                        href={`https://osu.ppy.sh/users/${member.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="truncate text-base font-display font-black text-zinc-900 dark:text-zinc-100 transition-colors group-hover:text-pink-500 dark:group-hover:text-pink-400 block"
-                      >
+          <p className="mt-2 text-sm text-zinc-500">Built by a few osu! players.</p>
+          <ul className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {TEAM.map((member) => (
+              <li key={member.id}>
+                <a
+                  href={`https://osu.ppy.sh/users/${member.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex h-full flex-col gap-3 rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-4 transition-colors hover:border-pink-500/30 hover:bg-zinc-900/70"
+                >
+                  <div className="flex items-center gap-3">
+                    <Avatar
+                      src={`https://a.ppy.sh/${member.id}`}
+                      name={member.name}
+                      size="md"
+                      className="ring-1 ring-zinc-800 transition-all group-hover:ring-pink-500/40"
+                    />
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-semibold text-zinc-100 transition-colors group-hover:text-pink-300">
                         {member.name}
-                      </a>
-                      <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider font-mono border ${member.roleClass}`}>
-                          {member.role}
-                        </span>
                       </div>
+                      <span
+                        className={`mt-1 inline-block rounded-full border px-2 py-0.5 text-[10px] font-medium ${member.accent}`}
+                      >
+                        {member.role}
+                      </span>
                     </div>
                   </div>
-                  
-                  <div className="mt-4">
-                    <p className="text-xs leading-relaxed text-zinc-500 dark:text-zinc-400 font-medium">
-                      {member.tagline}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="mt-5 text-right">
-                  <a
-                    href={`https://osu.ppy.sh/users/${member.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[9px] font-mono text-pink-500 dark:text-pink-400 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                  >
-                    View Profile &rarr;
-                  </a>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
+                  <span className="mt-auto inline-flex items-center gap-1 text-[11px] text-zinc-500 transition-colors group-hover:text-zinc-400">
+                    osu! profile
+                    <ArrowUpRight size={11} weight="bold" />
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
 
-      <div className="mt-16 text-center">
-        <Link
-          href={user ? "/" : "/login"}
-          className="relative inline-flex items-center gap-2.5 px-8 py-4 overflow-hidden rounded-2xl bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-500 font-display text-base font-black uppercase tracking-wider text-white shadow-[0_15px_30px_-5px_rgba(236,72,153,0.3)] hover:shadow-[0_20px_35px_-5px_rgba(6,182,212,0.45)] transition-all duration-300 hover:-translate-y-0.5 group/cta"
-        >
-          <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover/cta:animate-[shimmer_1.5s_infinite]" />
-          {user ? "Go to Trading Floor" : "Sign In & Start Trading"}
-          <ArrowRight size={18} weight="bold" />
-        </Link>
+        <div className="mt-14">
+          <Link
+            href={user ? "/" : "/login"}
+            className="inline-flex items-center gap-2 rounded-xl bg-pink-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-pink-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/50"
+          >
+            {user ? "Go to the market" : "Sign in to start trading"}
+            <ArrowRight size={16} weight="bold" />
+          </Link>
+        </div>
       </div>
-    </PageShell>
+    </div>
   );
 }
