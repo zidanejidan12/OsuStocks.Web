@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { ArrowRight, WarningCircle, Lock, Wallet as WalletIcon, TrendUp, Users, Trophy, Question, ChartLineUp, Plus, Minus, CaretDown, Coins, TerminalWindow, Shield, Broadcast, Flame, X, Bell, BellSlash } from "@phosphor-icons/react";
+import { ArrowRight, WarningCircle, Lock, Wallet as WalletIcon, Plus, Minus, CaretDown, X } from "@phosphor-icons/react";
 import type { MarketOverview, Paged, StockSort, StockSummary, Wallet } from "@/lib/api/types";
 import { getMarketOverview, getStocks, getWallet, ApiError } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/auth-context";
@@ -19,8 +19,9 @@ import { StockList } from "@/components/market/StockList";
 import { StockDetail } from "@/components/market/StockDetail";
 import { LiveMarketPanel } from "@/components/market/LiveMarketPanel";
 import { Coin } from "@/components/ui/Coin";
+import { Money } from "@/components/ui/Money";
 import { Avatar } from "@/components/ui/Avatar";
-import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { spring } from "@/lib/motion";
 
 const PAGE_SIZE = 25;
@@ -53,342 +54,6 @@ function ErrorNotice({ message }: { message: string }) {
 }
 
 // Live Trading Activity Popup Component
-function LiveActivityPopup({ isMuted, setIsMuted }: { isMuted: boolean; setIsMuted: (val: boolean) => void }) {
-  const [stocks, setStocks] = useState<StockSummary[]>([]);
-  const [activeEvent, setActiveEvent] = useState<{
-    id: number;
-    type: "trade" | "alert" | "reward";
-    badgeText: string;
-    icon: string;
-    avatarUrl: string | null;
-    playerName: string;
-    title: React.ReactNode;
-    subText: React.ReactNode;
-  } | null>(null);
-  const [visible, setVisible] = useState(false);
-  const [imgErrorId, setImgErrorId] = useState<number | null>(null);
-
-  // Fetch real market stock list on mount
-  useEffect(() => {
-    getStocks({ page: 1, pageSize: 50 })
-      .then((data) => {
-        if (data && data.items && data.items.length > 0) {
-          setStocks(data.items);
-        }
-      })
-      .catch(() => {
-        // Silently fallback if backend is down/unreachable
-      });
-  }, []);
-
-  useEffect(() => {
-    if (isMuted) {
-      setVisible(false);
-      return;
-    }
-    const fallbackPlayers = ["mrekk", "Akolibed", "Lifeline", "Gasha", "Chicony", "Kalanluu", "WhiteCat", "Ryuk", "Intersect"];
-    const randomUsernames = [
-      "Cookiezi", "peppy", "shigetora", "zidan", "jason", "toy", "HappyStick", 
-      "BeasttrollMC", "BTMC", "Azer", "Rafis", "Vaxei", "WubWoofWolf", 
-      "Idke", "Rohulk", "Varvalian", "FlyingTuna", "Bubbleman", "Karthy"
-    ];
-
-    let timer: any;
-    let fadeOutTimer: any;
-
-    const showNextEvent = () => {
-      setVisible(false);
-      
-      fadeOutTimer = setTimeout(() => {
-        let playerName = "";
-        let playerTicker = "";
-        let playerPrice = 100;
-        let playerChange = 0;
-        let avatarUrl = null;
-
-        if (stocks.length > 0) {
-          const randomStock = stocks[Math.floor(Math.random() * stocks.length)];
-          playerName = randomStock.playerName;
-          playerTicker = randomStock.stockId;
-          playerPrice = randomStock.currentPrice;
-          playerChange = randomStock.priceChange24h;
-          avatarUrl = randomStock.avatarUrl ?? null;
-        } else {
-          playerName = fallbackPlayers[Math.floor(Math.random() * fallbackPlayers.length)];
-          playerTicker = playerName.toUpperCase().substring(0, 4);
-          playerPrice = Math.floor(Math.random() * 800) + 150;
-          playerChange = (Math.random() * 25) - 10;
-        }
-
-        const buyer = randomUsernames[Math.floor(Math.random() * randomUsernames.length)];
-        const amount = Math.floor(Math.random() * 25) + 2;
-        const totalCredits = (amount * playerPrice).toLocaleString("en-US", { maximumFractionDigits: 1 });
-
-        // Choose event type: "buy", "sell", "surge", "reward", "volume"
-        const eventTypes = ["buy", "sell", "surge", "reward", "volume"];
-        const chosenType = eventTypes[Math.floor(Math.random() * eventTypes.length)];
-
-        let activeEv: {
-          type: "trade" | "alert" | "reward";
-          badgeText: string;
-          icon: string;
-          avatar: string | null;
-          title: React.ReactNode;
-          subText: React.ReactNode;
-        };
-
-        if (chosenType === "buy") {
-          activeEv = {
-            type: "trade",
-            badgeText: "Live Buy",
-            icon: "🛒",
-            avatar: avatarUrl,
-            title: (
-              <span className="text-zinc-300 text-xs sm:text-sm">
-                <strong className="text-zinc-50 font-semibold">{buyer}</strong> bought{" "}
-                <strong className="text-pink-400 font-semibold">{amount} shares</strong> of{" "}
-                <span className="text-zinc-100 font-semibold">{playerName}</span>
-              </span>
-            ),
-            subText: (
-              <span className="flex items-center gap-1.5 text-[11px] text-zinc-400 font-mono">
-                Total: <span className="text-cyan-400 font-bold">{totalCredits} Cr</span> • Price: <span className="text-zinc-300">{playerPrice.toFixed(1)}</span>
-              </span>
-            )
-          };
-        } else if (chosenType === "sell") {
-          activeEv = {
-            type: "trade",
-            badgeText: "Live Sell",
-            icon: "💸",
-            avatar: avatarUrl,
-            title: (
-              <span className="text-zinc-300 text-xs sm:text-sm">
-                <strong className="text-zinc-50 font-semibold">{buyer}</strong> sold{" "}
-                <strong className="text-zinc-400 font-semibold">{amount} shares</strong> of{" "}
-                <span className="text-zinc-100 font-semibold">{playerName}</span>
-              </span>
-            ),
-            subText: (
-              <span className="flex items-center gap-1.5 text-[11px] text-zinc-400 font-mono">
-                Total: <span className="text-zinc-300 font-semibold">{totalCredits} Cr</span> • Price: <span className="text-zinc-300">{playerPrice.toFixed(1)}</span>
-              </span>
-            )
-          };
-        } else if (chosenType === "surge") {
-          const isSurge = playerChange >= 0;
-          activeEv = {
-            type: "alert",
-            badgeText: isSurge ? "Price Surge" : "Price Dip",
-            icon: isSurge ? "📈" : "📉",
-            avatar: avatarUrl,
-            title: (
-              <span className="text-zinc-300 text-xs sm:text-sm">
-                <span className="text-zinc-50 font-semibold">{playerName} ({playerTicker})</span>{" "}
-                {isSurge ? "surged" : "dipped"}{" "}
-                <span className={isSurge ? "text-emerald-400 font-bold" : "text-rose-400 font-bold"}>
-                  {isSurge ? "+" : ""}{playerChange.toFixed(2)}%
-                </span>
-              </span>
-            ),
-            subText: (
-              <span className="flex items-center gap-1.5 text-[11px] text-zinc-400 font-mono">
-                Current Price: <span className="text-zinc-100 font-bold">{playerPrice.toFixed(1)} Cr</span>
-              </span>
-            )
-          };
-        } else if (chosenType === "reward") {
-          activeEv = {
-            type: "reward",
-            badgeText: "Daily Reward",
-            icon: "💰",
-            avatar: null,
-            title: (
-              <span className="text-zinc-300 text-xs sm:text-sm">
-                <strong className="text-zinc-50 font-semibold">{buyer}</strong> claimed their daily credits
-              </span>
-            ),
-            subText: (
-              <span className="flex items-center gap-1.5 text-[11px] text-zinc-400 font-mono">
-                Bonus: <span className="text-amber-400 font-bold">+1,000 Credits</span>
-              </span>
-            )
-          };
-        } else {
-          activeEv = {
-            type: "alert",
-            badgeText: "Volume Spike",
-            icon: "⚡",
-            avatar: avatarUrl,
-            title: (
-              <span className="text-zinc-300 text-xs sm:text-sm">
-                Trading activity spiking for{" "}
-                <span className="text-zinc-50 font-semibold">{playerName} ({playerTicker})</span>
-              </span>
-            ),
-            subText: (
-              <span className="flex items-center gap-1.5 text-[11px] text-zinc-400 font-mono">
-                24h Change: <span className={playerChange >= 0 ? "text-emerald-400 font-semibold" : "text-rose-400 font-semibold"}>{playerChange >= 0 ? "+" : ""}{playerChange.toFixed(2)}%</span>
-              </span>
-            )
-          };
-        }
-
-        setImgErrorId(null);
-        setActiveEvent({
-          id: Date.now(),
-          type: activeEv.type,
-          badgeText: activeEv.badgeText,
-          icon: activeEv.icon,
-          avatarUrl: activeEv.avatar,
-          playerName: playerName,
-          title: activeEv.title,
-          subText: activeEv.subText,
-        });
-        setVisible(true);
-      }, 400);
-    };
-
-    timer = setTimeout(showNextEvent, 2000);
-    const interval = setInterval(showNextEvent, 9000);
-
-    return () => {
-      clearTimeout(timer);
-      clearTimeout(fadeOutTimer);
-      clearInterval(interval);
-    };
-  }, [stocks, isMuted]);
-
-  if (!activeEvent) return null;
-
-  const borderToneClass = activeEvent.type === "alert"
-    ? "border-pink-500/30 shadow-[0_15px_40px_rgba(236,72,153,0.18)]"
-    : activeEvent.type === "trade"
-    ? "border-cyan-500/30 shadow-[0_15px_40px_rgba(6,182,212,0.18)]"
-    : "border-amber-500/30 shadow-[0_15px_40px_rgba(245,158,11,0.18)]";
-
-  const badgeClass = activeEvent.type === "alert"
-    ? "bg-pink-500/10 text-pink-400 border border-pink-500/20"
-    : activeEvent.type === "trade"
-    ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
-    : "bg-amber-500/10 text-amber-400 border border-amber-500/20";
-
-  return (
-    <motion.div
-      drag="x"
-      dragConstraints={{ left: 0, right: 0 }}
-      dragElastic={0.6}
-      onDragEnd={(event, info) => {
-        if (Math.abs(info.offset.x) > 80) {
-          setVisible(false);
-        }
-      }}
-      animate={{
-        y: visible ? 0 : 20,
-        opacity: visible ? 1 : 0,
-        scale: visible ? 1 : 0.95,
-      }}
-      transition={{ type: "spring", stiffness: 300, damping: 25 }}
-      className={`fixed bottom-20 right-6 z-50 max-w-[300px] w-[calc(100vw-3rem)] rounded-xl p-3 pb-3.5 border bg-zinc-950/90 backdrop-blur-xl ${borderToneClass} cursor-grab active:cursor-grabbing select-none`}
-      style={{
-        pointerEvents: visible ? "auto" : "none",
-      }}
-    >
-      <div className="flex items-start gap-3">
-        {/* Dynamic Avatar Container */}
-        <div className="relative shrink-0 select-none">
-          {activeEvent.avatarUrl && imgErrorId !== activeEvent.id ? (
-            <div className={`relative h-9 w-9 overflow-hidden rounded-lg ring-2 ring-zinc-950 bg-zinc-900 border ${
-              activeEvent.type === "alert"
-                ? "border-pink-500/30"
-                : activeEvent.type === "trade"
-                ? "border-cyan-500/30"
-                : "border-amber-500/30"
-            } flex items-center justify-center`}>
-              <img 
-                src={activeEvent.avatarUrl} 
-                alt="" 
-                className="h-full w-full object-cover"
-                onError={() => {
-                  setImgErrorId(activeEvent.id);
-                }}
-              />
-            </div>
-          ) : (
-            <div className="grid h-9 w-9 place-items-center rounded-lg bg-zinc-900 text-xs font-bold border border-zinc-800 ring-2 ring-zinc-950 text-zinc-300">
-              {activeEvent.playerName ? activeEvent.playerName.substring(0, 2).toUpperCase() : activeEvent.icon}
-            </div>
-          )}
-          
-          {/* Circular badge indicator at the corner of the avatar */}
-          <span className="absolute -bottom-0.5 -right-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-zinc-950 text-[9px] border border-zinc-800 shadow-sm">
-            {activeEvent.icon}
-          </span>
-        </div>
-
-        {/* Details and Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2">
-            <span className={`rounded-full px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider ${badgeClass}`}>
-              {activeEvent.badgeText}
-            </span>
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => {
-                  const newMute = !isMuted;
-                  setIsMuted(newMute);
-                  localStorage.setItem("muteLiveActivity", newMute ? "true" : "false");
-                }}
-                className="text-zinc-400 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-500/10 active:scale-90 transition-all p-1 rounded-md cursor-pointer"
-                title={isMuted ? "Unmute updates" : "Mute updates"}
-              >
-                {isMuted ? <BellSlash size={11} /> : <Bell size={11} />}
-              </button>
-              <button
-                type="button"
-                onClick={() => setVisible(false)}
-                className="text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-500/10 active:scale-90 transition-all p-1 rounded-md cursor-pointer"
-                title="Close"
-              >
-                <X size={11} weight="bold" />
-              </button>
-            </div>
-          </div>
-          
-          <div className="mt-1.5 text-xs leading-snug font-sans">
-            {activeEvent.title}
-          </div>
-          
-          <div className="mt-1 flex items-center justify-between">
-            {activeEvent.subText}
-          </div>
-        </div>
-      </div>
-      
-      {/* Visual countdown progress bar */}
-      <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-zinc-900/30 overflow-hidden rounded-b-xl">
-        <div 
-          className={`h-full bg-gradient-to-r ${
-            activeEvent.type === "alert"
-              ? "from-pink-500 to-rose-500"
-              : activeEvent.type === "trade"
-              ? "from-cyan-500 to-blue-500"
-              : "from-amber-500 to-yellow-500"
-          } transition-all linear`}
-          style={{ 
-            width: visible ? "100%" : "0%",
-            transitionDuration: visible ? "8200ms" : "0ms"
-          }}
-        />
-      </div>
-    </motion.div>
-  );
-}
-
-
-
-
 function Hero({ onLogin }: { onLogin: () => void }) {
   return (
     <section className="relative w-full min-h-[75vh] flex items-center pt-12 pb-16 sm:pt-16 sm:pb-20">
@@ -544,13 +209,6 @@ function WelcomeBanner({ show, onDismiss }: { show: boolean; onDismiss: () => vo
 export default function Home() {
   const { user, loading: authLoading, login } = useAuth();
 
-  const [isMuted, setIsMuted] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("muteLiveActivity") === "true";
-    }
-    return false;
-  });
-
   const [showWelcome, setShowWelcome] = useState(false);
 
   useEffect(() => {
@@ -697,77 +355,6 @@ export default function Home() {
     };
   }, [user, page, sort, country, debouncedSearch]);
 
-  // Periodic wiggling for live stocks list on the landing page
-  useEffect(() => {
-    if (stocks.length === 0) return;
-    
-    const interval = setInterval(() => {
-      setStocks(prev => {
-        if (prev.length === 0) return prev;
-        const next = [...prev];
-        // Pick 1-3 random stocks to update
-        const count = Math.min(next.length, Math.floor(Math.random() * 3) + 1);
-        for (let i = 0; i < count; i++) {
-          const idx = Math.floor(Math.random() * next.length);
-          const current = next[idx];
-          if (!current) continue;
-          const isUp = Math.random() > 0.45;
-          const pct = ((Math.random() * 0.25 + 0.05) * (isUp ? 1 : -1)) / 100;
-          const diff = current.currentPrice * pct;
-          
-          next[idx] = {
-            ...current,
-            currentPrice: Math.max(1, current.currentPrice + diff),
-            priceChange24h: current.priceChange24h + (pct * 100)
-          };
-        }
-        return next;
-      });
-    }, 2550);
-
-    return () => clearInterval(interval);
-  }, [stocks]);
-
-  // Periodic wiggling for live market overview on the landing page
-  useEffect(() => {
-    if (!overview) return;
-    
-    const interval = setInterval(() => {
-      setOverview(prev => {
-        if (!prev) return prev;
-        
-        // update volume slightly
-        const volumeDiff = Math.floor(Math.random() * 45) + 5;
-        const next = {
-          ...prev,
-          totalVolume: prev.totalVolume + volumeDiff
-        };
-        
-        // wiggle topGainer and topLoser prices
-        if (next.topGainer) {
-          const changePct = (Math.random() * 0.2 + 0.05) / 100;
-          next.topGainer = {
-            ...next.topGainer,
-            currentPrice: next.topGainer.currentPrice + (next.topGainer.currentPrice * changePct),
-            priceChange24h: next.topGainer.priceChange24h + (changePct * 100)
-          };
-        }
-        if (next.topLoser) {
-          const changePct = -(Math.random() * 0.15 + 0.05) / 100;
-          next.topLoser = {
-            ...next.topLoser,
-            currentPrice: Math.max(1, next.topLoser.currentPrice + (next.topLoser.currentPrice * changePct)),
-            priceChange24h: next.topLoser.priceChange24h + (changePct * 100)
-          };
-        }
-        
-        return next;
-      });
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [overview]);
-
   const handleQuickTrade = () => {
     const searchInput = document.getElementById("stock-search");
     if (searchInput) {
@@ -796,9 +383,6 @@ export default function Home() {
       <div className="absolute top-0 right-0 -z-10 h-[300px] w-[300px] rounded-full bg-pink-500/5 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 -z-10 h-[300px] w-[300px] rounded-full bg-purple-500/5 blur-[120px] pointer-events-none" />
 
-      {/* Floating Live Buy / activity popup */}
-      <LiveActivityPopup isMuted={isMuted} setIsMuted={setIsMuted} />
-
       <Reveal>
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between border-b border-zinc-900 pb-8 mb-8">
           {/* Welcome User Section */}
@@ -810,9 +394,6 @@ export default function Home() {
                 size="lg"
                 className="ring-2 ring-pink-500/20 group-hover:ring-pink-500/40 transition-all duration-300"
               />
-              <div className="absolute -bottom-1 -right-1 bg-pink-500 border border-zinc-950 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full shadow tracking-wider">
-                PRO
-              </div>
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-2.5">
@@ -829,15 +410,6 @@ export default function Home() {
                   </span>
                 )}
               </div>
-              
-              {/* Gamified Level Progress Bar HUD */}
-              <div className="mt-2 flex items-center gap-2.5 min-w-[200px] sm:w-60">
-                <span className="text-[9px] font-black text-zinc-400 uppercase tracking-wider shrink-0">LV. 14</span>
-                <div className="h-1.5 flex-1 bg-zinc-950 border border-zinc-900 rounded-full overflow-hidden relative">
-                  <div className="absolute top-0 left-0 bottom-0 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full" style={{ width: "74%" }} />
-                </div>
-                <span className="font-mono text-[9px] font-bold text-pink-400 shrink-0">74% XP</span>
-              </div>
             </div>
           </div>
 
@@ -850,24 +422,29 @@ export default function Home() {
               <div>
                 <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block">Available Balance</span>
                 <span className="text-lg font-mono font-bold text-zinc-100 tabular-nums flex items-center gap-1.5 mt-0.5">
-                  <Coin />
                   {!wallet ? (
-                    <span className="h-5 w-16 skeleton rounded inline-block" />
+                    <>
+                      <Coin />
+                      <span className="h-5 w-16 skeleton rounded inline-block" />
+                    </>
                   ) : !balanceLoaded ? (
-                    <motion.span
-                      initial={{ opacity: 0.4 }}
-                      animate={{ opacity: [0.4, 1, 0.4] }}
-                      transition={{ repeat: Infinity, duration: 1 }}
-                    >
-                      Loading...
-                    </motion.span>
+                    <>
+                      <Coin />
+                      <motion.span
+                        initial={{ opacity: 0.4 }}
+                        animate={{ opacity: [0.4, 1, 0.4] }}
+                        transition={{ repeat: Infinity, duration: 1 }}
+                      >
+                        Loading...
+                      </motion.span>
+                    </>
                   ) : (
                     <motion.span
                       initial={{ scale: 0.9, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={spring}
                     >
-                      {wallet.balance.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+                      <Money value={wallet.balance} />
                     </motion.span>
                   )}
                 </span>
@@ -1008,145 +585,6 @@ export default function Home() {
 // ==========================================
 // NEW LANDING PAGE SECTIONS (CLIENT-SIDE ONLY)
 // ==========================================
-
-function StatsSection() {
-  const [volume, setVolume] = useState(15842912);
-  const [traders, setTraders] = useState(2481);
-  const [stocksCount, setStocksCount] = useState(15102);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setVolume(prev => prev + Math.floor(Math.random() * 85) + 15);
-      if (Math.random() > 0.85) {
-        setTraders(prev => prev + (Math.random() > 0.45 ? 1 : -1));
-      }
-      if (Math.random() > 0.97) {
-        setStocksCount(prev => prev + 1);
-      }
-    }, 1500);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const stats = [
-    { 
-      label: "TOTAL SIMULATED VOLUME", 
-      value: `${volume.toLocaleString()} Cr`, 
-      icon: <Coins size={24} className="text-pink-400" />,
-      hoverClass: "hover:border-pink-500/40 hover:shadow-[0_0_30px_rgba(236,72,153,0.15)]",
-      iconBg: "bg-pink-500/[0.05] border-pink-500/20"
-    },
-    { 
-      label: "ACTIVE MANAGERS", 
-      value: `${traders.toLocaleString()} Traders`, 
-      icon: <Users size={24} className="text-cyan-400" />,
-      hoverClass: "hover:border-cyan-500/40 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)]",
-      iconBg: "bg-cyan-500/[0.05] border-cyan-500/20"
-    },
-    { 
-      label: "TRACKED PROFILE ASSETS", 
-      value: `${stocksCount.toLocaleString()} Stocks`, 
-      icon: <Trophy size={24} className="text-amber-400" />,
-      hoverClass: "hover:border-amber-500/40 hover:shadow-[0_0_30px_rgba(245,158,11,0.15)]",
-      iconBg: "bg-amber-500/[0.05] border-amber-500/20"
-    },
-  ];
-
-  return (
-    <section className="relative z-10 mx-auto w-full max-w-6xl px-6 py-10">
-      <Reveal>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-          {stats.map((s, idx) => (
-            <div 
-              key={idx}
-              className={`glass relative overflow-hidden rounded-2xl p-6 flex items-center gap-5 transition-all duration-300 border border-zinc-800/80 ${s.hoverClass}`}
-            >
-              <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border ${s.iconBg}`}>
-                {s.icon}
-              </div>
-              <div>
-                <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block">{s.label}</span>
-                <span className="text-xl font-mono font-bold text-zinc-100 tracking-tight block mt-0.5">
-                  {s.value}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </Reveal>
-    </section>
-  );
-}
-
-function LiveTerminalConsole() {
-  const [logs, setLogs] = useState<string[]>([
-    "> [SYSTEM] Initializing virtual stock broker terminal...",
-    "> [SYSTEM] Connected to virtual performance index datastream.",
-    "> [API_SYNC] Loaded 15,102 active player profiles.",
-    "> [MARKET] Simulated liquidity pools online. Ready for orders.",
-  ]);
-
-  useEffect(() => {
-    const mockActivities = [
-      "Order filled: Bought 45 shares of mrekk at 2,450.5 Cr",
-      "Order filled: Sold 12 shares of Akolibed at 2,310.2 Cr",
-      "mrekk set a new top play! Price index project +4.5%",
-      "System sync completed: 15,102 profiles updated from ranking tables",
-      "Order filled: Bought 150 shares of Lifeline at 1,850.2 Cr",
-      "Akolibed set a new top play! Price index project +8.2%",
-      "Market cap calculated: Total valuation 35.8M credits",
-      "Network status: Synced & Active 24/7. Latency: 4ms",
-    ];
-
-    const interval = setInterval(() => {
-      const randomActivity = mockActivities[Math.floor(Math.random() * mockActivities.length)];
-      const timestamp = new Date().toLocaleTimeString();
-      setLogs(prev => {
-        const next = [...prev, `> [${timestamp}] ${randomActivity}`];
-        if (next.length > 5) {
-          next.shift();
-        }
-        return next;
-      });
-    }, 2800);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <section className="relative z-10 mx-auto w-full max-w-6xl px-6 py-8">
-      <Reveal>
-        <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/70 p-5 font-mono text-[11px] sm:text-xs text-zinc-400 shadow-inner relative overflow-hidden">
-          <div className="absolute top-2 right-4 flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
-            <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">LIVE DATASTREAM</span>
-          </div>
-          <div className="flex items-center gap-2 mb-3 border-b border-zinc-900 pb-2 text-zinc-500 text-[10px] uppercase font-bold tracking-wider">
-            <TerminalWindow size={14} className="text-pink-500" />
-            <span>Virtual Broker Transaction Console</span>
-          </div>
-          <div className="flex flex-col gap-1.5 min-h-[100px] justify-end">
-            {logs.map((log, idx) => {
-              const isHighlight = log.includes("mrekk") || log.includes("Akolibed") || log.includes("top play");
-              return (
-                <div 
-                  key={idx} 
-                  className={`leading-relaxed transition-all duration-300 ${
-                    isHighlight ? "text-pink-400 font-bold drop-shadow-[0_0_8px_rgba(236,72,153,0.2)]" : "text-zinc-400"
-                  }`}
-                >
-                  {log}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </Reveal>
-    </section>
-  );
-}
-
-
 
 const MOCK_PREVIEW_PLAYERS = [
   {
