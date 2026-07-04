@@ -76,8 +76,6 @@ function Item({ m, linked }: { m: LiveMover; linked: boolean }) {
  */
 export function MarketTicker() {
   const pathname = usePathname();
-  if (pathname === "/login") return null;
-
   const reduce = useReducedMotion();
   const { user } = useAuth();
   const clickable = !!user;
@@ -89,6 +87,9 @@ export function MarketTicker() {
   const [userPaused, setUserPaused] = useState(false);
 
   useEffect(() => {
+    // The hook must run on every render (the ticker persists across routes),
+    // but there is no ticker on /login — skip the poll there.
+    if (pathname === "/login") return;
     let cancelled = false;
     const fetchMovers = () =>
       getLiveMovers(LIMIT)
@@ -102,8 +103,10 @@ export function MarketTicker() {
       cancelled = true;
       clearInterval(id);
     };
-  }, []);
+  }, [pathname]);
 
+  // Guard lives below the hooks so hook count stays stable across routes.
+  if (pathname === "/login") return null;
   if (!movers || movers.length === 0) return null;
 
   const paused = hovered || focused || userPaused;
@@ -195,32 +198,24 @@ export function MarketTicker() {
 
         {/* Slide Toggle Switch Area */}
         <div className="flex h-full w-[64px] shrink-0 items-center justify-center border-l border-zinc-800/40 bg-zinc-950/80 backdrop-blur-md z-50">
-          <div 
-            onClick={() => setCollapsed(!collapsed)}
-            className={`w-11 h-6 rounded-full border transition-colors duration-300 flex items-center p-0.5 cursor-pointer relative ${
-              collapsed 
-                ? "bg-zinc-900 border-zinc-800 justify-start" 
+          <button
+            type="button"
+            onClick={() => setCollapsed((v) => !v)}
+            aria-pressed={collapsed}
+            aria-label={collapsed ? "Expand ticker" : "Collapse ticker"}
+            className={`w-11 h-6 rounded-full border transition-colors duration-300 flex items-center p-0.5 cursor-pointer relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/50 ${
+              collapsed
+                ? "bg-zinc-900 border-zinc-800 justify-start"
                 : "bg-pink-500/20 border-pink-500/30 justify-end"
             }`}
-            title={collapsed ? "Slide right to expand" : "Slide left to collapse"}
           >
-            {/* Draggable/Animated Thumb */}
+            {/* Thumb — decorative; the button handles activation and keyboard. */}
             <motion.div
               layout
-              drag="x"
-              dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={0.2}
-              onDragEnd={(event, info) => {
-                if (info.offset.x < -10 && !collapsed) {
-                  setCollapsed(true);
-                }
-                if (info.offset.x > 10 && collapsed) {
-                  setCollapsed(false);
-                }
-              }}
+              aria-hidden="true"
               className={`w-4.5 h-4.5 rounded-full flex items-center justify-center shadow-md transition-colors duration-300 ${
-                collapsed 
-                  ? "bg-zinc-500" 
+                collapsed
+                  ? "bg-zinc-500"
                   : "bg-pink-500"
               }`}
             >
@@ -230,7 +225,7 @@ export function MarketTicker() {
                 <CaretLeft size={10} weight="bold" className="text-white" />
               )}
             </motion.div>
-          </div>
+          </button>
         </div>
       </aside>
     </>

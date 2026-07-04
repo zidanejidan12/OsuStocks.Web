@@ -107,7 +107,6 @@ function ThemeToggle() {
 
 export function Nav() {
   const pathname = usePathname();
-  if (pathname === "/login") return null;
   const { user, loading, logout } = useAuth();
   const { unreadCount } = useNotifications();
   const [open, setOpen] = useState(false);
@@ -209,6 +208,11 @@ export function Nav() {
       trigger?.focus();
     };
   }, [open]);
+
+  // Nav is mounted once in the layout and persists across routes, so every
+  // hook above must run on every render. Keep the /login guard here, below all
+  // hooks, or React throws "rendered fewer hooks than expected" on /login.
+  if (pathname === "/login") return null;
 
   return (
     <>
