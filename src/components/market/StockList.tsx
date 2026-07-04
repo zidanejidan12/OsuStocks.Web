@@ -15,9 +15,10 @@ import {
   TrendUp,
   TrendDown,
   CaretDown,
+  CaretUp,
 } from "@phosphor-icons/react";
 import type { MarketCountry, StockSort, StockSummary } from "@/lib/api/types";
-import { getMarketCountries } from "@/lib/api/client";
+import { getMarketCountries, getStock } from "@/lib/api/client";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PriceChange } from "@/components/ui/PriceChange";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -227,9 +228,6 @@ function StockRow({
   // Calculate global page rank index
   const rank = (page - 1) * 25 + index + 1;
 
-  // Derived 7d change
-  const change7d = (stock.priceChange24h * 1.62) + (Math.sin(index) * 4);
-
   return (
     <motion.tr
       initial={animateRows ? { opacity: 0, y: 8 } : false}
@@ -310,15 +308,7 @@ function StockRow({
         />
       </td>
 
-      {/* 6. 7d Change (Derived/Simulated) */}
-      <td className="hidden lg:table-cell px-4 py-3.5 text-right">
-        <PriceChange
-          value={change7d}
-          className="justify-end font-semibold text-xs"
-        />
-      </td>
-
-      {/* 7. Volume */}
+      {/* 6. Volume */}
       <td className="hidden sm:table-cell px-4 py-3.5 text-right font-mono text-xs tabular-nums text-zinc-400">
         {formatNumber(stock.volume)}
       </td>
@@ -370,10 +360,10 @@ export function StockList({
     const isActive = sort === ascVal || sort === descVal;
     if (!isActive) return null;
     const isAsc = sort === ascVal;
-    return (
-      <span className="inline-flex ml-1 text-pink-500 font-mono text-[9px] select-none">
-        {isAsc ? "▲" : "▼"}
-      </span>
+    return isAsc ? (
+      <CaretUp size={10} weight="bold" className="ml-1 text-pink-500" />
+    ) : (
+      <CaretDown size={10} weight="bold" className="ml-1 text-pink-500" />
     );
   };
 
@@ -384,6 +374,33 @@ export function StockList({
       onSortChange(descVal);
     }
   };
+
+  const getAriaSort = (
+    ascVal: StockSort,
+    descVal: StockSort,
+  ): "ascending" | "descending" | "none" =>
+    sort === ascVal ? "ascending" : sort === descVal ? "descending" : "none";
+
+  // Keyboard-operable, screen-reader-announced sortable column header.
+  const sortableHeader = (
+    label: string,
+    ascVal: StockSort,
+    descVal: StockSort,
+    thClass: string,
+    alignEnd: boolean,
+  ) => (
+    <th aria-sort={getAriaSort(ascVal, descVal)} className={thClass}>
+      <button
+        type="button"
+        onClick={() => handleHeaderClick(ascVal, descVal)}
+        className={`flex w-full items-center gap-1 rounded uppercase tracking-widest transition-colors hover:text-zinc-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/50 ${
+          alignEnd ? "justify-end" : ""
+        }`}
+      >
+        {label} {renderSortIndicator(ascVal, descVal)}
+      </button>
+    </th>
+  );
 
   // Favorites logic
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -405,11 +422,34 @@ export function StockList({
   // Filter Mode tab: "ALL" | "GAINERS" | "LOSERS" | "FAVORITES"
   const [filterTab, setFilterTab] = useState<"ALL" | "GAINERS" | "LOSERS" | "FAVORITES">("ALL");
 
-  // Filter stocks list locally if favorites active
-  const filteredStocks = stocks.filter((s) => {
-    if (filterTab === "FAVORITES") return favorites.includes(s.stockId);
-    return true;
-  });
+  // The Watchlist must show ALL starred players, not just those on the current
+  // page (the market list is paginated), so fetch favorites by id when active.
+  const [favoriteStocks, setFavoriteStocks] = useState<StockSummary[]>([]);
+  const [favLoading, setFavLoading] = useState(false);
+  useEffect(() => {
+    if (filterTab !== "FAVORITES") return;
+    if (favorites.length === 0) {
+      setFavoriteStocks([]);
+      return;
+    }
+    let cancelled = false;
+    setFavLoading(true);
+    Promise.all(favorites.map((id) => getStock(id).catch(() => null)))
+      .then((results) => {
+        if (!cancelled) {
+          setFavoriteStocks(results.filter((s): s is StockSummary => s !== null));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setFavLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [filterTab, favorites]);
+
+  const displayStocks = filterTab === "FAVORITES" ? favoriteStocks : stocks;
+  const showLoading = loading || (filterTab === "FAVORITES" && favLoading);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const canPrev = page > 1;
@@ -540,7 +580,7 @@ export function StockList({
         </div>
 
         <div className="overflow-x-auto w-full">
-          {loading ? (
+          {showLoading ? (
             <table className="w-full text-sm select-none">
               <thead>
                 <tr className="border-b border-zinc-800 text-left text-[10px] uppercase tracking-widest text-zinc-500 bg-zinc-900/25 sticky top-0 backdrop-blur-md z-10">
@@ -550,7 +590,6 @@ export function StockList({
                   <th className="hidden md:table-cell px-4 py-3">Region</th>
                   <th className="px-4 py-3 text-right">Price</th>
                   <th className="px-4 py-3 text-right">24h</th>
-                  <th className="hidden lg:table-cell px-4 py-3 text-right">7d</th>
                   <th className="hidden sm:table-cell px-4 py-3 text-right">Volume</th>
                   <th className="hidden sm:table-cell px-4 py-3 text-center w-24">Trend</th>
                   <th className="px-4 py-3 text-right w-20">Trade</th>
@@ -570,7 +609,6 @@ export function StockList({
                     <td className="hidden md:table-cell px-4 py-4"><Skeleton className="h-4 w-16 rounded" /></td>
                     <td className="px-4 py-4"><Skeleton className="ml-auto h-4 w-16 rounded" /></td>
                     <td className="px-4 py-4"><Skeleton className="ml-auto h-4 w-14 rounded" /></td>
-                    <td className="hidden lg:table-cell px-4 py-4"><Skeleton className="ml-auto h-4 w-14 rounded" /></td>
                     <td className="hidden sm:table-cell px-4 py-4"><Skeleton className="ml-auto h-4 w-16 rounded" /></td>
                     <td className="hidden sm:table-cell px-4 py-4"><Skeleton className="mx-auto h-4 w-12 rounded" /></td>
                     <td className="px-4 py-4"><Skeleton className="ml-auto h-7 w-12 rounded-lg" /></td>
@@ -578,7 +616,7 @@ export function StockList({
                 ))}
               </tbody>
             </table>
-          ) : filteredStocks.length === 0 ? (
+          ) : displayStocks.length === 0 ? (
             <div className="p-10">
               <EmptyState
                 title={filterTab === "FAVORITES" ? "Watchlist is empty" : "No players found"}
@@ -592,59 +630,23 @@ export function StockList({
                 <tr className="border-b border-zinc-800 text-left text-[10px] uppercase tracking-widest text-zinc-500 bg-zinc-900/40 sticky top-0 backdrop-blur-md z-10 select-none">
                   <th className="px-4 py-3.5 text-center w-12 font-bold">Rank</th>
                   <th className="px-2 py-3.5 w-8"></th>
-                  <th 
-                    onClick={() => handleHeaderClick("name_asc", "name_desc")}
-                    className="px-4 py-3.5 font-bold cursor-pointer hover:text-zinc-200 transition-colors"
-                  >
-                    <div className="flex items-center gap-1">
-                      Player {renderSortIndicator("name_asc", "name_desc")}
-                    </div>
-                  </th>
+                  {sortableHeader("Player", "name_asc", "name_desc", "px-4 py-3.5 font-bold", false)}
                   <th className="hidden md:table-cell px-4 py-3.5 font-bold">Region</th>
-                  <th 
-                    onClick={() => handleHeaderClick("price_asc", "price_desc")}
-                    className="px-4 py-3.5 text-right font-bold cursor-pointer hover:text-zinc-200 transition-colors"
-                  >
-                    <div className="flex items-center justify-end gap-1">
-                      Price {renderSortIndicator("price_asc", "price_desc")}
-                    </div>
-                  </th>
-                  <th 
-                    onClick={() => handleHeaderClick("change24h_asc", "change24h_desc")}
-                    className="px-4 py-3.5 text-right font-bold cursor-pointer hover:text-zinc-200 transition-colors"
-                  >
-                    <div className="flex items-center justify-end gap-1">
-                      24h Change {renderSortIndicator("change24h_asc", "change24h_desc")}
-                    </div>
-                  </th>
-                  <th 
-                    onClick={() => handleHeaderClick("change24h_asc", "change24h_desc")}
-                    className="hidden lg:table-cell px-4 py-3.5 text-right font-bold cursor-pointer hover:text-zinc-200 transition-colors"
-                  >
-                    <div className="flex items-center justify-end gap-1">
-                      7d Change {renderSortIndicator("change24h_asc", "change24h_desc")}
-                    </div>
-                  </th>
-                  <th 
-                    onClick={() => handleHeaderClick("volume_asc", "volume_desc")}
-                    className="hidden sm:table-cell px-4 py-3.5 text-right font-bold cursor-pointer hover:text-zinc-200 transition-colors"
-                  >
-                    <div className="flex items-center justify-end gap-1">
-                      Volume {renderSortIndicator("volume_asc", "volume_desc")}
-                    </div>
-                  </th>
+                  {sortableHeader("Price", "price_asc", "price_desc", "px-4 py-3.5 text-right font-bold", true)}
+                  {sortableHeader("24h Change", "change24h_asc", "change24h_desc", "px-4 py-3.5 text-right font-bold", true)}
+                  {sortableHeader("Volume", "volume_asc", "volume_desc", "hidden sm:table-cell px-4 py-3.5 text-right font-bold", true)}
                   <th className="hidden sm:table-cell px-4 py-3.5 text-center w-24 font-bold">Trend</th>
                   <th className="px-4 py-3.5 text-right w-20 font-bold">Trade</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-900/30">
-                {filteredStocks.map((stock, i) => (
+                {displayStocks.map((stock, i) => (
                   <StockRow
                     key={stock.stockId}
                     stock={stock}
                     animateRows={animateRows}
                     index={i}
-                    page={page}
+                    page={filterTab === "FAVORITES" ? 1 : page}
                     isFavorite={favorites.includes(stock.stockId)}
                     onToggleFavorite={() => toggleFavorite(stock.stockId)}
                     onSelect={() => onSelectStock?.(stock.stockId)}
