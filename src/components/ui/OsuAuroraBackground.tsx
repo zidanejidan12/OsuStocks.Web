@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import { usePathname } from "next/navigation";
 
 interface ColorScheme {
@@ -137,6 +137,9 @@ export function OsuAuroraBackground() {
   const [particles, setParticles] = useState<any[]>([]);
   const { scrollY } = useScroll();
   const [isLightMode, setIsLightMode] = useState(false);
+  // Framer-motion runs on JS, so the sitewide CSS prefers-reduced-motion rule
+  // can't reach it — gate the scroll parallax and the laser loop here.
+  const reduce = useReducedMotion();
 
   // Theme observer
   useEffect(() => {
@@ -201,36 +204,39 @@ export function OsuAuroraBackground() {
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 animate-hue-shift">
       {/* Moving Aurora Mesh Gradients */}
-      <motion.div style={{ y: y1, backgroundColor: activeColors.bg1 }} className="absolute -top-[10%] -right-[10%] w-[60%] h-[60%] rounded-full blur-[120px] animate-aurora-1" />
-      <motion.div style={{ y: y2, backgroundColor: activeColors.bg2 }} className="absolute -bottom-[10%] -left-[10%] w-[60%] h-[60%] rounded-full blur-[120px] animate-aurora-2" />
-      <motion.div style={{ y: y3, backgroundColor: activeColors.bg3 }} className="absolute top-[20%] right-[10%] w-[50%] h-[50%] rounded-full blur-[130px] animate-aurora-3" />
+      <motion.div style={{ y: reduce ? 0 : y1, backgroundColor: activeColors.bg1 }} className="absolute -top-[10%] -right-[10%] w-[60%] h-[60%] rounded-full blur-[120px] animate-aurora-1" />
+      <motion.div style={{ y: reduce ? 0 : y2, backgroundColor: activeColors.bg2 }} className="absolute -bottom-[10%] -left-[10%] w-[60%] h-[60%] rounded-full blur-[120px] animate-aurora-2" />
+      <motion.div style={{ y: reduce ? 0 : y3, backgroundColor: activeColors.bg3 }} className="absolute top-[20%] right-[10%] w-[50%] h-[50%] rounded-full blur-[130px] animate-aurora-3" />
 
       {/* Grid overlay */}
       <motion.div 
-        style={{ 
-          opacity: opacityGrid,
+        style={{
+          opacity: reduce ? 1 : opacityGrid,
           backgroundImage: `linear-gradient(to right, ${gridColor} 1px, transparent 1px), linear-gradient(to bottom, ${gridColor} 1px, transparent 1px)`
         }} 
         className="absolute inset-0 bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]" 
       />
 
-      {/* Scanning Laser/Grid Sweep */}
-      <motion.div
-        initial={{ y: "-10%" }}
-        animate={{ y: "110%" }}
-        transition={{
-          duration: 16,
-          repeat: Infinity,
-          ease: "linear",
-        }}
-        className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-pink-500/10 to-transparent opacity-25"
-        style={{
-          boxShadow: "0 0 15px rgba(236, 72, 153, 0.15)",
-        }}
-      />
+      {/* Scanning laser sweep — a perpetual framer-motion loop, so skip it
+          entirely under prefers-reduced-motion. */}
+      {!reduce && (
+        <motion.div
+          initial={{ y: "-10%" }}
+          animate={{ y: "110%" }}
+          transition={{
+            duration: 16,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+          className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-pink-500/10 to-transparent opacity-25"
+          style={{
+            boxShadow: "0 0 15px rgba(236, 72, 153, 0.15)",
+          }}
+        />
+      )}
 
       {/* osu! Approach Circles */}
-      <motion.div style={{ y: yApproach }} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] z-0">
+      <motion.div style={{ y: reduce ? 0 : yApproach }} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] z-0">
         <div className="absolute top-1/2 left-1/2 w-full h-full rounded-full border border-pink-500/15 shadow-[0_0_15px_rgba(236,72,153,0.08)] animate-approach-1" />
         <div className="absolute top-1/2 left-1/2 w-full h-full rounded-full border border-cyan-500/10 shadow-[0_0_15px_rgba(6,182,212,0.08)] animate-approach-2" />
         <div className="absolute top-1/2 left-1/2 w-full h-full rounded-full border border-pink-500/5 shadow-[0_0_15px_rgba(236,72,153,0.04)] animate-approach-3" />
