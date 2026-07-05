@@ -1,15 +1,17 @@
 # OsuStocks.Web — run with: npm run docker:up   (or: docker compose up --build)
 #
-# The port and API URL come from .env (the single source of truth). Compose reads
-# .env automatically for the ${VAR} substitutions below. NEXT_PUBLIC_API_BASE_URL
-# is inlined into the client bundle at build time; because API calls happen in the
-# browser, the default http://localhost:5152 targets the host's API.
+# The port and URLs come from .env (the single source of truth). Compose reads
+# .env automatically for the ${VAR} substitutions below; for another environment
+# pass an env file explicitly, e.g. `docker compose --env-file .env.staging up`.
+# These are inlined/frozen at BUILD time: API_PROXY_TARGET is the server-only
+# backend the /api/v1/* rewrite proxies to (never shipped to the browser), and
+# NEXT_PUBLIC_SITE_URL is the public web origin baked into the client bundle.
 services:
   web:
     build:
       context: .
       args:
-        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:5152}
+        API_PROXY_TARGET: ${API_PROXY_TARGET:-http://localhost:5152}
         NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
         PORT: ${PORT:-3000}
     image: osustocks-web
