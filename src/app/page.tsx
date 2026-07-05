@@ -2,13 +2,12 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { ArrowRight, WarningCircle, Lock, Wallet as WalletIcon, Plus, Minus, CaretDown, X } from "@phosphor-icons/react";
+import { ArrowRight, WarningCircle, Lock, Wallet as WalletIcon, CaretDown, X } from "@phosphor-icons/react";
 import type { MarketOverview, Paged, StockSort, StockSummary, Wallet } from "@/lib/api/types";
 import { getMarketOverview, getStocks, getWallet, ApiError } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/auth-context";
 import { Card } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { StatusDot } from "@/components/ui/StatusDot";
 import { buttonClasses } from "@/components/ui/Button";
 import { MagneticButton } from "@/components/ui/MagneticButton";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -70,7 +69,7 @@ function Hero({ onLogin }: { onLogin: () => void }) {
             </h1>
 
             <p className="mt-6 max-w-[44ch] text-lg sm:text-xl font-normal leading-relaxed text-zinc-300 drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]">
-              The <span className="text-pink-400 font-semibold drop-shadow-[0_0_12px_rgba(236,72,153,0.5)]">ultimate fantasy market</span> for osu! players. Build your portfolio with shares tied directly to <span className="text-cyan-400 font-semibold drop-shadow-[0_0_12px_rgba(6,182,212,0.5)]">live performance</span>, predict the next top plays, and dominate the global leaderboards.
+              A fantasy market for osu! players. Build a portfolio of shares tied to live performance, predict the next top plays, and climb the leaderboard.
             </p>
 
             <div className="mt-8 flex flex-wrap justify-center md:justify-start items-center gap-3">
@@ -371,7 +370,6 @@ export default function Home() {
     return (
       <div className="relative w-full overflow-x-hidden pb-16">
         <Hero onLogin={() => login("/")} />
-        <InteractiveChartSection />
         <FaqSection />
       </div>
     );
@@ -474,15 +472,9 @@ export default function Home() {
       <Reveal delay={0.02}>
         <div className="flex items-end justify-between gap-3 mb-6">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl font-black font-display tracking-tight bg-gradient-to-r from-zinc-100 via-pink-600 to-pink-700 dark:from-zinc-100 dark:via-pink-200 dark:to-pink-500 bg-clip-text text-transparent sm:text-2xl animate-gradient-text">
+            <h2 className="text-xl font-black font-display tracking-tight text-zinc-100 sm:text-2xl">
               Market Dashboard
             </h2>
-            <div className="flex items-center gap-1.5 rounded-full bg-cyan-500/10 px-2.5 py-0.5 border border-cyan-500/20">
-              <StatusDot tone="cyan" />
-              <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-cyan-400">
-                Live Feed
-              </span>
-            </div>
           </div>
         </div>
       </Reveal>
@@ -586,331 +578,6 @@ export default function Home() {
 // NEW LANDING PAGE SECTIONS (CLIENT-SIDE ONLY)
 // ==========================================
 
-const MOCK_PREVIEW_PLAYERS = [
-  {
-    id: "mrekk",
-    name: "mrekk",
-    rank: "#1 Global",
-    price: 2450.5,
-    change: "+15.2%",
-    color: "pink",
-    chartPath: "M 0 130 C 50 145, 100 90, 150 110 C 200 65, 250 135, 300 45",
-    points: [{x: 0, y: 130}, {x: 50, y: 145}, {x: 100, y: 90}, {x: 150, y: 110}, {x: 200, y: 65}, {x: 250, y: 135}, {x: 300, y: 45}],
-    avatar: "https://a.ppy.sh/2211396",
-  },
-  {
-    id: "akolibed",
-    name: "Akolibed",
-    rank: "#2 Global",
-    price: 2310.0,
-    change: "+8.7%",
-    color: "cyan",
-    chartPath: "M 0 115 C 50 120, 100 100, 150 115 C 200 80, 250 90, 300 60",
-    points: [{x: 0, y: 115}, {x: 50, y: 120}, {x: 100, y: 100}, {x: 150, y: 115}, {x: 200, y: 80}, {x: 250, y: 90}, {x: 300, y: 60}],
-    avatar: "https://a.ppy.sh/9269014",
-  },
-  {
-    id: "lifeline",
-    name: "Lifeline",
-    rank: "#4 Global",
-    price: 1850.2,
-    change: "+4.1%",
-    color: "amber",
-    chartPath: "M 0 140 C 50 130, 100 135, 150 110 C 200 120, 250 95, 300 85",
-    points: [{x: 0, y: 140}, {x: 50, y: 130}, {x: 100, y: 135}, {x: 150, y: 110}, {x: 200, y: 120}, {x: 250, y: 95}, {x: 300, y: 85}],
-    avatar: "https://a.ppy.sh/11311039",
-  }
-];
-
-function InteractiveChartSection() {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [sharesOwned, setSharesOwned] = useState(0);
-  const [alertMsg, setAlertMsg] = useState<string | null>(null);
-  const [alertType, setAlertType] = useState<"buy" | "sell">("buy");
-  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number; svgX: number; svgY: number; visible: boolean; price: string }>({
-    x: 0, y: 0, svgX: 0, svgY: 0, visible: false, price: ""
-  });
-
-  const player = MOCK_PREVIEW_PLAYERS[activeIndex];
-  const colorHex = player.color === "pink" ? "#ec4899" : player.color === "cyan" ? "#06b6d4" : "#f59e0b";
-
-  const triggerAlert = (msg: string, type: "buy" | "sell") => {
-    setAlertMsg(msg);
-    setAlertType(type);
-    setTimeout(() => setAlertMsg(null), 2500);
-  };
-
-  const handleBuy = () => {
-    setSharesOwned(prev => prev + 1);
-    triggerAlert(`Successfully bought 1 share of ${player.name}!`, "buy");
-  };
-
-  const handleSell = () => {
-    if (sharesOwned <= 0) {
-      triggerAlert("You don't own any shares to sell!", "sell");
-      return;
-    }
-    setSharesOwned(prev => prev - 1);
-    triggerAlert(`Successfully sold 1 share of ${player.name}!`, "sell");
-  };
-
-  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement, MouseEvent>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    // Convert mouse x to SVG grid coordinate (width 300)
-    const svgX = (x / rect.width) * 300;
-    
-    // Find closest data point
-    let closestPoint = player.points[0];
-    let minDiff = Math.abs(player.points[0].x - svgX);
-    for (let i = 1; i < player.points.length; i++) {
-      const diff = Math.abs(player.points[i].x - svgX);
-      if (diff < minDiff) {
-        minDiff = diff;
-        closestPoint = player.points[i];
-      }
-    }
-
-    // Map SVG y back to visual percentage for tooltip positioning
-    const svgY = closestPoint.y;
-    const visualY = (svgY / 150) * rect.height;
-    const visualX = (closestPoint.x / 300) * rect.width;
-
-    // Calculate price based on height
-    const minPrice = player.price * 0.9;
-    const maxPrice = player.price * 1.1;
-    const priceVal = maxPrice - ((svgY - 45) / 100) * (maxPrice - minPrice);
-
-    setTooltipPos({
-      x: visualX,
-      y: visualY,
-      svgX: closestPoint.x,
-      svgY,
-      visible: true,
-      price: priceVal.toFixed(1)
-    });
-  };
-
-  const handleMouseLeave = () => {
-    setTooltipPos(prev => ({ ...prev, visible: false }));
-  };
-
-  return (
-    <section className="relative z-10 mx-auto w-full max-w-6xl px-6 py-16">
-      <Reveal>
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <p className="text-[10px] font-bold text-cyan-400 uppercase tracking-[0.25em] mb-2">SANDBOX STAGE</p>
-          <h2 className="text-3xl sm:text-4xl font-display font-black tracking-tight text-zinc-50 uppercase">
-            Order Book <span className="text-cyan-400">Simulator</span>
-          </h2>
-          <p className="mt-3 text-zinc-400 text-sm leading-relaxed">
-            Interact with the trade console below. Swap active player profiles, view live pricing charts, and simulate transactions.
-          </p>
-        </div>
-      </Reveal>
-
-      <Reveal delay={0.05}>
-        <div className="relative overflow-hidden rounded-[24px] border border-zinc-800/80 bg-zinc-950/70 p-6 sm:p-8 backdrop-blur-md">
-          {/* Subtle accent corner glow */}
-          <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-[100px] opacity-15 pointer-events-none transition-all duration-700" style={{ backgroundColor: colorHex }} />
-          
-          {/* Notification Alert */}
-          <div className={"absolute top-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-semibold border backdrop-blur-md shadow-lg transition-all duration-300 " + (
-            alertMsg ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4 pointer-events-none"
-          ) + " " + (
-            alertType === "buy" 
-              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" 
-              : "bg-red-500/10 border-red-500/20 text-red-400"
-          )}>
-            <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: alertType === "buy" ? "#10b981" : "#ef4444" }} />
-            {alertMsg}
-          </div>
-
-          <div className="relative z-10 flex flex-col lg:flex-row gap-8 items-stretch">
-            {/* Left Column: Player Selector & Order Placement */}
-            <div className="flex flex-col justify-between w-full lg:w-1/3 shrink-0">
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 block mb-4">
-                  Active Listings
-                </span>
-                <div className="flex flex-col gap-2.5">
-                  {MOCK_PREVIEW_PLAYERS.map((p, idx) => (
-                    <button
-                      key={p.id}
-                      onClick={() => {
-                        setActiveIndex(idx);
-                        setSharesOwned(0);
-                      }}
-                      className={"flex items-center gap-3.5 px-4.5 py-4 rounded-xl border text-left transition-all duration-200 " + (
-                        activeIndex === idx
-                          ? "bg-zinc-900/60 border-zinc-800 shadow-md"
-                          : "bg-transparent border-transparent hover:bg-zinc-900/30"
-                      )}
-                    >
-                      <Avatar src={p.avatar} name={p.name} size="sm" />
-                      <div className="flex-1 min-w-0 ml-1">
-                        <span className="text-sm font-bold text-zinc-100 block leading-tight">{p.name}</span>
-                        <span className="text-[11px] text-zinc-500 block mt-0.5">{p.rank}</span>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-sm font-mono font-bold text-zinc-300 block">{p.price.toFixed(1)}</span>
-                        <span className={"text-[11px] font-bold block mt-0.5 " + (p.change.startsWith("+") ? "text-emerald-400" : "text-rose-400")}>{p.change}</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Order Controls */}
-              <div className="mt-8 pt-6 border-t border-zinc-900">
-                <div className="flex items-center justify-between mb-4.5">
-                  <span className="text-xs text-zinc-400 font-semibold uppercase tracking-wider">Estimated Holdings</span>
-                  <span className="text-xs font-mono font-bold text-zinc-100 bg-zinc-900 px-3 py-1 rounded-lg border border-zinc-800">
-                    {sharesOwned} Shares
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={handleBuy}
-                    className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-display font-black tracking-wider uppercase text-xs transition-all duration-300 shadow-[0_4px_20px_rgba(16,185,129,0.2)] active:scale-[0.98]"
-                  >
-                    <Plus size={13} weight="bold" />
-                    Buy Share
-                  </button>
-                  <button
-                    onClick={handleSell}
-                    className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-rose-500 hover:bg-rose-600 text-zinc-950 font-display font-black tracking-wider uppercase text-xs transition-all duration-300 shadow-[0_4px_20px_rgba(244,63,94,0.2)] active:scale-[0.98]"
-                  >
-                    <Minus size={13} weight="bold" />
-                    Sell Share
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Column: Chart details */}
-            <div className="flex-1 flex flex-col justify-between rounded-2xl bg-zinc-900/30 border border-zinc-900 p-5 sm:p-6 min-h-[350px]">
-              <div>
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="text-lg font-black text-zinc-950 dark:text-white leading-none uppercase font-display tracking-tight">{player.name}</h3>
-                    <p className="text-xs text-zinc-500 mt-1">{player.rank} • Live Index</p>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-xl font-mono font-black text-zinc-950 dark:text-white">{player.price.toFixed(1)} Cr</span>
-                    <span className={"text-[11px] font-bold block mt-1 " + (player.change.startsWith("+") ? "text-emerald-400" : "text-rose-400")}>
-                      {player.change} (24h)
-                    </span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-4 border-t border-zinc-900 pt-4">
-                  <div>
-                    <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider block">Market Cap</span>
-                    <span className="text-sm font-semibold text-zinc-300 block mt-0.5">
-                      {(player.price * 10000).toLocaleString("en-US", { maximumFractionDigits: 0 })} Cr
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider block">24h High</span>
-                    <span className="text-sm font-semibold text-emerald-400 block mt-0.5">
-                      {(player.price * 1.045).toFixed(1)} Cr
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider block">24h Low</span>
-                    <span className="text-sm font-semibold text-rose-400 block mt-0.5">
-                      {(player.price * 0.942).toFixed(1)} Cr
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Chart Grid Lines and Path */}
-              <div className="relative flex-1 flex items-end h-[160px] sm:h-[200px] mt-6 select-none border border-zinc-900 bg-zinc-950/20 rounded-xl overflow-hidden p-2">
-                <svg
-                  className="w-full h-full cursor-crosshair overflow-visible"
-                  viewBox="0 0 300 150"
-                  preserveAspectRatio="none"
-                  onMouseMove={handleMouseMove}
-                  onMouseLeave={handleMouseLeave}
-                >
-                  <defs>
-                    <linearGradient id={"grad-" + player.id} x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={colorHex} stopOpacity="0.15" />
-                      <stop offset="100%" stopColor={colorHex} stopOpacity="0" />
-                    </linearGradient>
-                  </defs>
-
-                  {/* Horizontal Trading Grid Lines */}
-                  <line x1="0" y1="30" x2="300" y2="30" stroke="rgba(255,255,255,0.03)" strokeDasharray="3 3" />
-                  <line x1="0" y1="60" x2="300" y2="60" stroke="rgba(255,255,255,0.03)" strokeDasharray="3 3" />
-                  <line x1="0" y1="90" x2="300" y2="90" stroke="rgba(255,255,255,0.03)" strokeDasharray="3 3" />
-                  <line x1="0" y1="120" x2="300" y2="120" stroke="rgba(255,255,255,0.03)" strokeDasharray="3 3" />
-
-                  <path
-                    d={player.chartPath + " L 300 150 L 0 150 Z"}
-                    fill={"url(#grad-" + player.id + ")"}
-                    className="transition-all duration-500 ease-out"
-                  />
-
-                  <path
-                    d={player.chartPath}
-                    fill="none"
-                    stroke={colorHex}
-                    strokeWidth="2"
-                    className="transition-all duration-500 ease-out"
-                    style={{ filter: "drop-shadow(0 0 4px " + colorHex + "60)" }}
-                  />
-
-                  {tooltipPos.visible && (
-                    <>
-                      <line
-                        x1={tooltipPos.svgX}
-                        y1="0"
-                        x2={tooltipPos.svgX}
-                        y2="150"
-                        stroke="rgba(255,255,255,0.1)"
-                        strokeDasharray="3 3"
-                        strokeWidth="1"
-                        className="pointer-events-none"
-                      />
-                      <circle
-                        cx={tooltipPos.svgX}
-                        cy={tooltipPos.svgY}
-                        r="4"
-                        fill={colorHex}
-                        stroke="#fff"
-                        strokeWidth="1.5"
-                        className="pointer-events-none"
-                        style={{ filter: "drop-shadow(0 0 4px " + colorHex + ")" }}
-                      />
-                    </>
-                  )}
-                </svg>
-
-                {tooltipPos.visible && (
-                  <div
-                    className="absolute bg-zinc-950/90 border border-zinc-800 text-[10px] font-mono font-bold text-zinc-100 px-2.5 py-1 rounded shadow-md pointer-events-none transform -translate-x-1/2 -translate-y-full"
-                    style={{
-                      left: tooltipPos.x + "px",
-                      top: (tooltipPos.y - 8) + "px"
-                    }}
-                  >
-                    {tooltipPos.price} Cr
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </Reveal>
-    </section>
-  );
-}
-
 function FaqSection() {
   const faqs = [
     {
@@ -935,7 +602,6 @@ function FaqSection() {
     <section id="faq" className="relative z-10 mx-auto w-full max-w-3xl px-6 py-16 sm:py-24">
       <Reveal>
         <div className="text-center mb-14">
-          <p className="text-[10px] font-bold text-amber-500 uppercase tracking-[0.25em] mb-2">FAQ KNOWLEDGE</p>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-zinc-100">
             Frequently Asked <span className="text-amber-400 drop-shadow-[0_0_12px_rgba(245,158,11,0.3)]">Questions</span>
           </h2>

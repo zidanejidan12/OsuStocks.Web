@@ -12,8 +12,6 @@ import {
   Coins,
   ArrowUp,
   ArrowDown,
-  TrendUp,
-  TrendDown,
   CaretDown,
   CaretUp,
 } from "@phosphor-icons/react";
@@ -144,38 +142,6 @@ type Props = {
   onPageChange: (page: number) => void;
   onSelectStock?: (stockId: string) => void;
 };
-
-// Player specific SVG Sparkline Trend chart
-function Sparkline({ change24h, id }: { change24h: number; id: string }) {
-  const points: string[] = [];
-  const count = 6;
-  const seed = id.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  
-  for (let i = 0; i < count; i++) {
-    const progress = i / (count - 1);
-    const x = progress * 56;
-    // Dynamic wavy line
-    const wave = Math.sin(seed + i * 1.5) * 6;
-    const trend = change24h * 0.3 * (progress - 0.5) * 8;
-    const y = 15 - wave - trend;
-    points.push(`${x},${y}`);
-  }
-  
-  const color = change24h >= 0 ? "#10b981" : "#f43f5e";
-  
-  return (
-    <svg width="56" height="30" className="opacity-90">
-      <path
-        d={`M ${points.join(" L ")}`}
-        fill="none"
-        stroke={color}
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
 function StockRow({
   stock,
@@ -311,13 +277,6 @@ function StockRow({
       {/* 6. Volume */}
       <td className="hidden sm:table-cell px-4 py-3.5 text-right font-mono text-xs tabular-nums text-zinc-400">
         {formatNumber(stock.volume)}
-      </td>
-
-      {/* 8. Trend Sparkline */}
-      <td className="hidden sm:table-cell px-4 py-2 align-middle">
-        <div className="flex justify-end pr-2">
-          <Sparkline change24h={stock.priceChange24h} id={stock.stockId} />
-        </div>
       </td>
 
       {/* 9. Buy Button */}
@@ -574,11 +533,6 @@ export function StockList({
 
       {/* Professional Trading Terminal Table */}
       <div className="relative overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-950/40 backdrop-blur-md shadow-[0_15px_50px_rgba(0,0,0,0.5)]">
-        {/* Swipe indicator for mobile devices */}
-        <div className="block sm:hidden text-center py-2.5 bg-pink-500/5 border-b border-zinc-850/50 text-[10px] font-black uppercase tracking-widest text-pink-400/80 animate-pulse">
-          ← Swipe sideways to view full statistics →
-        </div>
-
         <div className="overflow-x-auto w-full">
           {showLoading ? (
             <table className="w-full text-sm select-none">
@@ -591,7 +545,6 @@ export function StockList({
                   <th className="px-4 py-3 text-right">Price</th>
                   <th className="px-4 py-3 text-right">24h</th>
                   <th className="hidden sm:table-cell px-4 py-3 text-right">Volume</th>
-                  <th className="hidden sm:table-cell px-4 py-3 text-center w-24">Trend</th>
                   <th className="px-4 py-3 text-right w-20">Trade</th>
                 </tr>
               </thead>
@@ -610,7 +563,6 @@ export function StockList({
                     <td className="px-4 py-4"><Skeleton className="ml-auto h-4 w-16 rounded" /></td>
                     <td className="px-4 py-4"><Skeleton className="ml-auto h-4 w-14 rounded" /></td>
                     <td className="hidden sm:table-cell px-4 py-4"><Skeleton className="ml-auto h-4 w-16 rounded" /></td>
-                    <td className="hidden sm:table-cell px-4 py-4"><Skeleton className="mx-auto h-4 w-12 rounded" /></td>
                     <td className="px-4 py-4"><Skeleton className="ml-auto h-7 w-12 rounded-lg" /></td>
                   </tr>
                 ))}
@@ -635,7 +587,6 @@ export function StockList({
                   {sortableHeader("Price", "price_asc", "price_desc", "px-4 py-3.5 text-right font-bold", true)}
                   {sortableHeader("24h Change", "change24h_asc", "change24h_desc", "px-4 py-3.5 text-right font-bold", true)}
                   {sortableHeader("Volume", "volume_asc", "volume_desc", "hidden sm:table-cell px-4 py-3.5 text-right font-bold", true)}
-                  <th className="hidden sm:table-cell px-4 py-3.5 text-center w-24 font-bold">Trend</th>
                   <th className="px-4 py-3.5 text-right w-20 font-bold">Trade</th>
                 </tr>
               </thead>

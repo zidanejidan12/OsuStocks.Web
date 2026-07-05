@@ -25,14 +25,8 @@ export function Footer() {
               <span className="text-pink-500 drop-shadow-[0_0_15px_rgba(244,63,94,0.4)]">Osu</span>Stocks
             </div>
             <p className="text-sm lg:text-base leading-relaxed text-zinc-450 font-medium">
-              The premier fantasy stock market simulation game for the osu! community. Predict performances, manage simulated portfolios, and compete with traders worldwide.
+              A fantasy stock market for the osu! community — track players, build a portfolio, climb the leaderboard.
             </p>
-            <div className="mt-2 flex items-center gap-3">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-400">
-                Server Synced & Live 24/7
-              </span>
-            </div>
           </div>
 
           <nav aria-label="Quick Navigation Links" className="flex flex-col gap-4 text-sm lg:text-base sm:col-span-1 lg:col-span-1">

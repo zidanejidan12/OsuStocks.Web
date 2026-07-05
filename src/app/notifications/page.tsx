@@ -50,8 +50,8 @@ function PleaseLogIn() {
     <Card className="border border-zinc-805 bg-zinc-955/20 p-6">
       <EmptyState
         icon={<Lock size={20} weight="bold" className="text-pink-400" />}
-        title="Access Restricted"
-        message="You need to be signed in to view your notifications feed."
+        title="Sign in to see notifications"
+        message="Your notifications will show up here once you're signed in."
         action={
           <Link href="/login" className="px-4 py-2 rounded-xl bg-pink-500 hover:bg-pink-400 text-white text-xs font-black uppercase tracking-wider transition-all duration-200 shadow-sm hover:shadow-[0_2px_15px_rgba(236,72,153,0.25)]">
             Go to login
@@ -183,8 +183,8 @@ export default function NotificationsPage() {
             </h1>
             <p className="mt-2 text-sm text-zinc-400 font-mono">
               {unreadCount > 0
-                ? `${unreadCount} unread system feeds requiring attention`
-                : "All incoming streams clear and processed."}
+                ? `${unreadCount} unread`
+                : "You're all caught up."}
             </p>
           </div>
           {unreadCount > 0 && (
@@ -194,7 +194,7 @@ export default function NotificationsPage() {
               className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-pink-500/20 bg-pink-500/10 hover:bg-pink-500/20 text-pink-400 text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-[0_0_15px_rgba(236,72,153,0.1)] hover:shadow-[0_0_20px_rgba(236,72,153,0.2)]"
             >
               <Checks size={14} weight="bold" />
-              Acknowledge All
+              Mark all read
             </button>
           )}
         </header>
@@ -204,7 +204,7 @@ export default function NotificationsPage() {
       <Reveal delay={0.05}>
         <div className="flex flex-wrap gap-1.5 mb-6">
           {([
-            { id: "all", label: "All Streams", count: notifications.length },
+            { id: "all", label: "All", count: notifications.length },
             { id: "trades", label: "Trades", count: notifications.filter(n => n.type === "TradeExecuted").length },
             { id: "alerts", label: "Price Alerts", count: notifications.filter(n => n.type === "PriceAlert").length },
             { id: "rewards", label: "Rewards", count: notifications.filter(n => n.type === "Reward").length },
@@ -252,7 +252,7 @@ export default function NotificationsPage() {
           <EmptyState
             icon={<Bell size={20} weight="bold" className="text-zinc-500" />}
             title="No notifications"
-            message="Incoming fills, price alerts, and rewards will be streamed here."
+            message="Incoming fills, price alerts, and rewards will appear here."
           />
         </Reveal>
       )}

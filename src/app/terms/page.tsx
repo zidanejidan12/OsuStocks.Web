@@ -14,7 +14,7 @@ const API_REPO = "https://github.com/zidanejidan12/OsuStocks.API";
 
 export default function TermsPage() {
   return (
-    <div className="relative min-h-screen w-full py-16 px-4 select-none">
+    <div className="relative min-h-screen w-full py-16 px-4">
       {/* Decorative background glows */}
       <div className="absolute top-0 right-1/4 w-96 h-96 bg-pink-500/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-10 left-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-[120px] pointer-events-none" />
@@ -45,19 +45,19 @@ export default function TermsPage() {
 
         {/* Page Header */}
         <div className="border-b border-zinc-900 pb-8 mb-10">
-          <span className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.35)]">
+          <span className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-pink-500">
             Legal Agreement
           </span>
           <h1 className="mt-2 text-3xl sm:text-4xl font-black tracking-tight font-display text-zinc-50">
-            Terms of <span className="text-pink-500 drop-shadow-[0_0_15px_rgba(236,72,153,0.3)]">Use</span>
+            Terms of <span className="text-pink-500">Use</span>
           </h1>
           <p className="mt-2.5 text-xs text-zinc-500 font-mono uppercase tracking-wider">
             Last updated: <span className="text-zinc-400 font-bold">{LAST_UPDATED}</span>
           </p>
         </div>
 
-        {/* Main Document Content wrapped in Glassmorphism Card */}
-        <div className="glass backdrop-blur-3xl bg-zinc-950/40 border border-zinc-900/60 rounded-[2.5rem] p-6 sm:p-10 shadow-2xl space-y-10">
+        {/* Main Document Content */}
+        <div className="rounded-2xl bg-zinc-950/40 border border-zinc-900/60 p-6 sm:p-10 space-y-10">
           
           {/* Important Highlight Disclaimer */}
           <div className="rounded-2xl border border-pink-500/20 bg-pink-950/10 p-5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.02)]">

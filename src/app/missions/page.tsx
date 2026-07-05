@@ -15,7 +15,6 @@ import {
   TrendUp,
   Coins,
   Clock,
-  Sparkle,
 } from "@phosphor-icons/react";
 import { getMissions, ApiError } from "@/lib/api/client";
 import type { Mission } from "@/lib/api/types";
@@ -138,7 +137,7 @@ function MissionsSummary({ missions }: { missions: Mission[] }) {
             <div>
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-pink-500 animate-pulse shrink-0" />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-pink-600 dark:text-pink-400">Operation Progress</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-pink-600 dark:text-pink-400">Progress</span>
               </div>
               <h2 className="text-3xl font-black font-display text-zinc-800 dark:text-zinc-105 mt-2 flex items-baseline gap-2">
                 <span className="bg-gradient-to-r from-zinc-800 via-pink-600 to-pink-700 dark:from-zinc-100 dark:via-pink-200 dark:to-pink-500 bg-clip-text text-transparent animate-gradient-text drop-shadow-[0_0_10px_rgba(236,72,153,0.3)]">{completionRate}%</span>
@@ -188,7 +187,7 @@ function MissionsSummary({ missions }: { missions: Mission[] }) {
             <div>
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse shrink-0" />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-650 dark:text-indigo-400">System Refresh Clock</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-650 dark:text-indigo-400">Resets in</span>
               </div>
               <div className="flex items-center gap-3.5 mt-3.5">
                 <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 shadow-[0_0_10px_rgba(99,102,241,0.1)]">
@@ -196,16 +195,9 @@ function MissionsSummary({ missions }: { missions: Mission[] }) {
                 </div>
                 <div>
                   <div className="text-2xl font-black font-mono text-zinc-800 dark:text-zinc-100 leading-none tracking-tight">{resetLabel}</div>
-                  <div className="text-[10px] text-zinc-500 mt-1.5 font-semibold">Until objective rotation</div>
+                  <div className="text-[10px] text-zinc-500 mt-1.5 font-semibold">until reset</div>
                 </div>
               </div>
-            </div>
-            <div className="mt-4 flex items-center justify-between text-[10px] text-zinc-500 pt-2.5 border-t border-zinc-200/50 dark:border-zinc-800/40">
-              <span className="font-semibold uppercase tracking-wider">Status:</span>
-              <span className="text-indigo-600 dark:text-indigo-400 flex items-center gap-1 font-bold">
-                <Sparkle size={10} weight="fill" className="animate-pulse" />
-                Online & Tracking
-              </span>
             </div>
           </div>
         </div>
@@ -257,9 +249,6 @@ function MissionRow({ mission }: { mission: Mission }) {
       ) : (
         <div className="absolute -right-6 -top-6 -z-10 h-32 w-32 rounded-full bg-pink-500/[0.02] blur-2xl transition-all duration-500 group-hover:scale-110 group-hover:bg-pink-500/[0.06]" />
       )}
-      
-      {/* Subtle sweeping shine animation */}
-      <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-20 transition-opacity duration-500 bg-gradient-to-r from-transparent via-white/5 to-transparent -skew-x-12 translate-x-[-150%] animate-[shimmer_5s_infinite]" style={{ backgroundSize: '200% 100%' }} />
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pl-4 pr-2 pt-4">
         {/* Left column: Icon & Text Info */}

@@ -5,6 +5,8 @@ import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import {
   CaretRight,
+  CaretUp,
+  CaretDown,
   WarningCircle,
   Lock,
   Coins,
@@ -227,11 +229,6 @@ function HoldingsTable({ holdings, totalValuation }: { holdings: Holding[]; tota
   const reduceMotion = useReducedMotion();
   return (
     <div className="relative overflow-hidden rounded-2xl border border-zinc-800/80 border-t-pink-500/10 bg-zinc-955/10 shadow-lg backdrop-blur-md">
-      {/* Mobile Swipe Cue */}
-      <div className="block sm:hidden text-center py-2.5 bg-pink-500/5 border-b border-zinc-850/50 text-[10px] font-black uppercase tracking-widest text-pink-400/80 animate-pulse">
-        ← Swipe sideways to view full ledger →
-      </div>
-
       <div className="overflow-x-auto w-full">
         <table className="w-full text-sm">
           <caption className="sr-only">
@@ -322,9 +319,6 @@ function HoldingsTable({ holdings, totalValuation }: { holdings: Holding[]; tota
                       <span className="font-mono text-xs font-semibold tabular-nums text-zinc-305">
                         <Money value={h.currentPrice} />
                       </span>
-                      <span className="text-[9px] font-medium text-zinc-550 font-mono">
-                        Live Bid
-                      </span>
                     </div>
                   </td>
 
@@ -365,7 +359,12 @@ function HoldingsTable({ holdings, totalValuation }: { holdings: Holding[]; tota
                             ? "bg-rose-500/10 text-rose-455 border-rose-500/20" 
                             : "bg-zinc-800/40 text-zinc-400 border-zinc-700/30"
                       }`}>
-                        {isPositive ? "▲" : isNegative ? "▼" : "•"}{isPositive ? "+" : ""}<Money value={h.profitLoss} />
+                        {isPositive ? (
+                          <CaretUp size={11} weight="bold" />
+                        ) : isNegative ? (
+                          <CaretDown size={11} weight="bold" />
+                        ) : null}
+                        {isPositive ? "+" : ""}<Money value={h.profitLoss} />
                       </span>
                       <span className={`text-[10px] font-mono font-semibold ${
                         isPositive ? "text-emerald-500" : isNegative ? "text-rose-500" : "text-zinc-555"
@@ -728,9 +727,6 @@ function YourStockCard({ user }: { user: Me }) {
           <ChartLineUp size={16} className="text-pink-400" />
           <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Personal Player Stock</h2>
         </div>
-        <span className="text-[10px] font-bold text-pink-400 bg-pink-500/5 border border-pink-500/15 px-2 py-0.5 rounded-full uppercase tracking-wider font-mono">
-          Live Index
-        </span>
       </div>
 
       <Link
@@ -783,7 +779,7 @@ function HoldingsEmpty() {
             className={buttonClasses({ size: "sm", className: "gap-1.5 bg-pink-600 hover:bg-pink-500 font-bold" })}
           >
             <Coins size={16} weight="bold" />
-            Explore Live Market
+            Browse Market
           </Link>
         }
       />

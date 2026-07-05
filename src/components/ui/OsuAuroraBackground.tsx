@@ -102,43 +102,12 @@ const PATH_CONFIGS: Record<string, PathConfig> = {
   },
 };
 
-const gradientMap: Record<string, string> = {
-  yellow: "from-amber-500/30 to-amber-500/5",
-  orange: "from-orange-500/30 to-orange-500/5",
-  indigo: "from-indigo-500/30 to-indigo-500/5",
-  emerald: "from-emerald-500/30 to-emerald-500/5",
-  pink: "from-pink-500/30 to-pink-500/5",
-  cyan: "from-cyan-500/30 to-cyan-500/5",
-  white: "from-white/20 to-white/5",
-};
-
-const shadowMap: Record<string, string> = {
-  yellow: "rgba(245,158,11,0.2)",
-  orange: "rgba(249,115,22,0.2)",
-  indigo: "rgba(99,102,241,0.2)",
-  emerald: "rgba(16,185,129,0.2)",
-  pink: "rgba(236,72,153,0.2)",
-  cyan: "rgba(6,182,212,0.2)",
-  white: "rgba(255,255,255,0.15)",
-};
-
-const lightGradientMap: Record<string, string> = {
-  yellow: "from-amber-500/15 to-amber-500/2",
-  orange: "from-orange-500/15 to-orange-500/2",
-  indigo: "from-indigo-500/15 to-indigo-500/2",
-  emerald: "from-emerald-500/15 to-emerald-500/2",
-  pink: "from-pink-500/15 to-pink-500/2",
-  cyan: "from-cyan-500/15 to-cyan-500/2",
-  white: "from-zinc-500/10 to-zinc-500/2",
-};
-
 export function OsuAuroraBackground() {
   const pathname = usePathname();
-  const [particles, setParticles] = useState<any[]>([]);
   const { scrollY } = useScroll();
   const [isLightMode, setIsLightMode] = useState(false);
   // Framer-motion runs on JS, so the sitewide CSS prefers-reduced-motion rule
-  // can't reach it — gate the scroll parallax and the laser loop here.
+  // can't reach it — gate the scroll parallax here.
   const reduce = useReducedMotion();
 
   // Theme observer
@@ -160,53 +129,17 @@ export function OsuAuroraBackground() {
 
   // Different translation mappings for layers of backgrounds
   const y1 = useTransform(scrollY, [0, 1500], [0, -180]);
-  const y2 = useTransform(scrollY, [0, 1500], [0, 100]);
-  const y3 = useTransform(scrollY, [0, 1500], [0, -70]);
   const yApproach = useTransform(scrollY, [0, 1500], [0, -120]);
   const opacityGrid = useTransform(scrollY, [0, 800], [1, 0.25]);
 
-  useEffect(() => {
-    let colors = ["pink", "cyan", "white"];
-    if (pathname === "/trending") {
-      colors = ["orange", "pink", "white"];
-    } else if (pathname === "/leaderboard") {
-      colors = ["yellow", "indigo", "white"];
-    } else if (pathname === "/about") {
-      colors = ["emerald", "cyan", "white"];
-    } else if (pathname === "/portfolio") {
-      colors = ["pink", "indigo", "white"];
-    }
-
-    const list = Array.from({ length: 65 }).map((_, i) => {
-      const type = Math.random() > 0.4 ? "diamond" : "orb";
-      const colorRand = Math.random();
-      const color = colorRand > 0.6 ? colors[0] : colorRand > 0.3 ? colors[1] : colors[2];
-      return {
-        id: i,
-        left: Math.random() * 100,
-        top: Math.random() * 100,
-        size: type === "diamond" ? Math.random() * 4 + 2 : Math.random() * 25 + 15,
-        delay: Math.random() * -15,
-        duration: type === "diamond" ? Math.random() * 12 + 6 : Math.random() * 20 + 12,
-        type,
-        color
-      };
-    });
-    setParticles(list);
-  }, [pathname]);
-
-  const isLogin = pathname === "/login";
-
-  const gridColor = isLightMode 
+  const gridColor = isLightMode
     ? `rgba(28, 21, 28, ${config.gridOpacity * 2.2})` 
     : `rgba(255, 255, 255, ${config.gridOpacity})`;
 
   return (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 animate-hue-shift">
+    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
       {/* Moving Aurora Mesh Gradients */}
       <motion.div style={{ y: reduce ? 0 : y1, backgroundColor: activeColors.bg1 }} className="absolute -top-[10%] -right-[10%] w-[60%] h-[60%] rounded-full blur-[120px] animate-aurora-1" />
-      <motion.div style={{ y: reduce ? 0 : y2, backgroundColor: activeColors.bg2 }} className="absolute -bottom-[10%] -left-[10%] w-[60%] h-[60%] rounded-full blur-[120px] animate-aurora-2" />
-      <motion.div style={{ y: reduce ? 0 : y3, backgroundColor: activeColors.bg3 }} className="absolute top-[20%] right-[10%] w-[50%] h-[50%] rounded-full blur-[130px] animate-aurora-3" />
 
       {/* Grid overlay */}
       <motion.div 
@@ -217,83 +150,12 @@ export function OsuAuroraBackground() {
         className="absolute inset-0 bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]" 
       />
 
-      {/* Scanning laser sweep — a perpetual framer-motion loop, so skip it
-          entirely under prefers-reduced-motion. */}
-      {!reduce && (
-        <motion.div
-          initial={{ y: "-10%" }}
-          animate={{ y: "110%" }}
-          transition={{
-            duration: 16,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-          className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-pink-500/10 to-transparent opacity-25"
-          style={{
-            boxShadow: "0 0 15px rgba(236, 72, 153, 0.15)",
-          }}
-        />
-      )}
-
       {/* osu! Approach Circles */}
       <motion.div style={{ y: reduce ? 0 : yApproach }} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] z-0">
         <div className="absolute top-1/2 left-1/2 w-full h-full rounded-full border border-pink-500/15 shadow-[0_0_15px_rgba(236,72,153,0.08)] animate-approach-1" />
         <div className="absolute top-1/2 left-1/2 w-full h-full rounded-full border border-cyan-500/10 shadow-[0_0_15px_rgba(6,182,212,0.08)] animate-approach-2" />
         <div className="absolute top-1/2 left-1/2 w-full h-full rounded-full border border-pink-500/5 shadow-[0_0_15px_rgba(236,72,153,0.04)] animate-approach-3" />
       </motion.div>
-
-      {/* falling snowflakes (diamonds) & floating blurred orbs */}
-      {!isLogin && particles.map((p) => {
-        if (p.type === "diamond") {
-          const bgGradient = isLightMode 
-            ? lightGradientMap[p.color] 
-            : gradientMap[p.color];
-          const shadowColor = shadowMap[p.color];
-          
-          return (
-            <span
-              key={p.id}
-              className={`absolute transform rotate-45 bg-gradient-to-tr ${bgGradient} border border-white/10 animate-fall-wobble`}
-              style={{
-                left: `${p.left}%`,
-                width: `${p.size}px`,
-                height: `${p.size}px`,
-                top: `-20px`,
-                boxShadow: isLightMode ? "none" : `0 0 10px ${shadowColor}`,
-                animationDelay: `${p.delay}s`,
-                animationDuration: `${p.duration}s`,
-              }}
-            />
-          );
-        } else {
-          // Floating blurred orbs
-          const bgClassName = isLightMode
-            ? p.color === "pink"
-              ? "bg-pink-500/3"
-              : p.color === "cyan"
-              ? "bg-cyan-500/3"
-              : "bg-zinc-500/3"
-            : p.color === "pink"
-            ? "bg-pink-500/5"
-            : p.color === "cyan"
-            ? "bg-cyan-500/5"
-            : "bg-white/5";
-          return (
-            <span
-              key={p.id}
-              className={`absolute rounded-full blur-[10px] animate-float-slow ${bgClassName}`}
-              style={{
-                left: `${p.left}%`,
-                top: `${p.top}%`,
-                width: `${p.size}px`,
-                height: `${p.size}px`,
-                animationDelay: `${p.delay}s`,
-                animationDuration: `${p.duration}s`,
-              }}
-            />
-          );
-        }
-      })}
     </div>
   );
 }

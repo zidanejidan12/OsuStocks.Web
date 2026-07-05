@@ -31,9 +31,6 @@ export function MarketOverviewCards({
         transition={spring}
         className="glass relative overflow-hidden rounded-2xl p-5 border border-zinc-800/80 hover:border-pink-500/30 hover:shadow-[0_0_25px_rgba(236,72,153,0.06)] group"
       >
-        <div className="absolute top-0 left-0 w-8 h-[1px] bg-gradient-to-r from-pink-500/30 to-transparent" />
-        <div className="absolute top-0 left-0 w-[1px] h-8 bg-gradient-to-b from-pink-500/30 to-transparent" />
-        <div className="absolute top-0 right-0 w-32 h-32 bg-pink-500/3 rounded-full blur-2xl pointer-events-none group-hover:bg-pink-500/5 transition-all duration-500" />
         <div className="flex items-center gap-4">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-pink-500/10 text-pink-400 border border-pink-500/20 group-hover:border-pink-500/30 transition-all duration-300">
             <Trophy size={20} weight="bold" />
@@ -64,9 +61,6 @@ export function MarketOverviewCards({
         transition={spring}
         className="glass relative overflow-hidden rounded-2xl p-5 border border-zinc-800/80 hover:border-cyan-500/35 hover:shadow-[0_0_25px_rgba(6,182,212,0.08)] group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50"
       >
-        <div className="absolute top-0 left-0 w-8 h-[1px] bg-gradient-to-r from-cyan-500/30 to-transparent" />
-        <div className="absolute top-0 left-0 w-[1px] h-8 bg-gradient-to-b from-cyan-500/30 to-transparent" />
-        <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/3 rounded-full blur-2xl pointer-events-none group-hover:bg-cyan-500/5 transition-all duration-500" />
         <div className="absolute top-4 right-4 flex items-center gap-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 text-[8px] font-bold text-cyan-400 uppercase tracking-wider opacity-80 transition-opacity group-hover:opacity-100">
           <ArrowsDownUp size={9} weight="bold" />
           Sort
@@ -94,9 +88,6 @@ export function MarketOverviewCards({
             transition={spring}
             className="glass relative overflow-hidden rounded-2xl p-5 border border-zinc-800/80 hover:border-pink-500/35 hover:shadow-[0_0_25px_rgba(236,72,153,0.07)] group h-full flex flex-col justify-between"
           >
-            <div className="absolute top-0 left-0 w-8 h-[1px] bg-gradient-to-r from-pink-500/30 to-transparent" />
-            <div className="absolute top-0 left-0 w-[1px] h-8 bg-gradient-to-b from-pink-500/30 to-transparent" />
-            <div className="absolute top-0 right-0 w-32 h-32 bg-pink-500/4 rounded-full blur-2xl pointer-events-none group-hover:bg-pink-500/6 transition-all duration-500" />
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
                 <TrendUp size={14} weight="bold" className="text-pink-500" />
@@ -137,9 +128,6 @@ export function MarketOverviewCards({
             transition={spring}
             className="glass relative overflow-hidden rounded-2xl p-5 border border-zinc-800/80 hover:border-cyan-500/35 hover:shadow-[0_0_25px_rgba(6,182,212,0.07)] group h-full flex flex-col justify-between"
           >
-            <div className="absolute top-0 left-0 w-8 h-[1px] bg-gradient-to-r from-cyan-500/30 to-transparent" />
-            <div className="absolute top-0 left-0 w-[1px] h-8 bg-gradient-to-b from-cyan-500/30 to-transparent" />
-            <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/4 rounded-full blur-2xl pointer-events-none group-hover:bg-cyan-500/6 transition-all duration-500" />
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
                 <TrendDown size={14} weight="bold" className="text-cyan-400" />

@@ -10,7 +10,6 @@ import {
   TrendDown,
   ChartBar,
   WarningCircle,
-  Broadcast,
   Fire,
   ArrowRight
 } from "@phosphor-icons/react";
@@ -41,9 +40,9 @@ const BUCKETS: Bucket[] = [
   {
     key: "mostBought",
     title: "Most Bought",
-    subtitle: "COMMUNITY FAVORITE",
+    subtitle: "By buy count",
     Icon: ShoppingCart,
-    tagLabel: "COMMUNITY FAVORITE",
+    tagLabel: "By buy count",
     tagClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/25",
     metric: (s) => (
       <span className="font-mono text-xs text-zinc-300">
@@ -54,9 +53,9 @@ const BUCKETS: Bucket[] = [
   {
     key: "mostSold",
     title: "Most Sold",
-    subtitle: "PANIC LIQUIDATION",
+    subtitle: "By sell count",
     Icon: Tag,
-    tagLabel: "PANIC LIQUIDATION",
+    tagLabel: "By sell count",
     tagClass: "bg-rose-500/10 text-rose-400 border-rose-500/25",
     metric: (s) => (
       <span className="font-mono text-xs text-zinc-300">
@@ -67,27 +66,27 @@ const BUCKETS: Bucket[] = [
   {
     key: "fastestRising",
     title: "Fastest Rising",
-    subtitle: "SPEEDRUN PUMP",
+    subtitle: "By 24h change",
     Icon: TrendUp,
-    tagLabel: "SPEEDRUN PUMP",
+    tagLabel: "By 24h change",
     tagClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/25",
     metric: (s) => <PriceChange value={s.priceChange24h} />,
   },
   {
     key: "fastestFalling",
     title: "Fastest Falling",
-    subtitle: "CHOKE DEPRECIATION",
+    subtitle: "By 24h change",
     Icon: TrendDown,
-    tagLabel: "CHOKE DEPRECIATION",
+    tagLabel: "By 24h change",
     tagClass: "bg-rose-500/10 text-rose-400 border-rose-500/25",
     metric: (s) => <PriceChange value={s.priceChange24h} />,
   },
   {
     key: "highestVolume",
     title: "Highest Volume",
-    subtitle: "HYPER LIQUID CORE",
+    subtitle: "By 24h volume",
     Icon: ChartBar,
-    tagLabel: "HYPER LIQUID CORE",
+    tagLabel: "By 24h volume",
     tagClass: "bg-pink-500/10 text-pink-400 border-pink-500/25",
     metric: (s) => (
       <span className="font-mono text-xs text-zinc-300">
@@ -131,19 +130,7 @@ export default function TrendingPage() {
     <div className="relative w-full overflow-hidden min-h-screen pb-20">
       <div className="absolute top-0 right-0 -z-10 h-[350px] w-[350px] rounded-full bg-orange-500/12 dark:bg-orange-500/5 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 -z-10 h-[350px] w-[350px] rounded-full bg-rose-500/12 dark:bg-rose-500/5 blur-[120px] pointer-events-none" />
-      {/* Visualizer CSS style override */}
-      <style>{`
-        @keyframes soundwave-bounce {
-          0%, 100% { transform: scaleY(0.2); }
-          50% { transform: scaleY(1); }
-        }
-        .animate-soundwave {
-          animation: soundwave-bounce 0.8s ease-in-out infinite;
-          transform-origin: bottom;
-        }
-      `}</style>
-      
-      
+
       <div className="relative z-10 mx-auto max-w-7xl px-6 py-12 sm:py-16">
         {loading && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -190,7 +177,7 @@ export default function TrendingPage() {
                     Market Trends
                   </h1>
                   <p className="mt-3 text-sm text-zinc-400 max-w-[60ch] leading-relaxed">
-                    Track hyper-active stocks, rising candidates, and volume surges directly synced with player leaderboard dynamics.
+                    The most bought, sold, and fastest-moving player stocks over the last 24 hours.
                   </p>
                 </header>
               </Reveal>
@@ -334,25 +321,6 @@ export default function TrendingPage() {
                                     </div>
                                   </div>
  
-                                  {/* Simulated Volatility Soundwave bar visualizer */}
-                                  <div className="hidden sm:flex items-end gap-0.5 px-6 h-5">
-                                    {Array.from({ length: 5 }).map((_, waveIdx) => {
-                                      const isPositive = s.priceChange24h >= 0;
-                                      return (
-                                        <span 
-                                          key={waveIdx} 
-                                          className="w-0.5 h-full rounded-full animate-soundwave origin-bottom"
-                                          style={{ 
-                                            backgroundColor: isPositive ? "rgba(16, 185, 129, 0.6)" : "rgba(244, 63, 94, 0.6)",
-                                            boxShadow: isPositive ? "0 0 6px rgba(16, 185, 129, 0.3)" : "0 0 6px rgba(244, 63, 94, 0.3)",
-                                            animationDelay: `${waveIdx * 0.15}s`,
-                                            animationDuration: `${0.5 + Math.random() * 0.4}s`
-                                          }}
-                                        />
-                                      );
-                                    })}
-                                  </div>
-
                                   <div className="shrink-0 text-right">
                                     {activeBucket.metric(s)}
                                   </div>
@@ -364,11 +332,6 @@ export default function TrendingPage() {
                       </AnimatePresence>
                     </div>
                   )}
-                </div>
-
-                <div className="mt-8 pt-4 border-t border-zinc-900 flex justify-between items-center text-[10px] font-mono text-zinc-500">
-                  <span>Valuation System: Bonding linear PP</span>
-                  <span>Database sync status: Online</span>
                 </div>
               </Card>
             </div>

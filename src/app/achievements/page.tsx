@@ -135,13 +135,6 @@ function getAchievementTier(reward: number) {
   return { name: "Bronze", color: "text-orange-400", ring: "ring-orange-500/30", border: "border-orange-500/20", bg: "bg-orange-500/[0.01]", glow: "" };
 }
 
-function getAchievementRarity(reward: number) {
-  if (reward >= 1000) return { pct: "2.4%", label: "Ultra Rare", color: "from-cyan-500/20 to-teal-500/20 text-cyan-400 border-cyan-500/30" };
-  if (reward >= 500) return { pct: "12.8%", label: "Rare", color: "from-amber-500/20 to-yellow-500/20 text-amber-400 border-amber-500/30" };
-  if (reward >= 250) return { pct: "34.5%", label: "Uncommon", color: "from-zinc-500/20 to-zinc-400/20 text-zinc-300 border-zinc-500/25" };
-  return { pct: "78.2%", label: "Common", color: "from-orange-500/20 to-red-500/20 text-orange-400 border-orange-500/20" };
-}
-
 function AchievementsSummary({ data }: { data: AchievementsResponse }) {
   const total = data.items.length;
   const unlocked = data.unlockedCount ?? data.items.filter(a => a.unlocked).length;
@@ -251,7 +244,6 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
     achievement;
 
   const tier = getAchievementTier(rewardCredits);
-  const rarity = getAchievementRarity(rewardCredits);
 
   const cardStyle = unlocked
     ? `${tier.border} ${tier.bg} ${tier.glow} ring-1 ring-inset ${tier.ring} before:absolute before:inset-0 before:rounded-3xl before:bg-gradient-to-tr before:from-pink-500/5 before:to-transparent before:pointer-events-none`
@@ -289,10 +281,6 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
             <div className="flex items-center gap-2 mt-1">
               <span className={`text-[10px] font-sans font-black uppercase tracking-wider ${tier.color}`}>
                 {tier.name}
-              </span>
-              <span className="text-zinc-700 text-xs font-light">•</span>
-              <span className={`text-[10px] font-sans font-medium px-2 py-0.5 rounded-md border bg-zinc-900/50 border-zinc-800/80 text-zinc-350`}>
-                {rarity.pct} of players
               </span>
             </div>
           </div>
@@ -578,7 +566,6 @@ export default function AchievementsPage() {
                       const achievement = filteredItems[selectedIdx];
                       if (!achievement) return null;
                       const tier = getAchievementTier(achievement.rewardCredits);
-                      const rarity = getAchievementRarity(achievement.rewardCredits);
                       const unlocked = achievement.unlocked;
                       return (
                         <motion.div
@@ -590,13 +577,9 @@ export default function AchievementsPage() {
                           exit="exit"
                           className="flex flex-col items-center text-center flex-1"
                         >
-                          {/* Glow Behind Badge with Rotating Orbits */}
+                          {/* Glow Behind Badge */}
                           <div className="relative w-32 h-32 mb-6 flex items-center justify-center">
                             <div className={`absolute inset-0 rounded-full blur-3xl opacity-20 ${unlocked ? "bg-emerald-500" : "bg-pink-500"}`} />
-                            
-                            {/* Orbital Ring */}
-                            <div className="absolute inset-0 border border-dashed border-zinc-800 rounded-full animate-[spin_30s_linear_infinite]" />
-                            <div className="absolute inset-2 border border-zinc-900 rounded-full" />
 
                             <div
                               className={`w-24 h-24 rounded-3xl border-2 grid place-items-center transition-all duration-300 relative z-10 ${
@@ -606,14 +589,14 @@ export default function AchievementsPage() {
                               }`}
                             >
                               {unlocked ? (
-                                <SealCheck size={52} weight="fill" className="animate-pulse" />
+                                <SealCheck size={52} weight="fill" />
                               ) : (
                                 <Medal size={52} weight="bold" />
                               )}
                             </div>
                           </div>
 
-                          {/* Category Badge & Rarity Info */}
+                          {/* Category Badge & Tier Info */}
                           <div className="flex flex-col items-center gap-2 mb-3">
                             <div className="flex items-center gap-2">
                               <Badge tone={unlocked ? "accent" : "neutral"}>{achievement.category}</Badge>
@@ -623,9 +606,6 @@ export default function AchievementsPage() {
                                 </span>
                               )}
                             </div>
-                            <span className={`text-[10px] font-sans font-medium px-2.5 py-0.5 rounded-md border bg-zinc-900/50 border-zinc-800/80 text-zinc-350`}>
-                              {rarity.label} • {rarity.pct} Unlocked
-                            </span>
                           </div>
 
                           {/* Title */}

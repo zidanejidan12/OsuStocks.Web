@@ -846,11 +846,6 @@ function TransactionMonitorCard() {
         />
       ) : tab === "trades" ? (
         <div className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950/20 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
-          {/* Mobile Swipe Cue */}
-          <div className="block sm:hidden text-center py-2 bg-pink-500/5 border-b border-zinc-850/50 text-[10px] font-black uppercase tracking-widest text-pink-400/80 animate-pulse">
-            ← Swipe sideways to view all trade records →
-          </div>
-
           <div className="overflow-x-auto w-full">
             <table className="w-full min-w-[44rem] text-sm">
               <caption className="sr-only">Trades: trader, player, side, quantity, price, total, time.</caption>
@@ -912,11 +907,6 @@ function TransactionMonitorCard() {
         </div>
       ) : (
         <div className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950/20 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
-          {/* Mobile Swipe Cue */}
-          <div className="block sm:hidden text-center py-2 bg-pink-500/5 border-b border-zinc-850/50 text-[10px] font-black uppercase tracking-widest text-pink-400/80 animate-pulse">
-            ← Swipe sideways to view ledger details →
-          </div>
-
           <div className="overflow-x-auto w-full">
             <table className="w-full min-w-[32rem] text-sm">
               <caption className="sr-only">Wallet ledger: owner, type, amount, time.</caption>
@@ -1024,7 +1014,7 @@ export default function AdminPage() {
           <Card className="border border-zinc-805 bg-zinc-955/20 p-6">
             <EmptyState
               icon={<Lock size={20} weight="bold" className="text-pink-400" />}
-              title="Access Restricted"
+              title="Admins only"
               message="You need to be signed in as an administrator to view the control panel."
               action={
                 <Link href="/login" className="px-4 py-2 rounded-xl bg-pink-500 hover:bg-pink-400 text-white text-xs font-black uppercase tracking-wider transition-all duration-200 shadow-sm">
@@ -1046,7 +1036,7 @@ export default function AdminPage() {
             <EmptyState
               icon={<ShieldWarning size={20} weight="bold" className="text-rose-400" />}
               title="Access Denied"
-              message="This administrative sector is restricted to platform operators."
+              message="Only administrators can view this page."
               action={
                 <Link href="/" className="px-4 py-2 rounded-xl border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer">
                   Back to market
@@ -1071,7 +1061,7 @@ export default function AdminPage() {
               Admin Panel
             </h1>
             <p className="mt-1.5 text-xs text-zinc-405 font-mono">
-              Central node configuration and player tracking indexes.
+              Configure the market and manage tracked players.
             </p>
           </div>
         </header>

@@ -610,10 +610,6 @@ export function Nav() {
               transition={{ type: "spring", damping: 25, stiffness: 350 }}
               className="relative w-full max-w-sm overflow-hidden rounded-[2.5rem] border border-pink-500/35 bg-zinc-950/90 p-8 shadow-[0_0_50px_rgba(236,72,153,0.3)] backdrop-blur-xl text-center z-10"
             >
-              {/* Corner decorative light path */}
-              <div className="absolute -left-16 -top-16 w-36 h-36 bg-pink-500/10 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute -right-16 -bottom-16 w-36 h-36 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-
               {/* Close button */}
               <button
                 type="button"
@@ -624,11 +620,8 @@ export function Nav() {
                 <X size={16} weight="bold" />
               </button>
 
-              {/* Glowing Avatar Frame */}
+              {/* Avatar Frame */}
               <div className="relative mx-auto w-24 h-24 mb-5 flex items-center justify-center">
-                {/* Rotating accent aura */}
-                <div className="absolute inset-0 rounded-full border-2 border-dashed border-pink-500/40 animate-spin-slow" />
-                <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-pink-500 to-cyan-400 opacity-20 blur-md" />
                 <div className="relative rounded-full ring-4 ring-zinc-900 shadow-2xl">
                   <Avatar src={user.avatarUrl} name={user.username} size="lg" />
                 </div>
@@ -643,7 +636,7 @@ export function Nav() {
               </h2>
 
               <p className="mt-4 text-xs sm:text-sm leading-relaxed text-zinc-400">
-                You are successfully logged into OsuStocks. Start tracking performance, buying shares, and dominating the leaderboard!
+                You&apos;re signed in. Head to the market to start trading.
               </p>
 
               {/* Action Button */}

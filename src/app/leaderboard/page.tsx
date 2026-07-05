@@ -138,11 +138,6 @@ function PodiumCard({
       </span>
       <div className="mt-3 relative">
         <Avatar src={entry.avatarUrl} name={entry.username} size="md" className="ring-2 ring-zinc-850" />
-        {isRank1 && (
-          <div className="absolute -top-1.5 -right-1.5 text-xs text-amber-400 drop-shadow-[0_0_4px_rgba(245,158,11,0.8)]">
-            👑
-          </div>
-        )}
       </div>
       <div className="mt-2 flex max-w-full items-center gap-1.5 justify-center">
         <span className="truncate text-sm font-semibold text-zinc-100">
@@ -343,8 +338,7 @@ export default function LeaderboardPage() {
               {/* Rank 1 (Center) */}
               {podium[0] && (
                 <li key={podium[0].userId} className="w-full md:w-1/3 order-1 md:order-2 md:scale-[1.05] z-10 relative">
-                  <div className="absolute -top-7 left-1/2 -translate-x-1/2 text-3xl animate-bounce pointer-events-none">👑</div>
-                  <PodiumCard 
+                  <PodiumCard
                     entry={podium[0]} 
                     isMe={user?.userId === podium[0].userId} 
                     onCompare={() => handleCompareClick(podium[0])}
@@ -387,9 +381,6 @@ export default function LeaderboardPage() {
                 const isSelected = selectedUserId === e.userId;
                 const isCompared = versusA?.userId === e.userId || versusB?.userId === e.userId;
 
-                // Dynamic Trade combometer stats
-                const simulatedCombo = Math.max(2, (e.username.length % 5) + 3);
-                
                 return (
                   <motion.li
                     key={e.userId}
@@ -430,16 +421,11 @@ export default function LeaderboardPage() {
                         )}
                       </div>
                       
-                      <div className="flex items-center gap-2 mt-0.5">
-                        {typeof e.profitLoss === "number" && (
-                          <div className="text-xs">
-                            <PriceChange value={e.profitLoss} />
-                          </div>
-                        )}
-                        <span className="text-[9px] font-mono text-zinc-550 border border-zinc-900 rounded px-1.5 py-0.5 bg-zinc-950/40">
-                          STREAK x{simulatedCombo}
-                        </span>
-                      </div>
+                      {typeof e.profitLoss === "number" && (
+                        <div className="text-xs mt-0.5">
+                          <PriceChange value={e.profitLoss} />
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-4">
@@ -481,8 +467,8 @@ export default function LeaderboardPage() {
           >
             <div className="flex items-center justify-between border-b border-zinc-900 pb-2.5 mb-4">
               <span className="text-[9px] font-bold text-pink-400 flex items-center gap-1.5">
-                <Target size={12} className="animate-spin-slow" />
-                TRADER TELEMETRY COMBAT
+                <Target size={12} />
+                Compare
               </span>
               <button 
                 onClick={() => { setVersusA(null); setVersusB(null); }}
