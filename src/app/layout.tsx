@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Rajdhani, Outfit } from "next/font/google";
 import "./globals.css";
 import { MotionProvider } from "@/components/MotionProvider";
 import { AuthProvider } from "@/lib/auth/auth-context";
@@ -9,6 +9,7 @@ import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { Backdrop } from "@/components/Backdrop";
 import { MarketTicker } from "@/components/MarketTicker";
+import { DailyMissionsWidget } from "@/components/DailyMissionsWidget";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,6 +18,17 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+const rajdhani = Rajdhani({
+  variable: "--font-rajdhani",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+});
+
+const outfit = Outfit({
+  variable: "--font-outfit",
   subsets: ["latin"],
 });
 
@@ -116,7 +128,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${rajdhani.variable} ${outfit.variable} antialiased`}
     >
       <body className="flex min-h-screen flex-col bg-zinc-950 font-sans text-zinc-100">
         <a
@@ -135,6 +147,7 @@ export default function RootLayout({
             <AuthProvider>
               <NotificationsProvider>
                 <Nav />
+                <DailyMissionsWidget />
                 <main id="main" tabIndex={-1} className="relative flex-1 focus-visible:outline-none">
                   {children}
                 </main>

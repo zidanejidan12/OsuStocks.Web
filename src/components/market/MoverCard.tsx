@@ -21,7 +21,7 @@ export function MoverCard({
   mover: TopMover | null;
   tone: "success" | "danger";
 }) {
-  const accent = tone === "success" ? "text-emerald-400" : "text-rose-400";
+  const accent = tone === "success" ? "text-cyan-400" : "text-rose-400";
   const Icon = tone === "success" ? TrendUp : TrendDown;
 
   if (!mover || !mover.stockId) {
@@ -42,7 +42,7 @@ export function MoverCard({
         whileHover={{ y: -2 }}
         whileTap={{ scale: 0.98 }}
         transition={spring}
-        className="group h-full rounded-2xl border border-zinc-800/80 bg-zinc-900/50 p-5 shadow-[0_24px_50px_-30px_rgba(0,0,0,0.8)] transition-colors hover:border-zinc-700 hover:bg-zinc-900/70"
+        className="group h-full rounded-2xl border border-zinc-800/80 bg-zinc-900/30 backdrop-blur-md p-5 shadow-[0_24px_50px_-30px_rgba(0,0,0,0.8)] transition-all duration-300 hover:border-pink-500/30 hover:shadow-[0_0_30px_rgba(236,72,153,0.05)]"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">
@@ -52,13 +52,15 @@ export function MoverCard({
           <CaretRight
             size={16}
             weight="bold"
-            className="text-zinc-500 opacity-0 transition-opacity group-hover:opacity-100"
+            className="text-pink-400 opacity-0 -translate-x-1 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0"
           />
         </div>
 
         <div className="mt-4 flex items-center gap-2.5">
-          <Avatar src={mover.avatarUrl} name={mover.playerName} size="sm" />
-          <span className="truncate text-lg font-medium text-zinc-100">
+          <div className="shrink-0 transition-transform duration-300 group-hover:scale-105">
+            <Avatar src={mover.avatarUrl} name={mover.playerName} size="sm" />
+          </div>
+          <span className="truncate text-lg font-medium text-zinc-100 transition-colors duration-300 group-hover:text-pink-400">
             {mover.playerName}
           </span>
         </div>

@@ -65,34 +65,39 @@ export function SponsorCard({ className = "" }: { className?: string }) {
       target="_blank"
       rel="noopener noreferrer"
       aria-label={`${label} — osu! profile (opens in a new tab)`}
-      className={`group block rounded-2xl border border-zinc-800/80 bg-zinc-900/50 p-4 shadow-[0_24px_50px_-30px_rgba(0,0,0,0.8)] transition-colors hover:border-pink-500/40 hover:bg-zinc-900/70 ${className}`}
+      className={`group block relative overflow-hidden rounded-2xl border border-pink-500/10 bg-gradient-to-r from-pink-500/[0.04] via-zinc-950/40 to-transparent p-5 shadow-[0_24px_50px_-30px_rgba(0,0,0,0.8)] transition-all duration-300 hover:border-pink-500/40 hover:bg-zinc-900/30 hover:shadow-[0_0_40px_rgba(236,72,153,0.12)] ${className}`}
     >
-      <div className="flex items-center justify-between">
-        <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-500">
-          Sponsored by
-        </span>
-        <span aria-hidden="true" className="text-pink-400/60">
-          &#10084;
-        </span>
-      </div>
-      <div className="mt-3 flex items-center gap-3">
-        <Avatar
-          src={`https://a.ppy.sh/${SPONSOR.id}`}
-          name={SPONSOR.name}
-          size="md"
-        />
-        <div className="min-w-0">
-          <div className="truncate text-base font-semibold text-zinc-100 transition-colors group-hover:text-pink-200">
-            {SPONSOR.name}
-          </div>
-          <div className="text-xs text-zinc-500">osu! profile &#8599;</div>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-pink-500 animate-pulse" />
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-pink-400/90 drop-shadow-[0_0_10px_rgba(236,72,153,0.3)]">
+            Core Sponsor
+          </span>
         </div>
-        <span
-          aria-hidden="true"
-          className="ml-auto text-zinc-600 transition-colors group-hover:text-pink-300"
-        >
-          &#8599;
-        </span>
+      </div>
+
+      <div className="flex items-center gap-4">
+        <div className="relative">
+          <Avatar
+            src={`https://a.ppy.sh/${SPONSOR.id}`}
+            name={SPONSOR.name}
+            size="md"
+            className="relative ring-2 ring-zinc-950 bg-zinc-950"
+          />
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <h3 className="text-lg font-black tracking-tight text-zinc-100 transition-colors group-hover:text-pink-200">
+            {SPONSOR.name}
+          </h3>
+          <p className="text-xs text-zinc-500 mt-0.5">
+            Supporting osu! virtual stock market
+          </p>
+        </div>
+
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-900/50 border border-zinc-800/80 text-zinc-500 transition-all duration-300 group-hover:border-pink-500/30 group-hover:text-pink-300 group-hover:translate-x-0.5">
+          <span aria-hidden="true" className="text-sm font-semibold">&#8599;</span>
+        </div>
       </div>
     </a>
   );
