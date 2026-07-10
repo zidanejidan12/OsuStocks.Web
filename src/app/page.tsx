@@ -769,10 +769,19 @@ export default function Home() {
   }, [overview]);
 
   const handleQuickTrade = () => {
-    const searchInput = document.getElementById("stock-search");
+    const searchInput = document.getElementById("stock-search") as HTMLInputElement | null;
     if (searchInput) {
       searchInput.scrollIntoView({ behavior: "smooth", block: "center" });
-      searchInput.focus();
+      
+      // Add a premium temporary glow effect to draw the user's eye
+      searchInput.classList.add("ring-4", "ring-pink-500/40", "border-pink-500");
+      setTimeout(() => {
+        searchInput.classList.remove("ring-4", "ring-pink-500/40", "border-pink-500");
+      }, 1500);
+
+      setTimeout(() => {
+        searchInput.focus({ preventScroll: true });
+      }, 300);
     }
   };
 
