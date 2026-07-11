@@ -11,6 +11,9 @@ import {
   Lock,
   WarningCircle,
   ChartBar,
+  ShieldCheck,
+  Eye,
+  EyeSlash,
   type Icon as PhosphorIcon,
 } from "@phosphor-icons/react";
 import {
@@ -87,26 +90,175 @@ function PageShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-function WalletBalanceCard({ balance }: { balance: number }) {
+// A card-style 16-digit number built from the player's real, public osu! user id
+// (right-aligned so the id is the trailing digits, fully shown when revealed).
+// Instead of leading zeros, the gap is filled with a fixed "727" (osu! "WYSI")
+// sequence — the same scheme for every user, so cards read uniformly regardless
+// of how many digits the osu! id has (1 digit up to 16+).
+const CARD_FILL = "727"; // osu! WYSI — constant across all users
+
+function generateCardNumber(osuUserId: number, showFull: boolean): string {
+  const id = String(osuUserId).replace(/\D/g, "");
+  const filler = CARD_FILL.repeat(Math.ceil(16 / CARD_FILL.length));
+  // Take only as much filler as needed to reach 16 digits, then clamp to the
+  // last 16 in case the id itself is 16+ digits.
+  const digits = (filler.slice(0, Math.max(0, 16 - id.length)) + id).slice(-16);
+  const groups = digits.match(/.{1,4}/g) ?? [];
+  if (showFull) return groups.join(" ");
+  return `•••• •••• •••• ${digits.slice(-4)}`;
+}
+
+function VirtualCreditCard({
+  balance,
+  username,
+  osuUserId,
+}: {
+  balance: number;
+  username: string;
+  osuUserId: number;
+}) {
+  const [showFull, setShowFull] = useState(false);
+  const cardNumber = generateCardNumber(osuUserId, showFull);
   const { currentTier } = getWalletStanding(balance);
+  const reduceMotion = useReducedMotion();
+
+  const isGoldTone = currentTier.name.includes("Gold") || currentTier.name.includes("Bronze");
+  const chipGradient = isGoldTone
+    ? "from-amber-300 via-yellow-400 to-amber-600"
+    : "from-zinc-100 via-zinc-300 to-zinc-500";
+
+  const embossedStyle = {
+    textShadow: "1px 1px 1px rgba(0,0,0,0.95), -0.5px -0.5px 0.5px rgba(255,255,255,0.25)",
+  };
+
+  // Interactive 3D tilt & cursor-following spotlight (skipped under reduced motion).
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [rotateX, setRotateX] = useState(0);
+  const [rotateY, setRotateY] = useState(0);
+  const [spotlightPos, setSpotlightPos] = useState({ x: 50, y: 50 });
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (reduceMotion || !cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    setSpotlightPos({ x: (x / rect.width) * 100, y: (y / rect.height) * 100 });
+    setRotateX(-((y - rect.height / 2) / (rect.height / 2)) * 6);
+    setRotateY(((x - rect.width / 2) / (rect.width / 2)) * 6);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    setRotateX(0);
+    setRotateY(0);
+  };
 
   return (
-    <Card className="border border-zinc-805 bg-zinc-955/20 p-6">
-      <div className="flex items-center gap-4">
-        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-950/40">
-          <Coin size="h-7 w-7" />
+    <div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        transform:
+          isHovered && !reduceMotion
+            ? `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`
+            : "perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)",
+        transition: isHovered && !reduceMotion ? "none" : "all 0.5s ease-out",
+      }}
+      className={`relative group rounded-2xl bg-gradient-to-br ${currentTier.cardStyle} p-[1.5px] transition-all duration-500 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.85)] max-w-lg overflow-hidden select-none cursor-pointer`}
+    >
+      {/* Cursor spotlight reflection */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 mix-blend-overlay z-20"
+        style={{ background: `radial-gradient(circle 140px at ${spotlightPos.x}% ${spotlightPos.y}%, rgba(255,255,255,0.35), transparent)` }}
+      />
+      {/* Light sheen swipe */}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent pointer-events-none transform -skew-x-12 translate-x-[-100%] group-hover:translate-x-[150%] transition-transform duration-1000 ease-out" />
+
+      <div className={`relative overflow-hidden aspect-[1.586/1] w-full rounded-[15px] p-6 flex flex-col justify-between bg-gradient-to-br ${currentTier.bgStyle} text-white transition-all duration-300`}>
+        {/* Brushed-metal grain + gloss grid */}
+        <div className="absolute inset-0 bg-[repeating-linear-gradient(0deg,rgba(255,255,255,0.015)_0px,rgba(255,255,255,0.015)_1px,transparent_1px,transparent_2px)] pointer-events-none opacity-80" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff01_1px,transparent_1px),linear-gradient(to_bottom,#ffffff01_1px,transparent_1px)] bg-[size:20px_20px] opacity-[0.12] pointer-events-none" />
+        <div className={`absolute -right-20 -top-20 w-64 h-64 bg-current opacity-[0.06] rounded-full blur-3xl pointer-events-none ${currentTier.textStyle}`} />
+        <div className={`absolute -left-20 -bottom-20 w-64 h-64 bg-current opacity-[0.04] rounded-full blur-3xl pointer-events-none ${currentTier.textStyle}`} />
+        <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-white/10 via-transparent to-transparent" />
+
+        {/* Header */}
+        <div className="flex justify-between items-start z-10">
+          <div>
+            <span className="text-sm font-black tracking-tight text-zinc-100 font-display">
+              <span className="text-pink-500 font-black">Osu</span>Stocks
+            </span>
+            <div className={`text-[7px] font-bold uppercase tracking-widest mt-0.5 font-mono ${currentTier.textStyle}`}>{currentTier.name}</div>
+          </div>
+          <div className="flex items-center gap-1.5 bg-zinc-900/60 px-2.5 py-1 rounded-lg border border-zinc-800/80 backdrop-blur-md shadow-inner">
+            <ShieldCheck size={11} weight="bold" className="text-emerald-400" />
+            <span className="text-[8px] font-bold tracking-wider text-zinc-350 font-mono">SECURE</span>
+          </div>
         </div>
-        <div>
-          <span className="block text-[8px] font-bold uppercase tracking-widest text-zinc-500 font-mono">Available Funds</span>
-          <div className="font-display text-3xl font-black tracking-tight text-zinc-100 flex items-center gap-1.5">
+
+        {/* Chip & brand */}
+        <div className="flex justify-between items-center my-1 z-10">
+          <div className={`relative w-10 h-7 rounded-[6px] bg-gradient-to-br ${chipGradient} p-[1px] shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.5),0_1.5px_3px_rgba(0,0,0,0.3)] overflow-hidden shrink-0`}>
+            <svg className="absolute inset-0 w-full h-full text-zinc-950/20 stroke-current" viewBox="0 0 40 28" fill="none" strokeWidth="0.8">
+              <rect x="2" y="2" width="36" height="24" rx="3" strokeWidth="0.5" />
+              <path d="M12 2v24M28 2v24M2 14h36M12 8h16M12 20h16" />
+              <circle cx="20" cy="14" r="3" fill="currentColor" className="opacity-10" />
+            </svg>
+          </div>
+          <div className="flex items-center gap-4">
+            <svg className="w-4 h-4 opacity-40 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <path d="M5 8.5c.8-1 2.2-1.5 3.5-1.5s2.7.5 3.5 1.5M3 6c1.5-1.8 3.8-2.5 6-2.5s4.5.7 6 2.5M7 11c.4-.5 1.1-.8 1.8-.8s1.4.3 1.8.8" />
+            </svg>
+            <div className="relative w-10 h-6 flex items-center justify-center shrink-0">
+              <div className="absolute left-0 w-5 h-5 rounded-full bg-pink-500/70 mix-blend-screen backdrop-blur-[1px] border border-pink-400/20" />
+              <div className="absolute right-0 w-5 h-5 rounded-full bg-cyan-500/70 mix-blend-screen backdrop-blur-[1px] border border-cyan-400/20" />
+              <div className="absolute w-1.5 h-3 bg-purple-500/50 mix-blend-multiply rounded-full" />
+            </div>
+          </div>
+        </div>
+
+        {/* osu! id & balance */}
+        <div className="z-10">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="font-mono text-zinc-100 text-sm tracking-[0.22em] font-bold min-w-[13.5rem] select-none" style={embossedStyle}>
+              {cardNumber}
+            </div>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowFull(!showFull);
+              }}
+              className="text-zinc-500 hover:text-zinc-300 cursor-pointer p-1 rounded-md bg-zinc-900/40 border border-zinc-800 transition-colors relative"
+              title={showFull ? "Hide card number" : "Show card number"}
+              aria-label={showFull ? "Hide card number" : "Show card number"}
+            >
+              {showFull ? <EyeSlash size={12} weight="bold" /> : <Eye size={12} weight="bold" />}
+            </button>
+          </div>
+          <span className="text-[7px] font-bold uppercase tracking-widest text-zinc-500 block mb-0.5 font-mono">Available Funds</span>
+          <div className="font-display text-3xl font-black tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)] flex items-center gap-1.5">
+            <Coin />
             <span>{balance.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </div>
-          <span className={`mt-1 inline-block text-[10px] font-black uppercase tracking-widest ${currentTier.color.split(" ")[0]}`}>
-            {currentTier.name}
-          </span>
+        </div>
+
+        {/* Footer */}
+        <div className="flex justify-between items-end z-10 pt-2 border-t border-zinc-850/60 text-[9px] text-zinc-400 font-mono">
+          <div>
+            <div className="text-[6px] font-bold uppercase tracking-wider text-zinc-500 mb-0.5">Cardholder</div>
+            <div className="font-bold tracking-widest uppercase text-zinc-200" style={embossedStyle}>{username}</div>
+          </div>
+          <div className="text-right">
+            <div className="text-[6px] font-bold uppercase tracking-wider text-zinc-500 mb-0.5">osu! Member</div>
+            <div className="tracking-widest text-zinc-300 font-bold" style={embossedStyle}>#{osuUserId}</div>
+          </div>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }
 
@@ -470,7 +622,11 @@ export default function WalletPage() {
               <ScrollParallax speed={-0.3}>
                 <Reveal>
                   <motion.div variants={scaleIn} initial="hidden" animate="show">
-                    <WalletBalanceCard balance={wallet.balance} />
+                    <VirtualCreditCard
+                      balance={wallet.balance}
+                      username={user.username}
+                      osuUserId={user.osuUserId}
+                    />
                   </motion.div>
                 </Reveal>
               </ScrollParallax>
