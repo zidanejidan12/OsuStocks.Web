@@ -21,10 +21,16 @@ const TEAM = [
     accent: "text-cyan-400 border-cyan-500/25 bg-cyan-500/10",
   },
   {
+    id: 21866720,
+    name: "JeiiiTzy",
+    role: "Frontend",
+    accent: "text-cyan-400 border-cyan-500/25 bg-cyan-500/10",
+  },
+  {
     id: 6560131,
     name: "Nishino Flower",
-    role: "Project Lead",
-    accent: "text-rose-400 border-rose-500/25 bg-rose-500/10",
+    role: "Backend",
+    accent: "text-emerald-400 border-emerald-500/25 bg-emerald-500/10",
   },
 ];
 
@@ -99,7 +105,7 @@ export default function AboutPage() {
             Team
           </h2>
           <p className="mt-2 text-sm text-zinc-500">Built by a few osu! players.</p>
-          <ul className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <ul className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {TEAM.map((member) => (
               <li key={member.id}>
                 <a
